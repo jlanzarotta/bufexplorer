@@ -6,6 +6,7 @@ BufExplorer Plugin for Vim
 License
 =======
 Copyright (c) 2001-2013, Jeff Lanzarotta
+
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
