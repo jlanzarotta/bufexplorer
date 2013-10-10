@@ -3,6 +3,10 @@ bufexplorer
 
 BufExplorer Plugin for Vim
 
+vim.org
+=======
+This plugin can also be found at http://www.vim.org/scripts/script.php?script_id=42.
+
 License
 =======
 Copyright (c) 2001-2013, Jeff Lanzarotta
