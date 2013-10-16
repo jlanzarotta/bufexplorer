@@ -1,4 +1,4 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 11 Oct 2013
+*bufexplorer.txt*              Buffer Explorer       Last Change: 16 Oct 2013
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
                                 Version 7.4.1
@@ -26,7 +26,7 @@ To install:
   - Download the bufexplorer.zip from one of the following places:
     https://github.com/jlanzarotta/bufexplorer
     http://www.vim.org/scripts/script.php?script_id=42
-    or use a package manager line Vundle.
+    or use a package manager like Vundle.
   - Extract the zip archive into your runtime directory.
     The archive contains plugin/bufexplorer.vim, and doc/bufexplorer.txt.
   - Start Vim or goto an existing instance of Vim.
