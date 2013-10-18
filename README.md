@@ -22,12 +22,24 @@ Bufexplorer also offers various options including:
 
 For more about options, sort orders, configuration options, etc. please see the supplied VIM help.
 
-vim.org
-=======
+## vim.org
 This plugin can also be found at http://www.vim.org/scripts/script.php?script_id=42.
 
-License
-=======
+## Installation
+
+If you do not have a preferred installation method, I would recommend installing [vundle.vim](https://github.com/gmarik/vundle), and
+then simply putting the following in your _vimrc or .vimrc file:
+
+    Bundle 'jlanzarotta/bufexplorer'
+
+If you do now want to use [vundle.vim](https://github.com/gmarik/vundle), you can take the zip file from vim.org and unzip it and copy the plugin to your vimfiles\plugin directory and the txt file to your vimfiles\doc directory.  If you do that, make sure you generate the help by executing
+
+`:helptag <your runtime directory>/doc`
+
+Once help tags have been generated, you can view the manual with
+`:help bufexplorer`.
+
+## License
 Copyright (c) 2001-2013, Jeff Lanzarotta
 
 All rights reserved.
