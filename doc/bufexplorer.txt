@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 16 Oct 2013
+*bufexplorer.txt*              Buffer Explorer       Last Change: 22 Oct 2013
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.1
+                                Version 7.4.2
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -135,6 +135,12 @@ To control whether the default help is displayed or not, use: >
   let g:bufExplorerDefaultHelp=1       " Show default help.
 The default is to show the default help.
 
+                                        *g:bufExplorerDisableDefaultKeyMapping*
+To control whether the default key mappings are enabled or not, use: >
+  let g:bufExplorerDisableDefaultKeyMapping=0    " Do not disable mapping.
+  let g:bufExplorerDisableDefaultKeyMapping=1    " Disable mapping.
+The default is NOT to disable the default key mapping.
+
                                                     *g:bufExplorerDetailedHelp*
 To control whether detailed help is display by, use: >
   let g:bufExplorerDetailedHelp=0      " Do not show detailed help.
@@ -236,6 +242,10 @@ The default is 0, so that the size is set by Vim.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.4.2    October 22, 2013
+    - Added global option g:bufExplorerDisableDefaultKeyMapping.  This option
+      controls weather the default key mappings (\be, \bs, and \bv) are
+      enabled or not.  See documentation for more information.
 7.4.1    October 11, 2013
     - First update related to Vim 7.4.
     - Changed license text.

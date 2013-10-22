@@ -36,7 +36,7 @@
 " Name Of File: bufexplorer.vim
 "  Description: Buffer Explorer Vim Plugin
 "   Maintainer: Jeff Lanzarotta (delux256-vim at yahoo dot com)
-" Last Changed: Friday, 11 October 2013
+" Last Changed: Tuesday, 22 October 2013
 "      Version: See g:bufexplorer_version for version number.
 "        Usage: This file should reside in the plugin directory and be
 "               automatically sourced.
@@ -72,7 +72,7 @@ endif
 "2}}}
 
 " Version number
-let g:bufexplorer_version = "7.4.1"
+let g:bufexplorer_version = "7.4.2"
 
 " Check for Vim version {{{2
 if v:version < 700
@@ -1178,36 +1178,37 @@ function! BufExplorer_ReSize()
     call setpos(".", pres)
 endfunction
 
+" Default values {{{1
+call s:Set("g:bufExplorerDisableDefaultKeyMapping", 0)  " Do not disable default key mappings.
+call s:Set("g:bufExplorerDefaultHelp", 1)               " Show default help?
+call s:Set("g:bufExplorerDetailedHelp", 0)              " Show detailed help?
+call s:Set("g:bufExplorerFindActive", 1)                " When selecting an active buffer, take you to the window where it is active?
+call s:Set("g:bufExplorerOnlyOneTab", 1)                " If ShowTabBuffer = 1, only store the most recent tab for this buffer.
+call s:Set("g:bufExplorerReverseSort", 0)               " Sort in reverse order by default?
+call s:Set("g:bufExplorerShowDirectories", 1)           " (Dir's are added by commands like ':e .')
+call s:Set("g:bufExplorerShowRelativePath", 0)          " Show listings with relative or absolute paths?
+call s:Set("g:bufExplorerShowTabBuffer", 0)             " Show only buffer(s) for this tab?
+call s:Set("g:bufExplorerShowUnlisted", 0)              " Show unlisted buffers?
+call s:Set("g:bufExplorerShowNoName", 0)                " Show "No Name" buffers?
+call s:Set("g:bufExplorerSortBy", "mru")                " Sorting methods are in s:sort_by:
+call s:Set("g:bufExplorerSplitBelow", &splitbelow)      " Should horizontal splits be below or above current window?
+call s:Set("g:bufExplorerSplitOutPathName", 1)          " Split out path and file name?
+call s:Set("g:bufExplorerSplitRight", &splitright)      " Should vertical splits be on the right or left of current window?
+call s:Set("g:bufExplorerSplitVertSize", 0)             " Height for a vertical split. If <=0, default Vim size is used.
+call s:Set("g:bufExplorerSplitHorzSize", 0)             " Height for a horizontal split. If <=0, default Vim size is used.
+"1}}}
+
 " Default key mapping {{{1
-if !hasmapto('BufExplorer')
+if !hasmapto('BufExplorer') && g:bufExplorerDisableDefaultKeyMapping == 0
     noremap <script> <silent> <unique> <Leader>be :BufExplorer<CR>
 endif
 
-if !hasmapto('BufExplorerHorizontalSplit')
+if !hasmapto('BufExplorerHorizontalSplit') && g:bufExplorerDisableDefaultKeyMapping == 0
     noremap <script> <silent> <unique> <Leader>bs :BufExplorerHorizontalSplit<CR>
 endif
 
-if !hasmapto('BufExplorerVerticalSplit')
+if !hasmapto('BufExplorerVerticalSplit') && g:bufExplorerDisableDefaultKeyMapping == 0
     noremap <script> <silent> <unique> <Leader>bv :BufExplorerVerticalSplit<CR>
 endif
-
-" Default values {{{1
-call s:Set("g:bufExplorerDefaultHelp", 1)           " Show default help?
-call s:Set("g:bufExplorerDetailedHelp", 0)          " Show detailed help?
-call s:Set("g:bufExplorerFindActive", 1)            " When selecting an active buffer, take you to the window where it is active?
-call s:Set("g:bufExplorerOnlyOneTab", 1)            " If ShowTabBuffer = 1, only store the most recent tab for this buffer.
-call s:Set("g:bufExplorerReverseSort", 0)           " Sort in reverse order by default?
-call s:Set("g:bufExplorerShowDirectories", 1)       " (Dir's are added by commands like ':e .')
-call s:Set("g:bufExplorerShowRelativePath", 0)      " Show listings with relative or absolute paths?
-call s:Set("g:bufExplorerShowTabBuffer", 0)         " Show only buffer(s) for this tab?
-call s:Set("g:bufExplorerShowUnlisted", 0)          " Show unlisted buffers?
-call s:Set("g:bufExplorerShowNoName", 0)            " Show "No Name" buffers?
-call s:Set("g:bufExplorerSortBy", "mru")            " Sorting methods are in s:sort_by:
-call s:Set("g:bufExplorerSplitBelow", &splitbelow)  " Should horizontal splits be below or above current window?
-call s:Set("g:bufExplorerSplitOutPathName", 1)      " Split out path and file name?
-call s:Set("g:bufExplorerSplitRight", &splitright)  " Should vertical splits be on the right or left of current window?
-call s:Set("g:bufExplorerSplitVertSize", 0)         " Height for a vertical split. If <=0, default Vim size is used.
-call s:Set("g:bufExplorerSplitHorzSize", 0)         " Height for a horizontal split. If <=0, default Vim size is used.
-"1}}}
 
 " vim:ft=vim foldmethod=marker sw=4
