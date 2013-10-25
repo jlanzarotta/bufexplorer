@@ -1,2 +1,4 @@
 # Ignore generated tags
 /doc/tags
+dist.bat
+*.zip
