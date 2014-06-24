@@ -412,7 +412,7 @@ function! s:DisplayBufferList()
     " Wipe out any existing lines in case BufExplorer buffer exists and the
     " user had changed any global settings that might reduce the number of
     " lines needed in the buffer.
-    keepjumps 1,$d _
+    silent keepjumps 1,$d _
 
     call setline(1, s:CreateHelp())
     call s:BuildBufferList()
@@ -480,6 +480,7 @@ function! s:SetupSyntax()
         syn match bufExplorerCurBuf    /^\s*\d\+.%.*/
         syn match bufExplorerAltBuf    /^\s*\d\+.#.*/
         syn match bufExplorerUnlBuf    /^\s*\d\+u.*/
+        syn match bufExplorerInactBuf  /^\s*\d\+ \{7}.*/
 
         hi def link bufExplorerBufNbr Number
         hi def link bufExplorerMapping NonText
@@ -499,6 +500,7 @@ function! s:SetupSyntax()
         hi def link bufExplorerLockedBuf Special
         hi def link bufExplorerModBuf Exception
         hi def link bufExplorerUnlBuf Comment
+        hi def link bufExplorerInactBuf Comment
     endif
 endfunction
 
@@ -972,7 +974,7 @@ function! s:RebuildBufferList(...)
 
     if a:0 && a:000[0] && (line('$') >= s:firstBufferLine)
         " Clear the list first.
-        execute "keepjumps ".s:firstBufferLine.',$d _'
+        execute "silent keepjumps ".s:firstBufferLine.',$d _'
     endif
 
     let num_bufs = s:BuildBufferList()
@@ -1166,7 +1168,7 @@ function! BufExplorer_ReSize()
     " the lines are pushed up and we see some lagging '~'s.
     let pres = getpos(".")
 
-    execute $
+    normal! $
 
     let _scr = &scrolloff
     let &scrolloff = 0
