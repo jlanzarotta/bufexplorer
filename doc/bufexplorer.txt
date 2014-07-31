@@ -215,8 +215,8 @@ variable.
 
                                                    *g:bufExplorerSplitHorzSize*
 To control the size of the new horizontal split window. use: >
-  let g:bufExplorerHorzSize=n          " New split window is n rows high.
-  let g:bufExplorerHorzSize=0          " New split window size set by Vim.
+  let g:bufExplorerSplitHorzSize=n     " New split window is n rows high.
+  let g:bufExplorerSplitHorzSize=0     " New split window size set by Vim.
 The default is 0, so that the size is set by Vim.
 
                                                 *g:bufExplorerSplitOutPathName*
