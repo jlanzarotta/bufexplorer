@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 22 Oct 2013
+*bufexplorer.txt*              Buffer Explorer       Last Change: 13 Aug 2014
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.2
+                                Version 7.4.3
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -242,6 +242,11 @@ The default is 0, so that the size is set by Vim.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.4.3    August 13, 2013
+    - Ivan Ukhov fixed issue with deleting the last window.  This update also
+      fixes as well as anotherIf you have say, NERDtree open on the left side
+      and bufexplorer on the right, that bufexplorer would close NERDtree
+	  erroneously thinking that it is closing itself.
 7.4.2    October 22, 2013
     - Added global option g:bufExplorerDisableDefaultKeyMapping.  This option
       controls weather the default key mappings (\be, \bs, and \bv) are
