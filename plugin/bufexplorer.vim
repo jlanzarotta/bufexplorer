@@ -904,7 +904,7 @@ function! s:Close()
     let listed = filter(copy(s:MRUList), "buflisted(v:val)")
 
     " If we needed to split the main window, close the split one.
-    if s:splitMode != ""
+    if s:splitMode != "" && bufwinnr(s:originBuffer) != -1
         execute "wincmd c"
     endif
 
