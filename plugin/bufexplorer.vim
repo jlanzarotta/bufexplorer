@@ -808,6 +808,8 @@ function! s:SelectBuffer(...)
                     let _bufName = expand("#"._bufNbr.":p")
                     execute _bufName ? "drop ".escape(_bufName, " ") : "buffer "._bufNbr
                 endif
+            else
+                call s:Close()
             endif
 
             " Switch to the selected buffer.
