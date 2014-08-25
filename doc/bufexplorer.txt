@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 13 Aug 2014
+*bufexplorer.txt*              Buffer Explorer       Last Change: 19 Aug 2014
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.3
+                                Version 7.4.4
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -49,6 +49,14 @@ To start exploring in a newly split vertical window, use: >
 
 If you would like to use something other than '\', you may simply change the
 leader (see |mapleader|).
+
+When \bs or \bv is issued, bufexplorer opens in either a horizonally or
+vertically split window.  By issusing either of these commands, the user is
+telling bufexplorer that they want to split the window and have bufexplorer
+show the buffer they are about to select (from the bufexplorer windows) in the
+newly split window.  When \be is issued, bufexplorer opens the bufexplorer
+contents in the current window and the buffer the user selects is opened in
+the current window.
 
 Note: If the current buffer is modified when bufexplorer started, the current
       window is always split and the new bufexplorer is displayed in that new
@@ -242,11 +250,16 @@ The default is 0, so that the size is set by Vim.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
-7.4.3    August 13, 2013
+7.4.4    August 19, 2014
+    - Revert change where bufexplorer windows was closed even if the target
+      buffer has not been loaded yet.
+7.4.3    August 13, 2014
     - Ivan Ukhov fixed issue with deleting the last window.  This update also
-      fixes as well as anotherIf you have say, NERDtree open on the left side
-      and bufexplorer on the right, that bufexplorer would close NERDtree
-	  erroneously thinking that it is closing itself.
+      fixes as well as another.  If you have say, NERDtree open on the left
+      side and bufexplorer on the right, that bufexplorer would close NERDtree
+      erroneously thinking that it is closing itself.
+    - Radoslaw Burny fixed a few bugs that surfaced when bufexplorer is used
+      within winmanager.
 7.4.2    October 22, 2013
     - Added global option g:bufExplorerDisableDefaultKeyMapping.  This option
       controls weather the default key mappings (\be, \bs, and \bv) are
@@ -682,7 +695,7 @@ won't list names.
 ===============================================================================
 COPYRIGHT                                               *bufexplorer-copyright*
 
-Copyright (c) 2001-2013, Jeff Lanzarotta
+Copyright (c) 2001-2014, Jeff Lanzarotta
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

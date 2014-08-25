@@ -36,7 +36,7 @@
 " Name Of File: bufexplorer.vim
 "  Description: Buffer Explorer Vim Plugin
 "   Maintainer: Jeff Lanzarotta (delux256-vim at yahoo dot com)
-" Last Changed: Wednesday, 13 August 2014
+" Last Changed: Tuesday, 19 August 2014
 "      Version: See g:bufexplorer_version for version number.
 "        Usage: This file should reside in the plugin directory and be
 "               automatically sourced.
@@ -72,7 +72,7 @@ endif
 "2}}}
 
 " Version number
-let g:bufexplorer_version = "7.4.3"
+let g:bufexplorer_version = "7.4.4"
 
 " Check for Vim version {{{2
 if v:version < 700
@@ -1191,7 +1191,7 @@ call s:Set("g:bufExplorerShowDirectories", 1)           " (Dir's are added by co
 call s:Set("g:bufExplorerShowRelativePath", 0)          " Show listings with relative or absolute paths?
 call s:Set("g:bufExplorerShowTabBuffer", 0)             " Show only buffer(s) for this tab?
 call s:Set("g:bufExplorerShowUnlisted", 0)              " Show unlisted buffers?
-call s:Set("g:bufExplorerShowNoName", 0)                " Show "No Name" buffers?
+call s:Set("g:bufExplorerShowNoName", 0)                " Show 'No Name' buffers?
 call s:Set("g:bufExplorerSortBy", "mru")                " Sorting methods are in s:sort_by:
 call s:Set("g:bufExplorerSplitBelow", &splitbelow)      " Should horizontal splits be below or above current window?
 call s:Set("g:bufExplorerSplitOutPathName", 1)          " Split out path and file name?
