@@ -1203,14 +1203,17 @@ call s:Set("g:bufExplorerSplitHorzSize", 0)             " Height for a horizonta
 " Default key mapping {{{1
 if !hasmapto('BufExplorer') && g:bufExplorerDisableDefaultKeyMapping == 0
     noremap <script> <silent> <unique> <Leader>be :BufExplorer<CR>
+    sunmap  <script> <silent> <unique> <Leader>be
 endif
 
 if !hasmapto('BufExplorerHorizontalSplit') && g:bufExplorerDisableDefaultKeyMapping == 0
     noremap <script> <silent> <unique> <Leader>bs :BufExplorerHorizontalSplit<CR>
+    sunmap  <script> <silent> <unique> <Leader>bs
 endif
 
 if !hasmapto('BufExplorerVerticalSplit') && g:bufExplorerDisableDefaultKeyMapping == 0
     noremap <script> <silent> <unique> <Leader>bv :BufExplorerVerticalSplit<CR>
+    sunmap  <script> <silent> <unique> <Leader>bv
 endif
 
 " vim:ft=vim foldmethod=marker sw=4
