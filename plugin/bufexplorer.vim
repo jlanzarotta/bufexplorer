@@ -50,9 +50,9 @@
 "               Or you can override the defaults and define your own mapping
 "               in your vimrc file, for example:
 "
-"                   noremap <silent> <F11> :BufExplorer<CR>
-"                   noremap <silent> <m-F11> :BufExplorerHorizontalSplit<CR>
-"                   noremap <silent> <c-F11> :BufExplorerVerticalSplit<CR>
+"                   nnoremap <silent> <F11> :BufExplorer<CR>
+"                   nnoremap <silent> <m-F11> :BufExplorerHorizontalSplit<CR>
+"                   nnoremap <silent> <c-F11> :BufExplorerVerticalSplit<CR>
 "
 "               Or you can use
 "
@@ -1202,15 +1202,15 @@ call s:Set("g:bufExplorerSplitHorzSize", 0)             " Height for a horizonta
 
 " Default key mapping {{{1
 if !hasmapto('BufExplorer') && g:bufExplorerDisableDefaultKeyMapping == 0
-    noremap <script> <silent> <unique> <Leader>be :BufExplorer<CR>
+    nnoremap <script> <silent> <unique> <Leader>be :BufExplorer<CR>
 endif
 
 if !hasmapto('BufExplorerHorizontalSplit') && g:bufExplorerDisableDefaultKeyMapping == 0
-    noremap <script> <silent> <unique> <Leader>bs :BufExplorerHorizontalSplit<CR>
+    nnoremap <script> <silent> <unique> <Leader>bs :BufExplorerHorizontalSplit<CR>
 endif
 
 if !hasmapto('BufExplorerVerticalSplit') && g:bufExplorerDisableDefaultKeyMapping == 0
-    noremap <script> <silent> <unique> <Leader>bv :BufExplorerVerticalSplit<CR>
+    nnoremap <script> <silent> <unique> <Leader>bv :BufExplorerVerticalSplit<CR>
 endif
 
 " vim:ft=vim foldmethod=marker sw=4
