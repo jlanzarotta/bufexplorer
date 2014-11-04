@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 24 Oct 2014
+*bufexplorer.txt*              Buffer Explorer       Last Change: 03 Nov 2014
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.5
+                                Version 7.4.6
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -250,6 +250,9 @@ The default is 0, so that the size is set by Vim.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.4.6    November 03, 2014
+    - Not sure how, but the file format was converted to Dos instead of Unix.
+      I converted the file back to Unix.
 7.4.5    October 24, 2014
     - Dr Michael Henry suggested to change all noremap commands to nnoremap.
       Using noremap is unnecessarily broad and can cause problems, especially
