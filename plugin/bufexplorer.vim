@@ -36,7 +36,7 @@
 " Name Of File: bufexplorer.vim
 "  Description: Buffer Explorer Vim Plugin
 "   Maintainer: Jeff Lanzarotta (delux256-vim at yahoo dot com)
-" Last Changed: Tuesday, 19 August 2014
+" Last Changed: Monday, 03 November 2014
 "      Version: See g:bufexplorer_version for version number.
 "        Usage: This file should reside in the plugin directory and be
 "               automatically sourced.
@@ -51,10 +51,10 @@
 "               Or you can override the defaults and define your own mapping
 "               in your vimrc file, for example:
 "
-"                   noremap <silent> <F11> :BufExplorer<CR>
-"                   noremap <silent> <s-F11> :ToggleBufExplorer<CR>
-"                   noremap <silent> <m-F11> :BufExplorerHorizontalSplit<CR>
-"                   noremap <silent> <c-F11> :BufExplorerVerticalSplit<CR>
+"                   nnoremap <silent> <F11> :BufExplorer<CR>
+"                   nnoremap <silent> <s-F11> :ToggleBufExplorer<CR>
+"                   nnoremap <silent> <m-F11> :BufExplorerHorizontalSplit<CR>
+"                   nnoremap <silent> <c-F11> :BufExplorerVerticalSplit<CR>
 "
 "               Or you can use
 "
@@ -75,7 +75,7 @@ endif
 "2}}}
 
 " Version number
-let g:bufexplorer_version = "7.4.4"
+let g:bufexplorer_version = "7.4.6"
 
 " Check for Vim version {{{2
 if v:version < 700
@@ -915,6 +915,7 @@ endfunction
 function! s:Close()
     " Get only the listed buffers.
     let listed = filter(copy(s:MRUList), "buflisted(v:val)")
+
     " If we needed to split the main window, close the split one.
     if s:splitMode != "" && bufwinnr(s:originBuffer) != -1
         execute "wincmd c"
@@ -1214,19 +1215,19 @@ call s:Set("g:bufExplorerSplitHorzSize", 0)             " Height for a horizonta
 
 " Default key mapping {{{1
 if !hasmapto('BufExplorer') && g:bufExplorerDisableDefaultKeyMapping == 0
-    noremap <script> <silent> <unique> <Leader>be :BufExplorer<CR>
+    nnoremap <script> <silent> <unique> <Leader>be :BufExplorer<CR>
 endif
 
 if !hasmapto('BufExplorer') && g:bufExplorerDisableDefaultKeyMapping == 0
-    noremap <script> <silent> <unique> <Leader>bt :ToggleBufExplorer<CR>
+    nnoremap <script> <silent> <unique> <Leader>bt :ToggleBufExplorer<CR>
 endif
 
 if !hasmapto('BufExplorerHorizontalSplit') && g:bufExplorerDisableDefaultKeyMapping == 0
-    noremap <script> <silent> <unique> <Leader>bs :BufExplorerHorizontalSplit<CR>
+    nnoremap <script> <silent> <unique> <Leader>bs :BufExplorerHorizontalSplit<CR>
 endif
 
 if !hasmapto('BufExplorerVerticalSplit') && g:bufExplorerDisableDefaultKeyMapping == 0
-    noremap <script> <silent> <unique> <Leader>bv :BufExplorerVerticalSplit<CR>
+    nnoremap <script> <silent> <unique> <Leader>bv :BufExplorerVerticalSplit<CR>
 endif
 
 " vim:ft=vim foldmethod=marker sw=4

@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 19 Aug 2014
+*bufexplorer.txt*              Buffer Explorer       Last Change: 03 Nov 2014
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.4
+                                Version 7.4.6
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -131,10 +131,10 @@ If you do not like the default key mappings of \be, \bs, and \bv, you can
 override bufexplorer's default mappings by setting up something like the
 following in your vimrc file:
 
-  noremap <silent> <F11> :BufExplorer<CR>
-  noremap <silent> <s-F11> :ToggleBufExplorer<CR>
-  noremap <silent> <m-F11> :BufExplorerHorizontalSplit<CR>
-  noremap <silent> <c-F11> :BufExplorerVerticalSplit<CR>
+  nnoremap <silent> <F11> :BufExplorer<CR>
+  nnoremap <silent> <s-F11> :ToggleBufExplorer<CR>
+  nnoremap <silent> <m-F11> :BufExplorerHorizontalSplit<CR>
+  nnoremap <silent> <c-F11> :BufExplorerVerticalSplit<CR>
 
                                                           *g:bufExplorerChgWin*
 If set, bufexplorer will bring up the selected buffer in the window specified
@@ -253,6 +253,13 @@ The default is 0, so that the size is set by Vim.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.4.6    November 03, 2014
+    - Not sure how, but the file format was converted to Dos instead of Unix.
+      I converted the file back to Unix.
+7.4.5    October 24, 2014
+    - Dr Michael Henry suggested to change all noremap commands to nnoremap.
+      Using noremap is unnecessarily broad and can cause problems, especially
+      for select mode.
 7.4.4    August 19, 2014
     - Revert change where bufexplorer windows was closed even if the target
       buffer has not been loaded yet.
@@ -444,7 +451,7 @@ CHANGE LOG                                              *bufexplorer-changelog*
 
       But the worse thing is, when I want to save the current buffer and
       type ':w', I get another error message:
-      E382: Cannot write, 'buftype' option is set 
+      E382: Cannot write, 'buftype' option is set
       --------8<--------
 
 7.0.15   April 27, 2007
