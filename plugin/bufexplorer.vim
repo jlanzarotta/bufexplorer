@@ -1218,7 +1218,7 @@ if !hasmapto('BufExplorer') && g:bufExplorerDisableDefaultKeyMapping == 0
     nnoremap <script> <silent> <unique> <Leader>be :BufExplorer<CR>
 endif
 
-if !hasmapto('BufExplorer') && g:bufExplorerDisableDefaultKeyMapping == 0
+if !hasmapto('ToggleBufExplorer') && g:bufExplorerDisableDefaultKeyMapping == 0
     nnoremap <script> <silent> <unique> <Leader>bt :ToggleBufExplorer<CR>
 endif
 
