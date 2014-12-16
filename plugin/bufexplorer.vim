@@ -57,6 +57,7 @@
 "               Or you can use
 "
 "                 ":BufExplorer"                - Opens BufExplorer
+"                 ":ToggleBufExplorer"          - Opens/Closes BufExplorer
 "                 ":BufExplorerHorizontalSplit" - Opens horizontally window BufExplorer
 "                 ":BufExplorerVerticalSplit"   - Opens vertically split window BufExplorer
 "
@@ -84,6 +85,7 @@ endif
 
 " Create commands {{{2
 command! BufExplorer :call BufExplorer()
+command! ToggleBufExplorer :call ToggleBufExplorer()
 command! BufExplorerHorizontalSplit :call BufExplorerHorizontalSplit()
 command! BufExplorerVerticalSplit :call BufExplorerVerticalSplit()
 
@@ -337,6 +339,15 @@ endfunction
 function! BufExplorerVerticalSplit()
     let s:splitMode = "vsp"
     execute "BufExplorer"
+endfunction
+
+" ToggleBufExplorer {{{2
+function! ToggleBufExplorer()
+    if exists("s:running") && s:running == 1
+        call s:Close()
+    else
+        call BufExplorer()
+    endif
 endfunction
 
 " BufExplorer {{{2
