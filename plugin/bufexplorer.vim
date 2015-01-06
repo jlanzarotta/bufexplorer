@@ -346,6 +346,7 @@ endfunction
 " ToggleBufExplorer {{{2
 function! ToggleBufExplorer()
     if exists("s:running") && s:running == 1
+        call BufExplorer()
         call s:Close()
     else
         call BufExplorer()
