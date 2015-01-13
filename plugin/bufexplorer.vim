@@ -44,6 +44,7 @@
 "               You may use the default keymappings of
 "
 "                 <Leader>be  - Opens BufExplorer
+"                 <Leader>bt  - Toggles BufExplorer open or closed
 "                 <Leader>bs  - Opens horizontally split window BufExplorer
 "                 <Leader>bv  - Opens vertically split window BufExplorer
 "
@@ -51,12 +52,14 @@
 "               in your vimrc file, for example:
 "
 "                   nnoremap <silent> <F11> :BufExplorer<CR>
+"                   nnoremap <silent> <s-F11> :ToggleBufExplorer<CR>
 "                   nnoremap <silent> <m-F11> :BufExplorerHorizontalSplit<CR>
 "                   nnoremap <silent> <c-F11> :BufExplorerVerticalSplit<CR>
 "
 "               Or you can use
 "
 "                 ":BufExplorer"                - Opens BufExplorer
+"                 ":ToggleBufExplorer"          - Opens/Closes BufExplorer
 "                 ":BufExplorerHorizontalSplit" - Opens horizontally window BufExplorer
 "                 ":BufExplorerVerticalSplit"   - Opens vertically split window BufExplorer
 "
@@ -84,6 +87,7 @@ endif
 
 " Create commands {{{2
 command! BufExplorer :call BufExplorer()
+command! ToggleBufExplorer :call ToggleBufExplorer()
 command! BufExplorerHorizontalSplit :call BufExplorerHorizontalSplit()
 command! BufExplorerVerticalSplit :call BufExplorerVerticalSplit()
 
@@ -337,6 +341,16 @@ endfunction
 function! BufExplorerVerticalSplit()
     let s:splitMode = "vsp"
     execute "BufExplorer"
+endfunction
+
+" ToggleBufExplorer {{{2
+function! ToggleBufExplorer()
+    if exists("s:running") && s:running == 1
+        call BufExplorer()
+        call s:Close()
+    else
+        call BufExplorer()
+    endif
 endfunction
 
 " BufExplorer {{{2
@@ -914,7 +928,7 @@ function! s:Close()
         " buffers.
         execute "enew"
     else
-        " Since there are buffers left to switch to, swith to the previous and
+        " Since there are buffers left to switch to, switch to the previous and
         " then the current.
         for b in reverse(listed[0:1])
             execute "keepjumps silent b ".b
@@ -1203,6 +1217,10 @@ call s:Set("g:bufExplorerSplitHorzSize", 0)             " Height for a horizonta
 " Default key mapping {{{1
 if !hasmapto('BufExplorer') && g:bufExplorerDisableDefaultKeyMapping == 0
     nnoremap <script> <silent> <unique> <Leader>be :BufExplorer<CR>
+endif
+
+if !hasmapto('ToggleBufExplorer') && g:bufExplorerDisableDefaultKeyMapping == 0
+    nnoremap <script> <silent> <unique> <Leader>bt :ToggleBufExplorer<CR>
 endif
 
 if !hasmapto('BufExplorerHorizontalSplit') && g:bufExplorerDisableDefaultKeyMapping == 0
