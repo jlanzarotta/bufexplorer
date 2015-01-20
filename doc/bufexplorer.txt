@@ -42,6 +42,8 @@ USAGE                                                      *bufexplorer-usage*
 
 To start exploring in the current window, use: >
  \be   or   :BufExplorer   or   Your custom key mapping
+To toggle bufexplorer on or off in the current window, use:
+ \bt   or   :ToggleBufExplorer   or   Your custom key mapping
 To start exploring in a newly split horizontal window, use: >
  \bs   or   :BufExplorerHorizontalSplit   or   Your custom key mapping
 To start exploring in a newly split vertical window, use: >
@@ -130,6 +132,7 @@ override bufexplorer's default mappings by setting up something like the
 following in your vimrc file:
 
   nnoremap <silent> <F11> :BufExplorer<CR>
+  nnoremap <silent> <s-F11> :ToggleBufExplorer<CR>
   nnoremap <silent> <m-F11> :BufExplorerHorizontalSplit<CR>
   nnoremap <silent> <c-F11> :BufExplorerVerticalSplit<CR>
 
