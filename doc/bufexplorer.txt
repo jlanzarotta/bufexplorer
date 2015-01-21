@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 03 Nov 2014
+*bufexplorer.txt*              Buffer Explorer       Last Change: 20 Jan 2015
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.6
+                                Version 7.4.7
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -42,7 +42,7 @@ USAGE                                                      *bufexplorer-usage*
 
 To start exploring in the current window, use: >
  \be   or   :BufExplorer   or   Your custom key mapping
-To toggle bufexplorer on or off in the current window, use:
+To toggle bufexplorer on or off in the current window, use: >
  \bt   or   :ToggleBufExplorer   or   Your custom key mapping
 To start exploring in a newly split horizontal window, use: >
  \bs   or   :BufExplorerHorizontalSplit   or   Your custom key mapping
@@ -253,6 +253,10 @@ The default is 0, so that the size is set by Vim.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.4.7    January 20, 2015
+    - Thanks goes out to Phil Runninger for added the ability to toggle the
+      bufexplorer list on and off using the :ToggleBufExplorer command, the
+      map <Leader>bt, and the function ToggleBufExplorer().
 7.4.6    November 03, 2014
     - Not sure how, but the file format was converted to Dos instead of Unix.
       I converted the file back to Unix.

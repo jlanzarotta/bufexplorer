@@ -36,7 +36,7 @@
 " Name Of File: bufexplorer.vim
 "  Description: Buffer Explorer Vim Plugin
 "   Maintainer: Jeff Lanzarotta (delux256-vim at yahoo dot com)
-" Last Changed: Monday, 03 November 2014
+" Last Changed: Tuesday, 20 January 2015
 "      Version: See g:bufexplorer_version for version number.
 "        Usage: This file should reside in the plugin directory and be
 "               automatically sourced.
@@ -75,7 +75,7 @@ endif
 "2}}}
 
 " Version number
-let g:bufexplorer_version = "7.4.6"
+let g:bufexplorer_version = "7.4.7"
 
 " Check for Vim version {{{2
 if v:version < 700
@@ -135,7 +135,6 @@ function! s:Setup()
         autocmd BufWinEnter \[BufExplorer\] call s:Initialize()
         autocmd BufWinLeave \[BufExplorer\] call s:Cleanup()
         autocmd TabEnter * call s:TabEnter()
-        autocmd SessionLoadPost * call s:Reset()
     augroup END
 endfunction
 
