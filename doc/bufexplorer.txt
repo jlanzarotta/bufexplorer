@@ -80,7 +80,7 @@ Commands to use once exploring:
                buffer's 'buflisted' is cleared. This allows for the buffer to
                be displayed again using the 'show unlisted' command.
  D             |:wipeout| the buffer under the cursor from the list.  When a
-               buffers is wiped, it will not be shown when unlisted buffer are
+               buffer is wiped, it will not be shown when unlisted buffers are
                displayed.
  f             Toggles whether you are taken to the active window when
                selecting a buffer or not.
