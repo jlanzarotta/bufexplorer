@@ -73,13 +73,13 @@ Commands to use once exploring:
                window.
  <shift-enter> Opens the buffer that is under the cursor in another tab.
  b             Fast buffer switching with b<any bufnum>.
- B             Works in association with the|ShowTabBuffer|option.  If
-              |ShowTabBuffer|is set to 1, this toggles if BufExplorer is to
+ B             Works in association with the |ShowTabBuffer| option.  If
+               |ShowTabBuffer| is set to 1, this toggles if BufExplorer is to
                only store the most recent tab for this buffer or not.
- d            |:delete|the buffer under the cursor from the list.  The
+ d             |:delete| the buffer under the cursor from the list.  The
                buffer's 'buflisted' is cleared. This allows for the buffer to
                be displayed again using the 'show unlisted' command.
- D            |:wipeout|the buffer under the cursor from the list.  When a
+ D             |:wipeout| the buffer under the cursor from the list.  When a
                buffers is wiped, it will not be shown when unlisted buffer are
                displayed.
  f             Toggles whether you are taken to the active window when
@@ -104,7 +104,7 @@ Once invoked, Buffer Explorer displays a sorted list (MRU is the default
 sort method) of all the buffers that are currently opened. You are then
 able to move the cursor to the line containing the buffer's name you are
 wanting to act upon. Once you have selected the buffer you would like,
-you can then either open it, close it(delete), resort the list, reverse
+you can then either open it, close it (delete), resort the list, reverse
 the sort, quit exploring and so on...
 
 ===============================================================================
@@ -121,8 +121,8 @@ WINDOW LAYOUT                                       *bufexplorer-windowlayout*
   | |     |                    |                         +-- Current Line #.
   | |     |                    +-- Relative/Full Path
   | |     +-- Buffer Name.
-  | +-- Buffer Attributes. See|:buffers|for more information.
-  +-- Buffer Number. See|:buffers|for more information.
+  | +-- Buffer Attributes. See |:buffers| for more information.
+  +-- Buffer Number. See |:buffers| for more information.
 
 ===============================================================================
 CUSTOMIZATION                                       *bufexplorer-customization*
@@ -202,7 +202,7 @@ To control weither or not to show buffers on for the specific tab or not, use: >
 The default is not to show.
 
                                                     *g:bufExplorerShowUnlisted*
-To control whether to show unlisted buffer or not, use: >
+To control whether to show unlisted buffers or not, use: >
   let g:bufExplorerShowUnlisted=0      " Do not show unlisted buffers.
   let g:bufExplorerShowUnlisted=1      " Show unlisted buffers.
 The default is to NOT show unlisted buffers.
@@ -282,7 +282,7 @@ CHANGE LOG                                              *bufexplorer-changelog*
     - First update related to Vim 7.4.
     - Changed license text.
     - Fixed issue with 'hidden'.  If 'hidden' is set, make sure that
-      g:bufExplorerFindActive is set to 0.  Otherwise, when using /bs or /bv,
+      g:bufExplorerFindActive is set to 0.  Otherwise, when using \bs or \bv,
       and selecting a buffer, the original buffer will be switched to instead
       of being opened in the newly created windows.
     - Added new 'b' mapping when the bufExplorer window is opened.  When 'b'
@@ -339,7 +339,7 @@ CHANGE LOG                                              *bufexplorer-changelog*
       fixes.  Overall, I am hopeful that I not forgotten or lost a feature.
     - Thanks to Tim Johnson for testing out this new version.
     - I have hopefully allowed for better mapping of the main public
-      methods as is explained in the|bufexplorer-customization|section
+      methods as is explained in the |bufexplorer-customization| section
       of the documentation.
     - Add new 'B', 'o', and 'S' key mappings.
 7.2.8    November 08, 2010
@@ -510,7 +510,7 @@ CHANGE LOG                                              *bufexplorer-changelog*
     - Dave Eggum has made some 'significant' updates to this latest
       version:
       * Added BufExplorerGetAltBuf() global function to be used in the
-        user’s rulerformat.
+        user's rulerformat.
       * Added g:bufExplorerSplitRight option.
       * Added g:bufExplorerShowRelativePath option with mapping.
       * Added current line highlighting.
@@ -637,7 +637,7 @@ CHANGE LOG                                              *bufexplorer-changelog*
     - Thanks to Andre Pang for the original patch/idea to get bufexplorer
       to work in insertmode/modeless mode (evim).
     - Added Initialize and Cleanup autocommands to handle commands that
-         need to be performed when starting or leaving bufexplorer.
+      need to be performed when starting or leaving bufexplorer.
 6.0.15   February 20, 2002
     - Srinath Avadhanulax added a patch for winmanager.vim.
 6.0.14   February 19, 2002
