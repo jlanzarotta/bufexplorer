@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 20 Jan 2015
+*bufexplorer.txt*              Buffer Explorer       Last Change: 27 Jan 2015
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.7
+                                Version 7.4.8
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -253,6 +253,9 @@ The default is 0, so that the size is set by Vim.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.4.8    January 27, 2015
+    - Thanks to Marius Gedminas for fixing up the documentation and correcting
+      various typos. 
 7.4.7    January 20, 2015
     - Thanks goes out to Phil Runninger for added the ability to toggle the
       bufexplorer list on and off using the :ToggleBufExplorer command, the
