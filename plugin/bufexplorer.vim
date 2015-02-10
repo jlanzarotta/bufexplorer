@@ -268,7 +268,7 @@ function! s:ShouldIgnore(buf)
     endif
 
     " Ignore the BufExplorer buffer.
-    if fnamemodify(bufname(a:buf), ":t") == s:name
+    if fnamemodify(bufname(a:buf), ":t") == s:BufExplorerName()
         return 1
     endif
 
@@ -344,22 +344,27 @@ endfunction
 
 " ToggleBufExplorer {{{2
 function! ToggleBufExplorer()
-    if exists("s:running") && s:running == 1
-        call BufExplorer()
+    if exists("s:running") && s:running == 1 && bufname(winbufnr(0)) == s:BufExplorerName()
         call s:Close()
     else
         call BufExplorer()
     endif
 endfunction
 
-" BufExplorer {{{2
-function! BufExplorer()
+" BufexplorerName {{{2
+function! s:BufExplorerName()
     let name = s:name
 
     if !has("win32")
         " On non-Windows boxes, escape the name so that is shows up correctly.
         let name = escape(name, "[]")
     endif
+    return name
+endfunction
+
+" BufExplorer {{{2
+function! BufExplorer()
+    let name = s:BufExplorerName()
 
     " Make sure there is only one explorer open at a time.
     if s:running == 1
