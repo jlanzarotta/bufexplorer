@@ -360,7 +360,7 @@ function! BufExplorer()
         let name = escape(name, "[]")
     endif
 
-     " Make sure there is only one explorer open at a time.
+    " Make sure there is only one explorer open at a time.
     if s:running == 1
         " Go to the open buffer.
         if has("gui")
