@@ -268,7 +268,7 @@ function! s:ShouldIgnore(buf)
     endif
 
     " Ignore the BufExplorer buffer.
-    if fnamemodify(bufname(a:buf), ":t") == s:BufExplorerName()
+    if fnamemodify(bufname(a:buf), ":t") == s:name
         return 1
     endif
 
@@ -344,29 +344,23 @@ endfunction
 
 " ToggleBufExplorer {{{2
 function! ToggleBufExplorer()
-    if exists("s:running") && s:running == 1 && bufname(winbufnr(0)) == s:BufExplorerName()
+    if exists("s:running") && s:running == 1 && bufname(winbufnr(0)) == s:name
         call s:Close()
     else
         call BufExplorer()
     endif
 endfunction
 
-" BufexplorerName {{{2
-function! s:BufExplorerName()
+" BufExplorer {{{2
+function! BufExplorer()
     let name = s:name
 
     if !has("win32")
         " On non-Windows boxes, escape the name so that is shows up correctly.
         let name = escape(name, "[]")
     endif
-    return name
-endfunction
 
-" BufExplorer {{{2
-function! BufExplorer()
-    let name = s:BufExplorerName()
-
-    " Make sure there is only one explorer open at a time.
+     " Make sure there is only one explorer open at a time.
     if s:running == 1
         " Go to the open buffer.
         if has("gui")
@@ -580,7 +574,7 @@ function! s:CreateHelp()
         call add(header, '" d : delete buffer')
         call add(header, '" D : wipe buffer')
         call add(header, '" f : toggle find active buffer')
-        call add(header, '" p : toggle spliting of file and path name')
+        call add(header, '" p : toggle splitting of file and path name')
         call add(header, '" q : quit')
         call add(header, '" r : reverse sort')
         call add(header, '" R : toggle showing relative or full paths')
