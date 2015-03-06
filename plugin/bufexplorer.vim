@@ -443,28 +443,28 @@ function! s:MapKeys()
         nnoremap <buffer> <silent> <tab> :call <SID>SelectBuffer()<CR>
     endif
 
-    nnoremap <script> <silent> <buffer> <2-leftmouse> :call <SID>SelectBuffer()<CR>
-    nnoremap <script> <silent> <buffer> <CR>          :call <SID>SelectBuffer()<CR>
-    nnoremap <script> <silent> <buffer> <F1>          :call <SID>ToggleHelp()<CR>
-    nnoremap <script> <silent> <buffer> <s-cr>        :call <SID>SelectBuffer("tab")<CR>
-    nnoremap <script> <silent> <buffer> B             :call <SID>ToggleOnlyOneTab()<CR>
-    nnoremap <script> <silent> <buffer> b             :call <SID>SelectBuffer("ask")<CR>
-    nnoremap <script> <silent> <buffer> d             :call <SID>RemoveBuffer("delete")<CR>
-    xnoremap <script> <silent> <buffer> d             :call <SID>RemoveBuffer("delete")<CR>
-    nnoremap <script> <silent> <buffer> D             :call <SID>RemoveBuffer("wipe")<CR>
-    xnoremap <script> <silent> <buffer> D             :call <SID>RemoveBuffer("wipe")<CR>
-    nnoremap <script> <silent> <buffer> f             :call <SID>ToggleFindActive()<CR>
-    nnoremap <script> <silent> <buffer> m             :call <SID>MRUListShow()<CR>
-    nnoremap <script> <silent> <buffer> o             :call <SID>SelectBuffer()<CR>
-    nnoremap <script> <silent> <buffer> p             :call <SID>ToggleSplitOutPathName()<CR>
-    nnoremap <script> <silent> <buffer> q             :call <SID>Close()<CR>
-    nnoremap <script> <silent> <buffer> r             :call <SID>SortReverse()<CR>
-    nnoremap <script> <silent> <buffer> R             :call <SID>ToggleShowRelativePath()<CR>
-    nnoremap <script> <silent> <buffer> s             :call <SID>SortSelect()<CR>
-    nnoremap <script> <silent> <buffer> S             :call <SID>ReverseSortSelect()<CR>
-    nnoremap <script> <silent> <buffer> t             :call <SID>SelectBuffer("tab")<CR>
-    nnoremap <script> <silent> <buffer> T             :call <SID>ToggleShowTabBuffer()<CR>
-    nnoremap <script> <silent> <buffer> u             :call <SID>ToggleShowUnlisted()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> <2-leftmouse> :call <SID>SelectBuffer()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> <CR>          :call <SID>SelectBuffer()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> <F1>          :call <SID>ToggleHelp()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> <s-cr>        :call <SID>SelectBuffer("tab")<CR>
+    nnoremap <script> <silent> <nowait> <buffer> B             :call <SID>ToggleOnlyOneTab()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> b             :call <SID>SelectBuffer("ask")<CR>
+    nnoremap <script> <silent> <nowait> <buffer> d             :call <SID>RemoveBuffer("delete")<CR>
+    xnoremap <script> <silent> <nowait> <buffer> d             :call <SID>RemoveBuffer("delete")<CR>
+    nnoremap <script> <silent> <nowait> <buffer> D             :call <SID>RemoveBuffer("wipe")<CR>
+    xnoremap <script> <silent> <nowait> <buffer> D             :call <SID>RemoveBuffer("wipe")<CR>
+    nnoremap <script> <silent> <nowait> <buffer> f             :call <SID>ToggleFindActive()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> m             :call <SID>MRUListShow()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> o             :call <SID>SelectBuffer()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> p             :call <SID>ToggleSplitOutPathName()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> q             :call <SID>Close()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> r             :call <SID>SortReverse()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> R             :call <SID>ToggleShowRelativePath()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> s             :call <SID>SortSelect()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> S             :call <SID>ReverseSortSelect()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> t             :call <SID>SelectBuffer("tab")<CR>
+    nnoremap <script> <silent> <nowait> <buffer> T             :call <SID>ToggleShowTabBuffer()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> u             :call <SID>ToggleShowUnlisted()<CR>
 
     for k in ["G", "n", "N", "L", "M", "H"]
         execute "nnoremap <buffer> <silent>" k ":keepjumps normal!" k."<CR>"
