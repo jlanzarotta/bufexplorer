@@ -914,6 +914,9 @@ endfunction
 function! s:Close()
     " Get only the listed buffers.
     let listed = filter(copy(s:MRUList), "buflisted(v:val)")
+    if len(listed) == 0
+        let listed = filter(range(1, bufnr('$')), "buflisted(v:val)")
+    endif
 
     " If we needed to split the main window, close the split one.
     if s:splitMode != "" && bufwinnr(s:originBuffer) != -1
