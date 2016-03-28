@@ -41,7 +41,7 @@ Once help tags have been generated, you can view the manual with
 `:help bufexplorer`.
 
 ## License
-Copyright (c) 2001-2015, Jeff Lanzarotta
+Copyright (c) 2001-2016, Jeff Lanzarotta
 
 All rights reserved.
 
