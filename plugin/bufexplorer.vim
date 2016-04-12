@@ -1056,6 +1056,9 @@ function! s:SortListing()
         " Easiest case.
         execute sort 'n'
     elseif g:bufExplorerSortBy == "name"
+        " Sort by full path first
+        execute sort 'ir /\zs\f\+\ze\s\+line/'
+
         if g:bufExplorerSplitOutPathName
             execute sort 'ir /\d.\{7}\zs\f\+\ze/'
         else
@@ -1069,6 +1072,16 @@ function! s:SortListing()
 
         execute sort 'ir /\zs\f\+\ze\s\+line/'
     elseif g:bufExplorerSortBy == "extension"
+        " Sort by full path...
+        execute sort 'ir /\zs\f\+\ze\s\+line/'
+
+        " Sort by name...
+        if g:bufExplorerSplitOutPathName
+            " Sort twice - first on the file name then on the path.
+            execute sort 'ir /\d.\{7}\zs\f\+\ze/'
+        endif
+
+        " Sort by extension
         execute sort 'ir /\.\zs\w\+\ze\s/'
     elseif g:bufExplorerSortBy == "mru"
         let l = getline(s:firstBufferLine, "$")
