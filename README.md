@@ -28,7 +28,7 @@ This plugin can also be found at http://www.vim.org/scripts/script.php?script_id
 
 ## Installation
 
-If you do not have a preferred installation method, I would recommend installing [vundle.vim](https://github.com/gmarik/vundle), and
+If you do not have a preferred installation method, I would recommend installing [neobundle.vim](https://github.com/Shougo/neobundle.vim), and
 then simply putting the following in your _vimrc or .vimrc file:
 
     Bundle 'jlanzarotta/bufexplorer'
