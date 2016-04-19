@@ -1,5 +1,5 @@
 "=============================================================================
-"    Copyright: Copyright (c) 2001-2015, Jeff Lanzarotta
+"    Copyright: Copyright (c) 2001-2016, Jeff Lanzarotta
 "               All rights reserved.
 "
 "               Redistribution and use in source and binary forms, with or
@@ -36,7 +36,7 @@
 " Name Of File: bufexplorer.vim
 "  Description: Buffer Explorer Vim Plugin
 "   Maintainer: Jeff Lanzarotta (delux256-vim at yahoo dot com)
-" Last Changed: Tuesday, 27 January 2015
+" Last Changed: Friday, 1 April 2016
 "      Version: See g:bufexplorer_version for version number.
 "        Usage: This file should reside in the plugin directory and be
 "               automatically sourced.
@@ -67,20 +67,30 @@
 "      History: See supplied documentation.
 "=============================================================================
 
-" Plugin Code {{{1
-" Exit quickly if already running or when 'compatible' is set. {{{2
+" Exit quickly if already running or when 'compatible' is set. {{{1
 if exists("g:bufexplorer_version") || &cp
     finish
 endif
-"2}}}
+"1}}}
 
 " Version number
-let g:bufexplorer_version = "7.4.8"
+let g:bufexplorer_version = "7.4.9"
 
+" Pluging Code {{{1
 " Check for Vim version {{{2
 if v:version < 700
     echohl WarningMsg
-    echo "Sorry, bufexplorer ".g:bufexplorer_version." required Vim 7.0 and greater."
+    echo "Sorry, bufexplorer ".g:bufexplorer_version." required Vim 7.0 or greater."
+    echohl None
+    finish
+endif
+" Check to see if the version of Vim has the correct patch applied, if not, do
+" not used <nowait>.
+if v:version > 703 || v:version == 703 && has('patch1261') && has('patch1264')
+    " We are good to go.
+else
+    echohl WarningMsg
+    echo "Sorry, bufexplorer ".g:bufexplorer_version." required Vim 7.3 or greater with patch1261 and patch1264."
     echohl None
     finish
 endif
@@ -780,7 +790,7 @@ function! s:SelectBuffer(...)
             " Yes, we are to open the selected buffer in a tab.
 
             " Restore [BufExplorer] buffer.
-            execute "keepjumps silent buffer!".s:originBuffer
+            execute "silent buffer!".s:originBuffer
 
             " Get the tab nmber where this bufer is located in.
             let tabNbr = s:GetTabNbr(_bufNbr)
@@ -823,7 +833,7 @@ function! s:SelectBuffer(...)
             endif
 
             " Switch to the selected buffer.
-            execute "keepalt keepjumps silent b!" _bufNbr
+            execute "keepalt silent b!" _bufNbr
         endif
 
         " Make the buffer 'listed' again.
@@ -1081,7 +1091,7 @@ function! s:SortListing()
             execute sort 'ir /\d.\{7}\zs\f\+\ze/'
         endif
 
-        " Sort by extension
+        " Sort by extension.
         execute sort 'ir /\.\zs\w\+\ze\s/'
     elseif g:bufExplorerSortBy == "mru"
         let l = getline(s:firstBufferLine, "$")
@@ -1208,7 +1218,7 @@ function! BufExplorer_ReSize()
     call setpos(".", pres)
 endfunction
 
-" Default values {{{1
+" Default values {{{2
 call s:Set("g:bufExplorerDisableDefaultKeyMapping", 0)  " Do not disable default key mappings.
 call s:Set("g:bufExplorerDefaultHelp", 1)               " Show default help?
 call s:Set("g:bufExplorerDetailedHelp", 0)              " Show detailed help?
@@ -1226,9 +1236,8 @@ call s:Set("g:bufExplorerSplitOutPathName", 1)          " Split out path and fil
 call s:Set("g:bufExplorerSplitRight", &splitright)      " Should vertical splits be on the right or left of current window?
 call s:Set("g:bufExplorerSplitVertSize", 0)             " Height for a vertical split. If <=0, default Vim size is used.
 call s:Set("g:bufExplorerSplitHorzSize", 0)             " Height for a horizontal split. If <=0, default Vim size is used.
-"1}}}
 
-" Default key mapping {{{1
+" Default key mapping {{{2
 if !hasmapto('BufExplorer') && g:bufExplorerDisableDefaultKeyMapping == 0
     nnoremap <script> <silent> <unique> <Leader>be :BufExplorer<CR>
 endif
