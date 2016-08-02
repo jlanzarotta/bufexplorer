@@ -196,7 +196,7 @@ directory, use: >
 The default is to show absolute paths.
 
                                                    *g:bufExplorerShowTabBuffer*
-To control weither or not to show buffers on for the specific tab or not, use: >
+To control whether or not to show buffers on for the specific tab or not, use: >
   let g:bufExplorerShowTabBuffer=0        " No.
   let g:bufExplorerShowTabBuffer=1        " Yes.
 The default is not to show.
