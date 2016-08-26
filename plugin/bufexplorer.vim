@@ -76,7 +76,7 @@ endif
 " Version number
 let g:bufexplorer_version = "7.4.10"
 
-" Pluging Code {{{1
+" Plugin Code {{{1
 " Check for Vim version {{{2
 if v:version < 700
     echohl WarningMsg
