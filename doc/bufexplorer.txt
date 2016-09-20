@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 26 Aug 2016
+*bufexplorer.txt*              Buffer Explorer       Last Change: 20 Sep 2016
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.10
+                                Version 7.4.11
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -253,6 +253,12 @@ The default is 0, so that the size is set by Vim.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.4.11   September, 20, 2016
+    - Thanks to jpmv27 for reworking the per-tab buffer listing code.  Fix for
+      g:bufExplorerShowTabBuffer is not working correctly and other "gliches"
+      when the ShotTabBuffer option is enabled.  For example old code would not
+      correctly handle adding/deleting a tab that wasn't the highest-numbered
+      tab.
 7.4.10   August 26, 2016
     - Thanks to buddylindsey for fixing a misspelling in the docs.
 7.4.9    April 01, 2016
