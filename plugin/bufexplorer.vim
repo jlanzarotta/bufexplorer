@@ -124,7 +124,6 @@ let s:originBuffer = 0
 let s:running = 0
 let s:sort_by = ["number", "name", "fullpath", "mru", "extension"]
 let s:splitMode = ""
-let s:tabSpace = []
 let s:types = {"fullname": ':p', "path": ':p:h', "relativename": ':~:.', "relativepath": ':~:.:h', "shortname": ':t'}
 
 " Setup the autocommands that handle the MRUList and other stuff. {{{2
@@ -142,7 +141,6 @@ function! s:Setup()
         autocmd BufDelete * call s:DeactivateBuffer(0)
         autocmd BufWinEnter \[BufExplorer\] call s:Initialize()
         autocmd BufWinLeave \[BufExplorer\] call s:Cleanup()
-        autocmd TabEnter * call s:TabEnter()
     augroup END
 endfunction
 
@@ -151,83 +149,105 @@ function! s:Reset()
     " Build initial MRUList. This makes sure all the files specified on the
     " command line are picked up correctly.
     let s:MRUList = range(1, bufnr('$'))
+endfunction
 
-    " Initialize one tab space array, ignore zero-based tabpagenr since all
-    " tabpagenr's start at 1.  -1 signifies this is the first time we are
-    " referencing this tabpagenr.
-    "
-    " If Vim has been loaded with mksession, then it is possible for more tabs
-    " to exist.  So use tabpagenr() to determine how large to make the array. If
-    " there are 4 tabs, there should be 5 elements in this array.
-    "
-    " Each element will hold a CSV list of buffers viewed in that tab.  So on
-    " the 3rd tab, if there user has viewed 4 different buffers in that tab, the
-    " value would be:
-    "    echo s:tabSpace[3]
-    "    [4, 9, 1, 10]
-    "    echo s:tabSpace
-    "    [[-1], [-1], [-1], [4, 9, 1, 10], [-1]]
-    let s:tabSpace = []
-    let i = 0
+" AssociatedTab {{{2
+" Return the number of the tab associated with the specified buffer.
+" If the buffer is associated with more than one tab, the first one
+" found is returned. If the buffer is not associated with any tabs,
+" -1 is returned.
+function! s:AssociatedTab(bufnr)
+    for tab in range(1, tabpagenr('$'))
+        let list = gettabvar(tab, 'bufexp_buf_list', [])
+        let idx = index(list, a:bufnr)
+        if idx != -1
+            return tab
+        endif
+    endfor
 
-    while(tabpagenr('$') > 0 && i <= tabpagenr('$'))
-        call add(s:tabSpace, [-1])
-        let i = i + 1
-    endwhile
+    return -1
+endfunction
+
+" RemoveBufFromOtherTabs {{{2
+" Remove the specified buffer from the buffer lists of all tabs
+" except the current tab.
+function! s:RemoveBufFromOtherTabs(bufnr)
+    for tab in range(1, tabpagenr('$'))
+        if tab == tabpagenr()
+            continue
+        endif
+
+        let list = gettabvar(tab, 'bufexp_buf_list', [])
+        let idx = index(list, a:bufnr)
+        if idx == -1
+            continue
+        endif
+
+        call remove(list, idx)
+        call settabvar(tab, 'bufexp_buf_list', list)
+    endfor
+endfunction
+
+" AddBufToCurrentTab {{{2
+" Add the specified buffer to the list of buffers associated
+" with the current tab
+function! s:AddBufToCurrentTab(bufnr)
+    if index(t:bufexp_buf_list, a:bufnr) == -1
+        call add(t:bufexp_buf_list, a:bufnr)
+    endif
+endfunction
+
+" IsInCurrentTab {{{2
+" Returns whether the specified buffer is associated
+" with the current tab
+function! s:IsInCurrentTab(bufnr)
+    " It shouldn't happen that the list of buffers is
+    " not defined but if it does, play it safe and
+    " include the buffer
+    if !exists('t:bufexp_buf_list')
+        return 1
+    endif
+
+    return (index(t:bufexp_buf_list, a:bufnr) != -1)
+endfunction
+
+" UpdateTabBufData {{{2
+" Update the tab buffer data for the specified buffer
+"
+" The current tab's list is updated. If a buffer is only
+" allowed to be associated with one tab, it is removed
+" from the lists of any other tabs with which it may have
+" been associated.
+"
+" The associations between tabs and buffers are maintained
+" in separate lists for each tab, which are stored in tab-
+" specific variables 't:bufexp_buf_list'.
+function! s:UpdateTabBufData(bufnr)
+    " The first time we add a tab, Vim uses the current buffer
+    " as its starting page even though we are about to edit a
+    " new page, and another BufEnter for the new page is triggered
+    " later. Use this first BufEnter to initialize the list of
+    " buffers, but don't add the buffer number to the list
+    "
+    " Unfortunately, this doesn't work right when the first
+    " buffer opened in the tab should be associated with it,
+    " such as when 'tab split +buffer N' is used
+    if !exists("t:bufexp_buf_list")
+        let t:bufexp_buf_list = []
+        return
+    endif
+
+    call s:AddBufToCurrentTab(a:bufnr)
+
+    if g:bufExplorerOnlyOneTab
+        call s:RemoveBufFromOtherTabs(a:bufnr)
+    endif
 endfunction
 
 " ActivateBuffer {{{2
 function! s:ActivateBuffer()
-    " Verify the current tabpage exists in the
-    " current s:tabSpace array.  This can be missing
-    " entries when restoring sessions.
-    let i = 0
-    while( tabpagenr('$') > 0 && i <= tabpagenr() )
-        " Number:     0
-        " String:     1
-        " Funcref:    2
-        " List:       3
-        " Dictionary: 4
-        " Float:      5
-        if type(get(s:tabSpace, i)) == 0
-            call add(s:tabSpace, [-1])
-        endif
-
-        let i = i + 1
-    endwhile
-
     let _bufnr = bufnr("%")
-    let list = get(s:tabSpace, tabpagenr(), [-1])
-
-    if !empty(list) && list[0] == '-1'
-        " The first time we add a tab, Vim uses the current buffer
-        " as it's starting page.  Even though we are about to
-        " edit a new page (BufEnter is triggered after), so
-        " remove the -1 entry indicating we have covered this case.
-        let list = []
-        call add(list, _bufnr)
-        let s:tabSpace[tabpagenr()] = list
-    elseif empty(list) || index(list, _bufnr) == -1
-        " Add new buffer to this tab's buffer list.
-        call add(list, _bufnr)
-        let s:tabSpace[tabpagenr()] = list
-
-        if g:bufExplorerOnlyOneTab == 1
-            " If a buffer can only be available in 1 tab page ensure this
-            " buffer is not present in any other tabs
-            let tabidx = 1
-            while tabidx < len(s:tabSpace)
-                if tabidx != tabpagenr()
-                    let bufidx = index(s:tabSpace[tabidx], _bufnr)
-                    if bufidx != -1
-                        call remove(s:tabSpace[tabidx], bufidx)
-                    endif
-                endif
-                let tabidx = tabidx + 1
-            endwhile
-        endif
-    endif
-
+    call s:UpdateTabBufData(_bufnr)
     call s:MRUPush(_bufnr)
 endfunction
 
@@ -235,14 +255,6 @@ endfunction
 function! s:DeactivateBuffer(remove)
     let _bufnr = str2nr(expand("<abuf>"))
     call s:MRUPop(_bufnr)
-endfunction
-
-" TabEnter {{{2
-function! s:TabEnter()
-    " Make s:tabSpace 1-based
-    if empty(s:tabSpace) || len(s:tabSpace) < (tabpagenr() + 1)
-        call add(s:tabSpace, [-1])
-    endif
 endfunction
 
 " MRUPop {{{2
@@ -689,20 +701,8 @@ function! s:BuildBufferList()
         endif
 
         " Are we to show only buffer(s) for this tab?
-        if g:bufExplorerShowTabBuffer
-            let show_buffer = 0
-
-            for bufnr in s:tabSpace[tabpagenr()]
-                if buf.attributes =~ '^\s*'.bufnr.'\>'
-                    " Only buffers shown on the current tabpagenr
-                    let show_buffer = 1
-                    break
-                endif
-            endfor
-
-            if show_buffer == 0
-                continue
-            endif
+        if g:bufExplorerShowTabBuffer && (!s:IsInCurrentTab(str2nr(buf.attributes)))
+            continue
         endif
 
         let line = buf.attributes." "
@@ -792,13 +792,15 @@ function! s:SelectBuffer(...)
             " Restore [BufExplorer] buffer.
             execute "silent buffer!".s:originBuffer
 
-            " Get the tab nmber where this bufer is located in.
+            " Get the tab number where this buffer is located in.
             let tabNbr = s:GetTabNbr(_bufNbr)
 
             " Was the tab found?
             if tabNbr == 0
                 " _bufNbr is not opened in any tabs. Open a new tab with the selected buffer in it.
                 execute "999tab split +buffer" . _bufNbr
+                " Workaround for the issue mentioned in UpdateTabBufData
+                call s:UpdateTabBufData(_bufNbr)
             else
                 " The _bufNbr is already opened in a tab, go to that tab.
                 execute tabNbr . "tabnext"
@@ -941,9 +943,26 @@ function! s:Close()
     else
         " Since there are buffers left to switch to, switch to the previous and
         " then the current.
-        for b in reverse(listed[0:1])
-            execute "keepjumps silent b ".b
-        endfor
+
+        if len(listed) > 1
+            " Visit the previous buffer in the context of the
+            " correct tab, to avoid adding it to the list of
+            " buffers associated with the current tab. If the
+            " associated tab is -1, it means the previous buffer
+            " was last associated with a tab that's now closed.
+            " If we use some other tab to visit it, it will
+            " become associated with that tab, which can be
+            " disconcerting. So, in that case, skip visiting it.
+            let assocTab = s:AssociatedTab(listed[1])
+            if assocTab > 0
+                let curTab = tabpagenr()
+                execute 'tabnext ' . assocTab
+                execute "keepjumps silent b " . listed[1]
+                execute 'tabnext ' . curTab
+            endif
+        endif
+
+        execute "keepjumps silent b " . listed[0]
     endif
 
     " Clear any messages.
