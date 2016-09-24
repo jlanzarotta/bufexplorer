@@ -149,6 +149,26 @@ function! s:Reset()
     " Build initial MRUList. This makes sure all the files specified on the
     " command line are picked up correctly.
     let s:MRUList = range(1, bufnr('$'))
+
+    " Initialize the association of buffers to tabs for any buffers
+    " that have been created prior to now, e.g., files specified as
+    " vim command line arguments
+    call s:CatalogBuffers()
+endfunction
+
+" CatalogBuffers {{{2
+" Create tab associations for any existing buffers
+function! s:CatalogBuffers()
+    let ct = tabpagenr()
+
+    for tab in range(1, tabpagenr('$'))
+        silent execute 'normal! ' . tab . 'gt'
+        for buf in tabpagebuflist()
+            call s:UpdateTabBufData(buf)
+        endfor
+    endfor
+
+    silent execute 'normal! ' . ct . 'gt'
 endfunction
 
 " AssociatedTab {{{2
@@ -227,14 +247,18 @@ function! s:UpdateTabBufData(bufnr)
     " as its starting page even though we are about to edit a
     " new page, and another BufEnter for the new page is triggered
     " later. Use this first BufEnter to initialize the list of
-    " buffers, but don't add the buffer number to the list
+    " buffers, but don't add the buffer number to the list if
+    " it is already associated with another tab
     "
     " Unfortunately, this doesn't work right when the first
     " buffer opened in the tab should be associated with it,
     " such as when 'tab split +buffer N' is used
     if !exists("t:bufexp_buf_list")
         let t:bufexp_buf_list = []
-        return
+
+        if s:AssociatedTab(a:bufnr) != -1
+            return
+        endif
     endif
 
     call s:AddBufToCurrentTab(a:bufnr)
