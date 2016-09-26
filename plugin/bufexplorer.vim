@@ -946,12 +946,19 @@ function! s:DeleteBuffer(buf, mode)
     endtry
 endfunction
 
+" ListedAndCurrentTab {{{2
+" Returns whether the specified buffer is both listed and associated
+" with the current tab
+function! s:ListedAndCurrentTab(buf)
+    return buflisted(a:buf) && s:IsInCurrentTab(a:buf)
+endfunction
+
 " Close {{{2
 function! s:Close()
-    " Get only the listed buffers.
-    let listed = filter(copy(s:MRUList), "buflisted(v:val)")
+    " Get only the listed buffers associated with the current tab
+    let listed = filter(copy(s:MRUList), "s:ListedAndCurrentTab(v:val)")
     if len(listed) == 0
-        let listed = filter(range(1, bufnr('$')), "buflisted(v:val)")
+        let listed = filter(range(1, bufnr('$')), "s:ListedAndCurrentTab(v:val)")
     endif
 
     " If we needed to split the main window, close the split one.
@@ -967,26 +974,9 @@ function! s:Close()
     else
         " Since there are buffers left to switch to, switch to the previous and
         " then the current.
-
-        if len(listed) > 1
-            " Visit the previous buffer in the context of the
-            " correct tab, to avoid adding it to the list of
-            " buffers associated with the current tab. If the
-            " associated tab is -1, it means the previous buffer
-            " was last associated with a tab that's now closed.
-            " If we use some other tab to visit it, it will
-            " become associated with that tab, which can be
-            " disconcerting. So, in that case, skip visiting it.
-            let assocTab = s:AssociatedTab(listed[1])
-            if assocTab > 0
-                let curTab = tabpagenr()
-                execute 'tabnext ' . assocTab
-                execute "keepjumps silent b " . listed[1]
-                execute 'tabnext ' . curTab
-            endif
-        endif
-
-        execute "keepjumps silent b " . listed[0]
+        for b in reverse(listed[0:1])
+            execute "keepjumps silent b ".b
+        endfor
     endif
 
     " Clear any messages.
