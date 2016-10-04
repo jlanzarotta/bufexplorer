@@ -27,18 +27,35 @@ For more about options, sort orders, configuration options, etc. please see the 
 This plugin can also be found at http://www.vim.org/scripts/script.php?script_id=42.
 
 ## Installation
+### Manually
+1.  If you do not want to use on the the bundle handlers, you can take the zip
+    file from vim.org and unzip it and copy the plugin to your vimfiles\plugin
+    directory and the txt file to your vimfiles\doc directory.  If you do that,
+    make sure you generate the help by executing
 
-If you do not have a preferred installation method, I would recommend installing [neobundle.vim](https://github.com/Shougo/neobundle.vim), and
-then simply putting the following in your _vimrc or .vimrc file:
+    `:helptag <your runtime directory>/doc`
 
-    Neobundle 'jlanzarotta/bufexplorer'
+    Once help tags have been generated, you can view the manual with
+    `:help bufexplorer`.
 
-If you do not want to use [neobundle.vim](https://github.com/Shougo/neobundle.vim), you can take the zip file from vim.org and unzip it and copy the plugin to your vimfiles\plugin directory and the txt file to your vimfiles\doc directory.  If you do that, make sure you generate the help by executing
+### Vundle (https://github.com/gmarik/Vundle.vim)
+1. Add the following configuration to your `.vimrc`.
 
-`:helptag <your runtime directory>/doc`
+        Plugin 'jlanzarotta/bufexplorer.vim'
 
-Once help tags have been generated, you can view the manual with
-`:help bufexplorer`.
+2. Install with `:BundleInstall`.
+
+### NeoBundle (https://github.com/Shougo/neobundle.vim)
+1. Add the following configuration to your `.vimrc`.
+
+        NeoBundle 'jlanzarotta/bufexplorer.vim'
+
+2. Install with `:NeoBundleInstall`.
+
+### Pathogen
+1. Install with the following command.
+
+        git clone https://github.com/jlanzarotta/bufexplorer.vim ~/.vim/bundle/bufexplorer.vim
 
 ## License
 Copyright (c) 2001-2016, Jeff Lanzarotta
