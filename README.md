@@ -55,7 +55,7 @@ This plugin can also be found at http://www.vim.org/scripts/script.php?script_id
 ### Pathogen
 1. Install with the following command.
 
-        git clone https://github.com/jlanzarotta/bufexplorer.vim ~/.vim/bundle/bufexplorer.vim
+        git clone https://github.com/jlanzarotta/bufexplorer.git ~/.vim/bundle/bufexplorer.vim
 
 ## License
 Copyright (c) 2001-2016, Jeff Lanzarotta
