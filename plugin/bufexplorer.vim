@@ -822,7 +822,7 @@ function! s:SelectBuffer(...)
             " Was the tab found?
             if tabNbr == 0
                 " _bufNbr is not opened in any tabs. Open a new tab with the selected buffer in it.
-                execute "999tab split +buffer" . _bufNbr
+                execute "$tab split +buffer" . _bufNbr
                 " Workaround for the issue mentioned in UpdateTabBufData
                 call s:UpdateTabBufData(_bufNbr)
             else
