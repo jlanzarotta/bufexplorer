@@ -41,7 +41,7 @@ This plugin can also be found at http://www.vim.org/scripts/script.php?script_id
 ### Vundle (https://github.com/gmarik/Vundle.vim)
 1. Add the following configuration to your `.vimrc`.
 
-        Plugin 'jlanzarotta/bufexplorer.vim'
+        Plugin 'jlanzarotta/bufexplorer'
 
 2. Install with `:BundleInstall`.
 
