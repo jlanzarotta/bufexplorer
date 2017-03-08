@@ -1,5 +1,5 @@
-"=============================================================================
-"    Copyright: Copyright (c) 2001-2016, Jeff Lanzarotta
+"============================================================================
+"    Copyright: Copyright (c) 2001-2017, Jeff Lanzarotta
 "               All rights reserved.
 "
 "               Redistribution and use in source and binary forms, with or
@@ -36,7 +36,7 @@
 " Name Of File: bufexplorer.vim
 "  Description: Buffer Explorer Vim Plugin
 "   Maintainer: Jeff Lanzarotta (delux256-vim at yahoo dot com)
-" Last Changed: Friday, 30 September 2016
+" Last Changed: Wednesday, 08 March 2017
 "      Version: See g:bufexplorer_version for version number.
 "        Usage: This file should reside in the plugin directory and be
 "               automatically sourced.
@@ -74,7 +74,7 @@ endif
 "1}}}
 
 " Version number
-let g:bufexplorer_version = "7.4.12"
+let g:bufexplorer_version = "7.4.13"
 
 " Plugin Code {{{1
 " Check for Vim version {{{2
@@ -117,7 +117,7 @@ function! s:Set(var, default)
 endfunction
 
 " Script variables {{{2
-let s:MRU_Exclude_List = ["[BufExplorer]","__MRU_Files__"]
+let s:MRU_Exclude_List = ["[BufExplorer]","__MRU_Files__","[Buf\ List]"]
 let s:MRUList = []
 let s:name = '[BufExplorer]'
 let s:originBuffer = 0
@@ -329,26 +329,7 @@ endfunction
 
 " Initialize {{{2
 function! s:Initialize()
-    let s:_insertmode = &insertmode
-    set noinsertmode
-
-    let s:_showcmd = &showcmd
-    set noshowcmd
-
-    let s:_cpo = &cpo
-    set cpo&vim
-
-    let s:_report = &report
-    let &report = 10000
-
-    setlocal nonumber
-    setlocal foldcolumn=0
-    setlocal nofoldenable
-    setlocal cursorline
-    setlocal nospell
-
-    setlocal nobuflisted
-
+    call s:SetLocalSettings()
     let s:running = 1
 endfunction
 
@@ -374,6 +355,28 @@ function! s:Cleanup()
     let s:splitMode = ""
 
     delmarks!
+endfunction
+
+" SetLocalSettings {{{2
+function! s:SetLocalSettings()
+    let s:_insertmode = &insertmode
+    set noinsertmode
+
+    let s:_showcmd = &showcmd
+    set noshowcmd
+
+    let s:_cpo = &cpo
+    set cpo&vim
+
+    let s:_report = &report
+    let &report = 10000
+
+    setlocal nonumber
+    setlocal foldcolumn=0
+    setlocal nofoldenable
+    setlocal cursorline
+    setlocal nospell
+    setlocal nobuflisted
 endfunction
 
 " BufExplorerHorizontalSplit {{{2
@@ -1210,6 +1213,7 @@ call s:Set("g:bufExplorerMaxHeight", 25) " Handles dynamic resizing of the windo
 " or by winmanager.
 function! BufExplorer_Start()
     let b:displayMode = "winmanager"
+    call s:SetLocalSettings()
     call BufExplorer()
 endfunction
 
@@ -1221,6 +1225,7 @@ endfunction
 " Handles dynamic refreshing of the window.
 function! BufExplorer_Refresh()
     let b:displayMode = "winmanager"
+    call s:SetLocalSettings()
     call BufExplorer()
 endfunction
 

@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 30 Sep 2016
+*bufexplorer.txt*              Buffer Explorer       Last Change: 08 Mar 2017
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.12
+                                Version 7.4.13
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -253,7 +253,11 @@ The default is 0, so that the size is set by Vim.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
-7.4.12   September, 30, 2016
+7.4.13   March 08, 2017
+    - Thanks to devakivamsi for pointing out that even though bufexplorer
+      turns off line numbers by default within its own window, this did not
+      work correctly when using WinManager.  This has now been corrected.
+7.4.12   September 30, 2016
     - Thanks again to Martin Vuille for several more fixes related to making
       bufexplorer more tab-friendly.
 7.4.11   September, 20, 2016
@@ -720,7 +724,7 @@ TODO                                                         *bufexplorer-todo*
 ===============================================================================
 CREDITS                                                   *bufexplorer-credits*
 
-Author: Jeff Lanzarotta <delux256-vim at yahoo dot com>
+Author: Jeff Lanzarotta <delux256-vim at outlook dot com>
 
 Credit must go out to Bram Moolenaar and all the Vim developers for
 making the world's best editor (IMHO). I also want to thank everyone who
@@ -730,7 +734,7 @@ won't list names.
 ===============================================================================
 COPYRIGHT                                               *bufexplorer-copyright*
 
-Copyright (c) 2001-2016, Jeff Lanzarotta
+Copyright (c) 2001-2017, Jeff Lanzarotta
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
