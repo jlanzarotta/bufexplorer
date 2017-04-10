@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 08 Mar 2017
+*bufexplorer.txt*              Buffer Explorer       Last Change: 10 Apr 2017
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.13
+                                Version 7.4.14
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -253,6 +253,9 @@ The default is 0, so that the size is set by Vim.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.4.14   April 10, 2017
+    - As suggested by adelarsq way back on January 5th, 2016, a filetype has
+      been added.  There is now 'filetype=bufexplorer'.
 7.4.13   March 08, 2017
     - Thanks to devakivamsi for pointing out that even though bufexplorer
       turns off line numbers by default within its own window, this did not
