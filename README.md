@@ -52,6 +52,13 @@ This plugin can also be found at http://www.vim.org/scripts/script.php?script_id
 
 2. Install with `:NeoBundleInstall`.
 
+### Plug (https://github.com/junegunn/vim-plug)
+1. Add the following configuration to your `.vimrc`.
+
+        Plug 'jlanzarotta/bufexplorer.vim'
+
+2. Instal with `:PlugInstall`.
+
 ### Pathogen
 1. Install with the following command.
 
