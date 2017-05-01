@@ -36,7 +36,7 @@
 " Name Of File: bufexplorer.vim
 "  Description: Buffer Explorer Vim Plugin
 "   Maintainer: Jeff Lanzarotta (delux256-vim at yahoo dot com)
-" Last Changed: Monday, 10 April 2017
+" Last Changed: Monday, 01 May 2017
 "      Version: See g:bufexplorer_version for version number.
 "        Usage: This file should reside in the plugin directory and be
 "               automatically sourced.
@@ -74,7 +74,7 @@ endif
 "1}}}
 
 " Version number
-let g:bufexplorer_version = "7.4.14"
+let g:bufexplorer_version = "7.4.15"
 
 " Plugin Code {{{1
 " Check for Vim version {{{2
@@ -825,14 +825,16 @@ function! s:SelectBuffer(...)
 
             " Was the tab found?
             if tabNbr == 0
-                " _bufNbr is not opened in any tabs. Open a new tab with the selected buffer in it.
+                " _bufNbr is not opened in any tabs. Open a new tab with the
+                " selected buffer in it.
                 if v:version > 704 || ( v:version == 704 && has('patch2237') )
-                  " new syntax for last tab as of 7.4.2237
-                  execute "$tab split +buffer" . _bufNbr
+                    " new syntax for last tab as of 7.4.2237
+                    execute "$tab split +buffer" . _bufNbr
                 else
-                  execute "999tab split +buffer" . _bufNbr
+                    execute "999tab split +buffer" . _bufNbr
                 endif
-                " Workaround for the issue mentioned in UpdateTabBufData
+
+                " Workaround for the issue mentioned in UpdateTabBufData.
                 call s:UpdateTabBufData(_bufNbr)
             else
                 " The _bufNbr is already opened in a tab, go to that tab.

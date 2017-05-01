@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 10 Apr 2017
+*bufexplorer.txt*              Buffer Explorer       Last Change: 01 May 2017
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.14
+                                Version 7.4.15
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -253,6 +253,9 @@ The default is 0, so that the size is set by Vim.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.4.15   May 01, 2017
+    - Finally applied the patch submitted by justfalter.  This patch is a
+      backward-compatible fix for the "invalid tab range" bug.
 7.4.14   April 10, 2017
     - As suggested by adelarsq way back on January 5th, 2016, a filetype has
       been added.  There is now 'filetype=bufexplorer'.
