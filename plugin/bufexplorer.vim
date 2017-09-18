@@ -35,8 +35,8 @@
 "               EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 " Name Of File: bufexplorer.vim
 "  Description: Buffer Explorer Vim Plugin
-"   Maintainer: Jeff Lanzarotta (delux256-vim at yahoo dot com)
-" Last Changed: Monday, 01 May 2017
+"   Maintainer: Jeff Lanzarotta (delux256-vim at outlook dot com)
+" Last Changed: Monday, 18 September 2017
 "      Version: See g:bufexplorer_version for version number.
 "        Usage: This file should reside in the plugin directory and be
 "               automatically sourced.
@@ -74,7 +74,7 @@ endif
 "1}}}
 
 " Version number
-let g:bufexplorer_version = "7.4.15"
+let g:bufexplorer_version = "7.4.19"
 
 " Plugin Code {{{1
 " Check for Vim version {{{2
@@ -497,13 +497,14 @@ function! s:MapKeys()
     nnoremap <script> <silent> <nowait> <buffer> <CR>          :call <SID>SelectBuffer()<CR>
     nnoremap <script> <silent> <nowait> <buffer> <F1>          :call <SID>ToggleHelp()<CR>
     nnoremap <script> <silent> <nowait> <buffer> <s-cr>        :call <SID>SelectBuffer("tab")<CR>
-    nnoremap <script> <silent> <nowait> <buffer> B             :call <SID>ToggleOnlyOneTab()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> a             :call <SID>ToggleFindActive()<CR>
     nnoremap <script> <silent> <nowait> <buffer> b             :call <SID>SelectBuffer("ask")<CR>
     nnoremap <script> <silent> <nowait> <buffer> d             :call <SID>RemoveBuffer("delete")<CR>
     xnoremap <script> <silent> <nowait> <buffer> d             :call <SID>RemoveBuffer("delete")<CR>
     nnoremap <script> <silent> <nowait> <buffer> D             :call <SID>RemoveBuffer("wipe")<CR>
     xnoremap <script> <silent> <nowait> <buffer> D             :call <SID>RemoveBuffer("wipe")<CR>
-    nnoremap <script> <silent> <nowait> <buffer> f             :call <SID>ToggleFindActive()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> f             :call <SID>SelectBuffer("split", "sb")<CR>
+    nnoremap <script> <silent> <nowait> <buffer> F             :call <SID>SelectBuffer("split", "st")<CR>
     nnoremap <script> <silent> <nowait> <buffer> m             :call <SID>MRUListShow()<CR>
     nnoremap <script> <silent> <nowait> <buffer> o             :call <SID>SelectBuffer()<CR>
     nnoremap <script> <silent> <nowait> <buffer> p             :call <SID>ToggleSplitOutPathName()<CR>
@@ -515,6 +516,8 @@ function! s:MapKeys()
     nnoremap <script> <silent> <nowait> <buffer> t             :call <SID>SelectBuffer("tab")<CR>
     nnoremap <script> <silent> <nowait> <buffer> T             :call <SID>ToggleShowTabBuffer()<CR>
     nnoremap <script> <silent> <nowait> <buffer> u             :call <SID>ToggleShowUnlisted()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> v             :call <SID>SelectBuffer("split", "vr")<CR>
+    nnoremap <script> <silent> <nowait> <buffer> V             :call <SID>SelectBuffer("split", "vl")<CR>
 
     for k in ["G", "n", "N", "L", "M", "H"]
         execute "nnoremap <buffer> <silent>" k ":keepjumps normal!" k."<CR>"
@@ -620,10 +623,13 @@ function! s:CreateHelp()
         call add(header, '" <F1> : toggle this help')
         call add(header, '" <enter> or o or Mouse-Double-Click : open buffer under cursor')
         call add(header, '" <shift-enter> or t : open buffer in another tab')
+        call add(header, '" a : toggle find active buffer')
+        call add(header, '" b : Fast buffer switching with b<any bufnum>')
         call add(header, '" B : toggle if to save/use recent tab or not')
         call add(header, '" d : delete buffer')
         call add(header, '" D : wipe buffer')
-        call add(header, '" f : toggle find active buffer')
+        call add(header, '" F : open buffer in another window above the current')
+        call add(header, '" f : open buffer in another window below the current')
         call add(header, '" p : toggle splitting of file and path name')
         call add(header, '" q : quit')
         call add(header, '" r : reverse sort')
@@ -632,6 +638,8 @@ function! s:CreateHelp()
         call add(header, '" S : reverse cycle thru "sort by" fields')
         call add(header, '" T : toggle if to show only buffers for this tab or not')
         call add(header, '" u : toggle showing unlisted buffers')
+        call add(header, '" V : open buffer in another window on the left of the current')
+        call add(header, '" v : open buffer in another window on the right of the current')
     else
         call add(header, '" Press <F1> for Help')
     endif
@@ -813,15 +821,13 @@ function! s:SelectBuffer(...)
             return s:Close()
         endif
 
-        " Are we suppose to open the selected buffer in a tab?
+        " Get the tab number where this bufer is located in.
+        let tabNbr = s:GetTabNbr(_bufNbr)
+        " Are we supposed to open the selected buffer in a tab?
         if (a:0 == 1) && (a:1 == "tab")
-            " Yes, we are to open the selected buffer in a tab.
 
             " Restore [BufExplorer] buffer.
             execute "silent buffer!".s:originBuffer
-
-            " Get the tab number where this buffer is located in.
-            let tabNbr = s:GetTabNbr(_bufNbr)
 
             " Was the tab found?
             if tabNbr == 0
@@ -843,9 +849,42 @@ function! s:SelectBuffer(...)
                 " Focus window.
                 execute s:GetWinNbr(tabNbr, _bufNbr) . "wincmd w"
             endif
-        else
-            " No, the user did not ask to open the selected buffer in a tab.
+            " Are we supposed to open the selected buffer in a split?
+        elseif (a:0 == 2) && (a:1 == "split")
+            if g:bufExplorerFindActive
+                call s:Close()
+            endif
+            " Was the tab found?
+            if tabNbr != 0
+                " Yes, the buffer is located in a tab. Go to that tab instead of
+                " opening split
+                execute tabNbr . "tabnext"
+            else
+                "Nope, the buffer is not in a tab, open it accordingly
+                let _bufName = expand("#"._bufNbr.":p")
+                if (a:2 == "vl")
+                    execute _bufName ?
+                                \ "vert topleft sb ".escape(_bufName, " ") :
+                                \ "vert topleft sb "._bufNbr
+                elseif (a:2 == "vr")
+                    execute _bufName ?
+                                \ "vert belowright sb ".escape(_bufName, " ") :
+                                \ "vert belowright sb "._bufNbr
+                elseif (a:2 == "st")
+                    execute _bufName ?
+                                \ "topleft sb ".escape(_bufName, " ") :
+                                \ "topleft sb "._bufNbr
+                else " = sb
+                    execute _bufName ?
+                                \ "belowright sb ".escape(_bufName, " ") :
+                                \ "belowright sb "._bufNbr
+                endif
+            endif
 
+            " Switch to selected buffer
+            execute "keepalt silent b!" _bufNbr
+            " Default, open in current window
+        else
             " Are we suppose to move to the tab where the active buffer is?
             if exists("g:bufExplorerChgWin")
                 execute g:bufExplorerChgWin."wincmd w"
@@ -853,9 +892,6 @@ function! s:SelectBuffer(...)
                 if g:bufExplorerFindActive
                     call s:Close()
                 endif
-
-                " Get the tab number where this buffer is located in.
-                let tabNbr = s:GetTabNbr(_bufNbr)
 
                 " Was the tab found?
                 if tabNbr != 0
