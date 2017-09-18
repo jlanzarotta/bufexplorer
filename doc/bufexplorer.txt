@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 01 May 2017
+*bufexplorer.txt*              Buffer Explorer       Last Change: 18 Sep 2017
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.15
+                                Version 7.4.19
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -72,6 +72,8 @@ Commands to use once exploring:
  <leftmouse>   Opens the buffer that is under the cursor into the current
                window.
  <shift-enter> Opens the buffer that is under the cursor in another tab.
+ a             Toggles whether you are taken to the active window when
+               selecting a buffer or not.
  b             Fast buffer switching with b<any bufnum>.
  B             Works in association with the |ShowTabBuffer| option.  If
                |ShowTabBuffer| is set to 1, this toggles if BufExplorer is to
@@ -82,8 +84,8 @@ Commands to use once exploring:
  D             |:wipeout| the buffer under the cursor from the list.  When a
                buffer is wiped, it will not be shown when unlisted buffers are
                displayed.
- f             Toggles whether you are taken to the active window when
-               selecting a buffer or not.
+ F             Open selected buffer in another window above the current.
+ f             Open selected buffer in another window below the current.
  o             Opens the buffer that is under the cursor into the current
                window.
  p             Toggles the showing of a split filename/pathname.
@@ -99,6 +101,8 @@ Commands to use once exploring:
  t             Opens the buffer that is under the cursor in another tab.
  T             Toggles to show only buffers for this tab or not.
  u             Toggles the showing of "unlisted" buffers.
+ V             Open the selected buffer in another window on the left of the current.
+ v             Open the selected buffer in another window on the right of the current.
 
 Once invoked, Buffer Explorer displays a sorted list (MRU is the default
 sort method) of all the buffers that are currently opened. You are then
@@ -253,6 +257,22 @@ The default is 0, so that the size is set by Vim.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.4.19   September 18, 2017
+    - Merged all changes from github back into this version and tried to sync
+      to the correct version number.
+7.4.18 - Github
+7.4.17 - Github.
+7.4.16   August 14, 2017
+    - Thanks to Yubo Su for the patch that adds 'f, F, V, and v' commands.
+      With this change, the original 'f' command was remapped to 'a'.
+
+      The set of commands that can be used during exploring are:
+      F - Open selected buffer in another window above the current.
+      f - Open selected buffer in another window below the current.
+      V - Open the selected buffer in another window on the left of the
+          current.
+      v - Open the selected buffer in another window on the right of the
+          current.
 7.4.15   May 01, 2017
     - Finally applied the patch submitted by justfalter.  This patch is a
       backward-compatible fix for the "invalid tab range" bug.
