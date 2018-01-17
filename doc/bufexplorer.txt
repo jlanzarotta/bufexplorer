@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 18 Sep 2017
+*bufexplorer.txt*              Buffer Explorer       Last Change: 18 Jan 2018
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.19
+                                Version 7.4.20
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -249,18 +249,28 @@ current window, use: >
 The default is to use the global &splitright.
 
                                                    *g:bufExplorerSplitVertSize*
-To control the size of the new vertical split window. use: >
+To control the size of the new vertical split window, use: >
   let g:bufExplorerVertSize=n          " New split window is n columns wide.
   let g:bufExplorerVertSize=0          " New split windows size set by Vim.
 The default is 0, so that the size is set by Vim.
 
+                                                   *g:bufExplorerVersionWarn*
+To control wether to warning about Vim version or not, use: >
+  let g:bufExplorerVersionWarn=1       " Warn if version conflict.
+  let g:bufExplorerVersionWarn=0       " Do not warn if version conflict.
+The default is 1.
+
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.4.20   January 18, 2017
+    - Thanks to arcseldon for supplying code that can remove the warning
+      messages if you using this plugin on an older version of Vim.  The
+      global variable is g:bufExplorerVersionWarn.
 7.4.19   September 18, 2017
     - Merged all changes from github back into this version and tried to sync
       to the correct version number.
-7.4.18 - Github
+7.4.18 - Github.
 7.4.17 - Github.
 7.4.16   August 14, 2017
     - Thanks to Yubo Su for the patch that adds 'f, F, V, and v' commands.

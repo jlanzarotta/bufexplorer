@@ -1,5 +1,5 @@
 "============================================================================
-"    Copyright: Copyright (c) 2001-2017, Jeff Lanzarotta
+"    Copyright: Copyright (c) 2001-2018, Jeff Lanzarotta
 "               All rights reserved.
 "
 "               Redistribution and use in source and binary forms, with or
@@ -36,7 +36,7 @@
 " Name Of File: bufexplorer.vim
 "  Description: Buffer Explorer Vim Plugin
 "   Maintainer: Jeff Lanzarotta (delux256-vim at outlook dot com)
-" Last Changed: Monday, 18 September 2017
+" Last Changed: Thursday, 19 January 2018
 "      Version: See g:bufexplorer_version for version number.
 "        Usage: This file should reside in the plugin directory and be
 "               automatically sourced.
@@ -74,15 +74,16 @@ endif
 "1}}}
 
 " Version number
-let g:bufexplorer_version = "7.4.19"
-if !exists("g:bufexplorer_version_warn")
-    let g:bufexplorer_version_warn = 1
-endif
+let g:bufexplorer_version = "7.4.20"
 
 " Plugin Code {{{1
 " Check for Vim version {{{2
+if !exists("g:bufExplorerVersionWarn")
+    let g:bufExplorerVersionWarn = 1
+endif
+
 if v:version < 700
-    if g:bufexplorer_version_warn
+    if g:bufExplorerVersionWarn
         echohl WarningMsg
         echo "Sorry, bufexplorer ".g:bufexplorer_version." required Vim 7.0 or greater."
         echohl None
