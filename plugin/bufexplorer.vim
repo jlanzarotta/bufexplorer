@@ -75,13 +75,18 @@ endif
 
 " Version number
 let g:bufexplorer_version = "7.4.19"
+if !exists("g:bufexplorer_version_warn")
+    let g:bufexplorer_version_warn = 1
+endif
 
 " Plugin Code {{{1
 " Check for Vim version {{{2
 if v:version < 700
-    echohl WarningMsg
-    echo "Sorry, bufexplorer ".g:bufexplorer_version." required Vim 7.0 or greater."
-    echohl None
+    if g:bufexplorer_version_warn
+        echohl WarningMsg
+        echo "Sorry, bufexplorer ".g:bufexplorer_version." required Vim 7.0 or greater."
+        echohl None
+    endif
     finish
 endif
 " Check to see if the version of Vim has the correct patch applied, if not, do
@@ -89,9 +94,11 @@ endif
 if v:version > 703 || v:version == 703 && has('patch1261') && has('patch1264')
     " We are good to go.
 else
-    echohl WarningMsg
-    echo "Sorry, bufexplorer ".g:bufexplorer_version." required Vim 7.3 or greater with patch1261 and patch1264."
-    echohl None
+    if g:bufexplorer_version_warn
+        echohl WarningMsg
+        echo "Sorry, bufexplorer ".g:bufexplorer_version." required Vim 7.3 or greater with patch1261 and patch1264."
+        echohl None
+    endif
     finish
 endif
 
