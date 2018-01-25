@@ -95,7 +95,7 @@ endif
 if v:version > 703 || v:version == 703 && has('patch1261') && has('patch1264')
     " We are good to go.
 else
-    if g:bufexplorer_version_warn
+    if g:bufExplorerVersionWarn
         echohl WarningMsg
         echo "Sorry, bufexplorer ".g:bufexplorer_version." required Vim 7.3 or greater with patch1261 and patch1264."
         echohl None
