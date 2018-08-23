@@ -965,17 +965,13 @@ function! s:RemoveBuffer(mode)
 
     let _bufNbr = str2nr(getline('.'))
 
-    if getbufvar(_bufNbr, '&modified') == 1
-
-        if a:mode != "force_delete"
-	    call s:Error("Sorry, no write since last change for buffer "._bufNbr.", unable to delete")
-	    return
-	endif
-        call s:DeleteBuffer(_bufNbr, a:mode)
-    else
-        " Okay, everything is good, delete or wipe the buffer.
-        call s:DeleteBuffer(_bufNbr, a:mode)
+    if getbufvar(_bufNbr, '&modified') == 1 && a:mode != "force_delete"
+	call s:Error("Sorry, no write since last change for buffer "._bufNbr.", unable to delete")
+	return
     endif
+
+    " Okay, everything is good, delete or wipe the buffer.
+    call s:DeleteBuffer(_bufNbr, a:mode)
 
     " Reactivate winmanager autocommand activity.
     if exists("b:displayMode") && b:displayMode == "winmanager"
