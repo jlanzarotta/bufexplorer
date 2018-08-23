@@ -860,7 +860,7 @@ function! s:SelectBuffer(...)
                 execute s:GetWinNbr(tabNbr, _bufNbr) . "wincmd w"
             endif
             " Are we supposed to open the selected buffer in a split?
-	elseif (a:0 == 2) && (a:1 == "split")
+        elseif (a:0 == 2) && (a:1 == "split")
             if g:bufExplorerFindActive
                 call s:Close()
             endif
