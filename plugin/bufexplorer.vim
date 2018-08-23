@@ -860,7 +860,7 @@ function! s:SelectBuffer(...)
                 execute s:GetWinNbr(tabNbr, _bufNbr) . "wincmd w"
             endif
             " Are we supposed to open the selected buffer in a split?
-        elseif (a:0 == 2) && (a:1 == "split")
+	elseif (a:0 == 2) && (a:1 == "split")
             if g:bufExplorerFindActive
                 call s:Close()
             endif
@@ -966,8 +966,8 @@ function! s:RemoveBuffer(mode)
     let _bufNbr = str2nr(getline('.'))
 
     if getbufvar(_bufNbr, '&modified') == 1 && a:mode != "force_delete"
-	call s:Error("Sorry, no write since last change for buffer "._bufNbr.", unable to delete")
-	return
+        call s:Error("Sorry, no write since last change for buffer "._bufNbr.", unable to delete")
+        return
     endif
 
     " Okay, everything is good, delete or wipe the buffer.
@@ -989,7 +989,7 @@ function! s:DeleteBuffer(buf, mode)
             execute "silent bwipe" a:buf
         elseif a:mode == "force_delete"
             execute "silent bdelete!" a:buf
-	else
+        else
             execute "silent bdelete" a:buf
         endif
 
