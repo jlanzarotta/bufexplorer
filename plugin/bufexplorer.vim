@@ -526,7 +526,6 @@ function! s:MapKeys()
     nnoremap <script> <silent> <nowait> <buffer> u             :call <SID>ToggleShowUnlisted()<CR>
     nnoremap <script> <silent> <nowait> <buffer> v             :call <SID>SelectBuffer("split", "vr")<CR>
     nnoremap <script> <silent> <nowait> <buffer> V             :call <SID>SelectBuffer("split", "vl")<CR>
-    nnoremap <script> <silent> <nowait> <buffer> x             :call <SID>RemoveBuffer("force_delete")<CR>
 
     for k in ["G", "n", "N", "L", "M", "H"]
         execute "nnoremap <buffer> <silent>" k ":keepjumps normal!" k."<CR>"
@@ -649,7 +648,6 @@ function! s:CreateHelp()
         call add(header, '" u : toggle showing unlisted buffers')
         call add(header, '" V : open buffer in another window on the left of the current')
         call add(header, '" v : open buffer in another window on the right of the current')
-        call add(header, '" x : delete buffer without saving changes')
     else
         call add(header, '" Press <F1> for Help')
     endif
@@ -952,6 +950,8 @@ function! s:RemoveBuffer(mode)
         return
     endif
 
+    let mode = a:mode
+
     " Do not allow this buffer to be deleted if it is the last one.
     if len(s:MRUList) == 1
         call s:Error("Sorry, you are not allowed to delete the last buffer")
@@ -965,13 +965,27 @@ function! s:RemoveBuffer(mode)
 
     let _bufNbr = str2nr(getline('.'))
 
-    if getbufvar(_bufNbr, '&modified') == 1 && a:mode != "force_delete"
-        call s:Error("Sorry, no write since last change for buffer "._bufNbr.", unable to delete")
-        return
+    if getbufvar(_bufNbr, '&modified') == 1
+    if a:mode == "delete"
+        let answer = confirm('No write since last change for buffer '._bufNbr.'. Delete anyway?', "&Yes\n&No", 2)
+        if answer == 1
+            let mode = "force_delete"
+        else
+            return
+        endif
+    elseif a:mode == "wipe"
+        let answer = confirm('No write since last change for buffer '._bufNbr.'. Wipe anyway?', "&Yes\n&No", 2)
+        if answer == 1
+            let mode = "force_wipe"
+        else
+            return
+        endif
+    endif
+
     endif
 
     " Okay, everything is good, delete or wipe the buffer.
-    call s:DeleteBuffer(_bufNbr, a:mode)
+    call s:DeleteBuffer(_bufNbr, mode)
 
     " Reactivate winmanager autocommand activity.
     if exists("b:displayMode") && b:displayMode == "winmanager"
@@ -987,6 +1001,8 @@ function! s:DeleteBuffer(buf, mode)
         " Wipe/Delete buffer from Vim.
         if a:mode == "wipe"
             execute "silent bwipe" a:buf
+        elseif a:mode == "force_wipe"
+            execute "silent bwipe!" a:buf
         elseif a:mode == "force_delete"
             execute "silent bdelete!" a:buf
         else
