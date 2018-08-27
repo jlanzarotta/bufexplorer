@@ -972,14 +972,14 @@ function! s:RemoveBuffer(mode)
             return
         endif
 
-	let answer = confirm('No write since last change for buffer '._bufNbr.'. Delete anyway?', "&Yes\n&No", 2)
+        let answer = confirm('No write since last change for buffer '._bufNbr.'. Delete anyway?', "&Yes\n&No", 2)
 
         if a:mode == "delete" && answer == 1
-	    let mode = "force_delete"
-	elseif a:mode == "wipe" && answer == 1
-	    let mode = "force_wipe"
+            let mode = "force_delete"
+        elseif a:mode == "wipe" && answer == 1
+            let mode = "force_wipe"
         else
-                return
+            return
         endif
 
     endif
