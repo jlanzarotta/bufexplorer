@@ -966,21 +966,27 @@ function! s:RemoveBuffer(mode)
     let _bufNbr = str2nr(getline('.'))
 
     if getbufvar(_bufNbr, '&modified') == 1
-    if a:mode == "delete"
-        let answer = confirm('No write since last change for buffer '._bufNbr.'. Delete anyway?', "&Yes\n&No", 2)
-        if answer == 1
-            let mode = "force_delete"
-        else
+        " Calling confirm() requires Vim built with dialog option
+        if !has("dialog_con") && !has("dialog_gui")
+            call s:Error("Sorry, no write since last change for buffer "._bufNbr.", unable to delete")
             return
         endif
-    elseif a:mode == "wipe"
-        let answer = confirm('No write since last change for buffer '._bufNbr.'. Wipe anyway?', "&Yes\n&No", 2)
-        if answer == 1
-            let mode = "force_wipe"
-        else
-            return
+
+        if a:mode == "delete"
+            let answer = confirm('No write since last change for buffer '._bufNbr.'. Delete anyway?', "&Yes\n&No", 2)
+            if answer == 1
+                let mode = "force_delete"
+            else
+                return
+            endif
+        elseif a:mode == "wipe"
+            let answer = confirm('No write since last change for buffer '._bufNbr.'. Wipe anyway?', "&Yes\n&No", 2)
+            if answer == 1
+                let mode = "force_wipe"
+            else
+                return
+            endif
         endif
-    endif
 
     endif
 
