@@ -950,6 +950,8 @@ function! s:RemoveBuffer(mode)
         return
     endif
 
+    let mode = a:mode
+
     " Do not allow this buffer to be deleted if it is the last one.
     if len(s:MRUList) == 1
         call s:Error("Sorry, you are not allowed to delete the last buffer")
@@ -964,12 +966,26 @@ function! s:RemoveBuffer(mode)
     let _bufNbr = str2nr(getline('.'))
 
     if getbufvar(_bufNbr, '&modified') == 1
-        call s:Error("Sorry, no write since last change for buffer "._bufNbr.", unable to delete")
-        return
-    else
-        " Okay, everything is good, delete or wipe the buffer.
-        call s:DeleteBuffer(_bufNbr, a:mode)
+        " Calling confirm() requires Vim built with dialog option
+        if !has("dialog_con") && !has("dialog_gui")
+            call s:Error("Sorry, no write since last change for buffer "._bufNbr.", unable to delete")
+            return
+        endif
+
+        let answer = confirm('No write since last change for buffer '._bufNbr.'. Delete anyway?', "&Yes\n&No", 2)
+
+        if a:mode == "delete" && answer == 1
+            let mode = "force_delete"
+        elseif a:mode == "wipe" && answer == 1
+            let mode = "force_wipe"
+        else
+            return
+        endif
+
     endif
+
+    " Okay, everything is good, delete or wipe the buffer.
+    call s:DeleteBuffer(_bufNbr, mode)
 
     " Reactivate winmanager autocommand activity.
     if exists("b:displayMode") && b:displayMode == "winmanager"
@@ -985,6 +1001,10 @@ function! s:DeleteBuffer(buf, mode)
         " Wipe/Delete buffer from Vim.
         if a:mode == "wipe"
             execute "silent bwipe" a:buf
+        elseif a:mode == "force_wipe"
+            execute "silent bwipe!" a:buf
+        elseif a:mode == "force_delete"
+            execute "silent bdelete!" a:buf
         else
             execute "silent bdelete" a:buf
         endif
