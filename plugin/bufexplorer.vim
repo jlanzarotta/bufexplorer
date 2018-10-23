@@ -132,8 +132,8 @@ let s:originBuffer = 0
 let s:running = 0
 let s:sort_by = ["number", "name", "fullpath", "mru", "extension"]
 let s:splitMode = ""
-let s:types = {"fullname": ':p', "path": ':p:h', "relativename": ':~:.', "relativepath": ':~:.:h', "shortname": ':t'}
-
+let s:types = {"fullname": ':p', "path": ':p:h', "relativename": ':~:.', "relativepath": ':~:.:h', "shortname": ':t', "extension": ':e'}
+    
 " Setup the autocommands that handle the MRUList and other stuff. {{{2
 autocmd VimEnter * call s:Setup()
 
@@ -750,6 +750,11 @@ function! s:BuildBufferList()
         endif
 
         let line = buf.attributes." "
+
+        if exists("g:loaded_webdevicons") 
+            let line .= WebDevIconsGetFileTypeSymbol('*.'.buf.extension)
+            let line .= " "
+        endif
 
         " Are we to split the path and file name?
         if g:bufExplorerSplitOutPathName
