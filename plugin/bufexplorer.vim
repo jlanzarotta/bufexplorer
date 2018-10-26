@@ -132,7 +132,7 @@ let s:originBuffer = 0
 let s:running = 0
 let s:sort_by = ["number", "name", "fullpath", "mru", "extension"]
 let s:splitMode = ""
-let s:types = {"fullname": ':p', "path": ':p:h', "relativename": ':~:.', "relativepath": ':~:.:h', "shortname": ':t', "extension": ':e'}
+let s:types = {"fullname": ':p', "path": ':p:h', "relativename": ':~:.', "relativepath": ':~:.:h', "shortname": ':t'}
     
 " Setup the autocommands that handle the MRUList and other stuff. {{{2
 autocmd VimEnter * call s:Setup()
@@ -752,7 +752,7 @@ function! s:BuildBufferList()
         let line = buf.attributes." "
 
         if exists("g:loaded_webdevicons") 
-            let line .= WebDevIconsGetFileTypeSymbol('*.'.buf.extension)
+            let line .= WebDevIconsGetFileTypeSymbol(buf.shortname)
             let line .= " "
         endif
 
