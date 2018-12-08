@@ -263,6 +263,9 @@ The default is 1.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.4.21   December 8, 2018
+    - Merged in changes from adelarsq that introduced ryanoasis/vim-devicons
+      support.
 7.4.20   January 18, 2017
     - Thanks to jpflouret for supplying code that can remove the warning
       messages if you using this plugin on an older version of Vim.  The
