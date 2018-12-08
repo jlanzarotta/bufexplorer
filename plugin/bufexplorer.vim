@@ -751,6 +751,11 @@ function! s:BuildBufferList()
 
         let line = buf.attributes." "
 
+        if exists("g:loaded_webdevicons") 
+            let line .= WebDevIconsGetFileTypeSymbol(buf.shortname)
+            let line .= " "
+        endif
+
         " Are we to split the path and file name?
         if g:bufExplorerSplitOutPathName
             let type = (g:bufExplorerShowRelativePath) ? "relativepath" : "path"
