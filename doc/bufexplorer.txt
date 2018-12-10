@@ -265,7 +265,8 @@ CHANGE LOG                                              *bufexplorer-changelog*
 
 7.4.21   December 8, 2018
     - Merged in changes from adelarsq that introduced ryanoasis/vim-devicons
-      support.
+      support.  If the global g:loaded_webdevicons has been set, bufexplorer
+      will now load the associated dev icons for each buffer.
 7.4.20   January 18, 2017
     - Thanks to jpflouret for supplying code that can remove the warning
       messages if you using this plugin on an older version of Vim.  The
