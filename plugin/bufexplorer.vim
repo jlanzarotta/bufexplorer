@@ -36,7 +36,7 @@
 " Name Of File: bufexplorer.vim
 "  Description: Buffer Explorer Vim Plugin
 "   Maintainer: Jeff Lanzarotta (delux256-vim at outlook dot com)
-" Last Changed: Thursday, 19 January 2018
+" Last Changed: Saturday, 08 December 2018
 "      Version: See g:bufexplorer_version for version number.
 "        Usage: This file should reside in the plugin directory and be
 "               automatically sourced.
@@ -74,7 +74,7 @@ endif
 "1}}}
 
 " Version number
-let g:bufexplorer_version = "7.4.20"
+let g:bufexplorer_version = "7.4.21"
 
 " Plugin Code {{{1
 " Check for Vim version {{{2
@@ -751,7 +751,7 @@ function! s:BuildBufferList()
 
         let line = buf.attributes." "
 
-        if exists("g:loaded_webdevicons") 
+        if exists("g:loaded_webdevicons")
             let line .= WebDevIconsGetFileTypeSymbol(buf.shortname)
             let line .= " "
         endif

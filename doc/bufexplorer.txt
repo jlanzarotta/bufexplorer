@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 18 Jan 2018
+*bufexplorer.txt*              Buffer Explorer       Last Change: 08 Dec 2018
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.20
+                                Version 7.4.21
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
