@@ -57,7 +57,7 @@ This plugin can also be found at http://www.vim.org/scripts/script.php?script_id
 
         Plug 'jlanzarotta/bufexplorer'
 
-2. Instal with `:PlugInstall`.
+2. Install with `:PlugInstall`.
 
 ### Pathogen
 1. Install with the following command.
