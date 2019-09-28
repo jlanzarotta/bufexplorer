@@ -957,12 +957,6 @@ function! s:RemoveBuffer(mode)
 
     let mode = a:mode
 
-    " Do not allow this buffer to be deleted if it is the last one.
-    if len(s:MRUList) == 1
-        call s:Error("Sorry, you are not allowed to delete the last buffer")
-        return
-    endif
-
     " These commands are to temporarily suspend the activity of winmanager.
     if exists("b:displayMode") && b:displayMode == "winmanager"
         call WinManagerSuspendAUs()
