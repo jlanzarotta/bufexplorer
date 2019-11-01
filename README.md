@@ -28,8 +28,8 @@ This plugin can also be found at http://www.vim.org/scripts/script.php?script_id
 
 ## Installation
 ### Manually
-1.  If you do not want to use on the the bundle handlers, you can take the zip
-    file from vim.org and unzip it and copy the plugin to your vimfiles\plugin
+1.  If you do not want to use one of the the bundle handlers, you can take the
+    zip file from vim.org and unzip it and copy the plugin to your vimfiles\plugin
     directory and the txt file to your vimfiles\doc directory.  If you do that,
     make sure you generate the help by executing
 
