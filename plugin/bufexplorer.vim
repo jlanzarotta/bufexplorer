@@ -392,12 +392,14 @@ endfunction
 function! BufExplorerHorizontalSplit()
     let s:splitMode = "sp"
     execute "BufExplorer"
+    let s:splitMode = ""
 endfunction
 
 " BufExplorerVerticalSplit {{{2
 function! BufExplorerVerticalSplit()
     let s:splitMode = "vsp"
     execute "BufExplorer"
+    let s:splitMode = ""
 endfunction
 
 " ToggleBufExplorer {{{2
