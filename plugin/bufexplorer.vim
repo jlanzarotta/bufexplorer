@@ -1,5 +1,5 @@
 "============================================================================
-"    Copyright: Copyright (c) 2001-2018, Jeff Lanzarotta
+"    Copyright: Copyright (c) 2001-2022, Jeff Lanzarotta
 "               All rights reserved.
 "
 "               Redistribution and use in source and binary forms, with or
@@ -35,8 +35,8 @@
 "               EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 " Name Of File: bufexplorer.vim
 "  Description: Buffer Explorer Vim Plugin
-"   Maintainer: Jeff Lanzarotta (delux256-vim at outlook dot com)
-" Last Changed: Saturday, 08 December 2018
+"   Maintainer: Jeff Lanzarotta (my name at gmail dot com)
+" Last Changed: Wednesday, 05 January 2022
 "      Version: See g:bufexplorer_version for version number.
 "        Usage: This file should reside in the plugin directory and be
 "               automatically sourced.
@@ -74,7 +74,7 @@ endif
 "1}}}
 
 " Version number
-let g:bufexplorer_version = "7.4.21"
+let g:bufexplorer_version = "7.4.22"
 
 " Plugin Code {{{1
 " Check for Vim version {{{2
