@@ -451,6 +451,9 @@ function! BufExplorer()
             execute 'keepalt ' . _size . s:splitMode
         endif
 
+        " Note that the current buffer resulted from a split
+        let b:didSplit = 1
+
         " Restore the original settings.
         let [&splitbelow, &splitright] = [_splitbelow, _splitright]
     endif
@@ -1038,7 +1041,7 @@ function! s:Close()
     endif
 
     " If we needed to split the main window, close the split one.
-    if s:splitMode != "" && bufwinnr(s:originBuffer) != -1
+    if exists("b:didSplit") && b:didSplit == 1 && bufwinnr(s:originBuffer) != -1
         execute "wincmd c"
     endif
 
