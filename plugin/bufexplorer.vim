@@ -475,6 +475,7 @@ function! s:DisplayBufferList()
     " the buffer using CTRL-^.
     setlocal buftype=nofile
     setlocal modifiable
+    setlocal noreadonly
     setlocal noswapfile
     setlocal nowrap
 
