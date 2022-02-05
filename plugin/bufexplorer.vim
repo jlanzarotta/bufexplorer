@@ -313,7 +313,7 @@ endfunction
 " ShouldIgnore {{{2
 function! s:ShouldIgnore(buf)
     " Ignore temporary buffers with buftype set.
-    if empty(getbufvar(a:buf, "&buftype") == 0)
+    if empty(getbufvar(a:buf, "&buftype")) == 0
         return 1
     endif
 
