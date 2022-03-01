@@ -14,7 +14,7 @@ With bufexplorer, you can quickly and easily switch between buffers by using the
 `\<Leader\>bv` force vertical split open
 
 
-Once the bufexplorer window is open you can use the normal movement keys (hjkl) to move around and then use <Enter> or <Left-Mouse-Click> to select the buffer you would like to open. If you would like to have the selected buffer opened in a new tab, simply press either <Shift-Enter> or 't'. Please note that when opening a buffer in a tab, that if the buffer is already in another tab, bufexplorer can switch to that tab automatically for you if you would like. More about that in the supplied VIM help.
+Once the bufexplorer window is open you can use the normal movement keys (hjkl) to move around and then use `<Enter>` or `<Left-Mouse-Click>` to select the buffer you would like to open. If you would like to have the selected buffer opened in a new tab, simply press either `<Shift-Enter>` or `t`. Please note that when opening a buffer in a tab, that if the buffer is already in another tab, bufexplorer can switch to that tab automatically for you if you would like. More about that in the supplied VIM help.
 
 Bufexplorer also offers various options including:
 - Display the list of buffers in various sort orders including:
