@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 27 Jan 2022
+*bufexplorer.txt*              Buffer Explorer       Last Change: 02 May 2022
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.23
+                                Version 7.4.24
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -785,7 +785,7 @@ won't list names.
 ===============================================================================
 COPYRIGHT                                               *bufexplorer-copyright*
 
-Copyright (c) 2001-2017, Jeff Lanzarotta
+Copyright (c) 2001-2022, Jeff Lanzarotta
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
