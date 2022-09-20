@@ -138,6 +138,9 @@ let s:types = {"fullname": ':p', "path": ':p:h', "relativename": ':~:.', "relati
 " Setup the autocommands that handle the MRUList and other stuff. {{{2
 autocmd VimEnter * call s:Setup()
 
+" Reset MRUList and buffer->tab associations after loading a session. {{{2
+autocmd SessionLoadPost * call s:Reset()
+
 " Setup {{{2
 function! s:Setup()
     call s:Reset()
@@ -156,8 +159,9 @@ endfunction
 " Reset {{{2
 function! s:Reset()
     " Build initial MRUList. This makes sure all the files specified on the
-    " command line are picked up correctly.
-    let s:MRUList = range(1, bufnr('$'))
+    " command line are picked up correctly. Check buffers exist so this also
+    " works after wiping buffers and loading a session (e.g. sessionman.vim)
+    let s:MRUList = filter(range(1, bufnr('$')), 'bufexists(v:val)')
 
     " Initialize the association of buffers to tabs for any buffers
     " that have been created prior to now, e.g., files specified as
