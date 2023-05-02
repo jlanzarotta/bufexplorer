@@ -480,13 +480,12 @@ endfunction
 
 " DisplayBufferList {{{2
 function! s:DisplayBufferList()
-    " Do not set bufhidden since it wipes out the data if we switch away from
-    " the buffer using CTRL-^.
     setlocal buftype=nofile
     setlocal modifiable
     setlocal noreadonly
     setlocal noswapfile
     setlocal nowrap
+    setlocal bufhidden=wipe
 
     call s:SetupSyntax()
     call s:MapKeys()
