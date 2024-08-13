@@ -21,17 +21,8 @@ env_files:
 #    # you may remove this if you don't need go generate
 #    - go generate ./...
 
-#builds:
-#  - binary:
-#      timetracker
-#    env:
-#      - CGO_ENABLED=1
-#    goos:
-#      - windows
-#    goarch:
-#      - amd64
-#    ldflags:
-#      -s -w -X timetracker/cmd.BuildDateTime={{.Date}} -X timetracker/cmd.BuildVersion={{.Version}}
+builds:
+  - skip: true
 
 archives:
   - format: tar.gz
