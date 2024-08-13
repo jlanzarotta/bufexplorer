@@ -1,4 +1,4 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 30 May 2024
+*bufexplorer.txt*              Buffer Explorer       Last Change: 13 Aug 2024
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
                                 Version 7.4.27
