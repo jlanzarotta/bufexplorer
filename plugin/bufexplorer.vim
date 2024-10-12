@@ -709,6 +709,11 @@ function! s:GetBufferInfo(bufnr)
             let name = "[No Name]"
         endif
 
+        " Filter out term:// buffers if g:bufExplorerShowTerminal is 0
+        if !g:bufExplorerShowTerminal && name =~ '^term://'
+            continue
+        endif
+
         for [key, val] in items(s:types)
             let b[key] = fnamemodify(name, val)
         endfor
@@ -1356,6 +1361,7 @@ call s:Set("g:bufExplorerSplitOutPathName", 1)          " Split out path and fil
 call s:Set("g:bufExplorerSplitRight", &splitright)      " Should vertical splits be on the right or left of current window?
 call s:Set("g:bufExplorerSplitVertSize", 0)             " Height for a vertical split. If <=0, default Vim size is used.
 call s:Set("g:bufExplorerSplitHorzSize", 0)             " Height for a horizontal split. If <=0, default Vim size is used.
+call s:Set("g:bufExplorerShowTerminal", 1)              " Show terminal buffers?
 
 " Default key mapping {{{2
 if !hasmapto('BufExplorer') && g:bufExplorerDisableDefaultKeyMapping == 0
