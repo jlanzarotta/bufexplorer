@@ -625,6 +625,7 @@ function! s:GetHelpStatus()
     let ret .= ((g:bufExplorerOnlyOneTab == 0) ? "" : " | One tab/buffer")
     let ret .= ' | '.((g:bufExplorerShowRelativePath == 0) ? "Absolute" : "Relative")
     let ret .= ' '.((g:bufExplorerSplitOutPathName == 0) ? "Full" : "Split")." path"
+    let ret .= ((g:bufExplorerShowTerminal == 0) ? "" : " | Show terminal")
 
     return ret
 endfunction
