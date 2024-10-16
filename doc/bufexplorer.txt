@@ -254,6 +254,12 @@ To control the size of the new vertical split window, use: >
   let g:bufExplorerSplitVertSize=0          " New split windows size set by Vim.
 The default is 0, so that the size is set by Vim.
 
+                                                   *g:bufExplorerShowTerminal*
+To control whether terminal buffers are displayed in BufExplorer, use: >
+  let g:bufExplorerShowTerminal=1           " Show terminal buffers.
+  let g:bufExplorerShowTerminal=0           " Don't show terminal buffers.
+The default is 1, to show the terminal buffers.
+
                                                    *g:bufExplorerVersionWarn*
 To control whether to warning about Vim version or not, use: >
   let g:bufExplorerVersionWarn=1       " Warn if version conflict.

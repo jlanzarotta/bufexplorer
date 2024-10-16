@@ -537,6 +537,8 @@ function! s:MapKeys()
     nnoremap <script> <silent> <nowait> <buffer> u             :call <SID>ToggleShowUnlisted()<CR>
     nnoremap <script> <silent> <nowait> <buffer> v             :call <SID>SelectBuffer("split", "vr")<CR>
     nnoremap <script> <silent> <nowait> <buffer> V             :call <SID>SelectBuffer("split", "vl")<CR>
+    nnoremap <script> <silent> <nowait> <buffer> H             :call <SID>ToggleShowTerminal()<CR>
+
 
     for k in ["G", "n", "N", "L", "M", "H"]
         execute "nnoremap <buffer> <silent>" k ":keepjumps normal!" k."<CR>"
@@ -623,6 +625,7 @@ function! s:GetHelpStatus()
     let ret .= ((g:bufExplorerOnlyOneTab == 0) ? "" : " | One tab/buffer")
     let ret .= ' | '.((g:bufExplorerShowRelativePath == 0) ? "Absolute" : "Relative")
     let ret .= ' '.((g:bufExplorerSplitOutPathName == 0) ? "Full" : "Split")." path"
+    let ret .= ((g:bufExplorerShowTerminal == 0) ? "" : " | Show terminal")
 
     return ret
 endfunction
@@ -707,6 +710,11 @@ function! s:GetBufferInfo(bufnr)
         let b["hasNoName"] = empty(name)
         if b.hasNoName
             let name = "[No Name]"
+        endif
+
+        " Filter out term:// buffers if g:bufExplorerShowTerminal is 0
+        if !g:bufExplorerShowTerminal && name =~ '^term://'
+            continue
         endif
 
         for [key, val] in items(s:types)
@@ -1068,6 +1076,13 @@ function! s:Close()
     echo
 endfunction
 
+" ToggleShowTerminal {{{2
+function! s:ToggleShowTerminal()
+    let g:bufExplorerShowTerminal = !g:bufExplorerShowTerminal
+    call s:RebuildBufferList()
+    call s:UpdateHelpStatus()
+endfunction
+
 " ToggleSplitOutPathName {{{2
 function! s:ToggleSplitOutPathName()
     let g:bufExplorerSplitOutPathName = !g:bufExplorerSplitOutPathName
@@ -1356,6 +1371,7 @@ call s:Set("g:bufExplorerSplitOutPathName", 1)          " Split out path and fil
 call s:Set("g:bufExplorerSplitRight", &splitright)      " Should vertical splits be on the right or left of current window?
 call s:Set("g:bufExplorerSplitVertSize", 0)             " Height for a vertical split. If <=0, default Vim size is used.
 call s:Set("g:bufExplorerSplitHorzSize", 0)             " Height for a horizontal split. If <=0, default Vim size is used.
+call s:Set("g:bufExplorerShowTerminal", 1)              " Show terminal buffers?
 
 " Default key mapping {{{2
 if !hasmapto('BufExplorer') && g:bufExplorerDisableDefaultKeyMapping == 0
