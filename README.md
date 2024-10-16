@@ -78,7 +78,7 @@ This plugin can also be found at http://www.vim.org/scripts/script.php?script_id
 
 ## License
 
-Copyright (c) 2001-2023, Jeff Lanzarotta
+Copyright (c) 2001-2024, Jeff Lanzarotta
 
 All rights reserved.
 
