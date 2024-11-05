@@ -8,3 +8,5 @@ tags
 # Github token.
 github_token
 
+# goreleaser dist directory.
+dist/
