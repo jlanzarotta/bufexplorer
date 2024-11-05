@@ -74,7 +74,7 @@ endif
 "1}}}
 
 " Version number
-let g:bufexplorer_version = "7.4.27"
+let g:bufexplorer_version = "7.4.28"
 
 " Plugin Code {{{1
 " Check for Vim version {{{2

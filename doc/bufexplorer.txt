@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 13 Aug 2024
+*bufexplorer.txt*              Buffer Explorer       Last Change: 05 Nov 2024
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.27
+                                Version 7.4.28
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -269,6 +269,10 @@ The default is 1.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.4.28   November 5, 2024
+       - Thanks to GitHub user jsvia, for the addition of the new
+         bufExplorerShowTerminal feature.  Please refer to the documentation
+         for complete information.
 7.4.27   May 30, 2024
        - Thanks to GitHub user NotNormallyAGitUser, for the recommendation to
          change the display of the relative path to replace $HOME with "~".
