@@ -8,7 +8,6 @@ env_files:
   github_token: ./github_token
 
 builds:
-  - skip: true
 
     #source:
     #  name_template: '{{ .ProjectName }}-{{ .Version }}'.
