@@ -27,6 +27,15 @@ source:
     - doc/bufexplorer.txt
     - LICENSE
 
+archives:
+  - #
+    format: zip
+    name_template: "{{ .ProjectName }}-{{ .Version }}"
+    files:
+      - plugin/bufexplorer.vim
+      - doc/bufexplorer.txt
+      - LICENSE
+
 checksum:
   name_template: 'checksums.txt'
 
