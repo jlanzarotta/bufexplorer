@@ -6,7 +6,8 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 # vim: set ts=2 sw=2 tw=0 fo=cnqoj
 
-#version: 1
+version: 2
+project_name: bufexplorer
 
 env_files:
   # GoReleaser requires an API token with the 'repo' scope selected to deploy
@@ -38,16 +39,19 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    files:
+      - plugin/bufexplorer.vim
+      - doc/bufexplorer.txt
 
 checksum:
   name_template: 'checksums.txt'
 
-snapshot:
-  name_template: '{{ .Tag }}-next'
-
 changelog:
   use: github-native
   sort: asc
+  filters:
+    exclude:
+      - README
 
 release:
   draft: false
