@@ -7,8 +7,8 @@ env_files:
   # https://github.com/settings/tokens/new.
   github_token: ./github_token
 
-    #builds:
-    #  - skip: true
+builds:
+  - skip: true
 
     #source:
     #  name_template: '{{ .ProjectName }}-{{ .Version }}'.
