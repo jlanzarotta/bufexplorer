@@ -18,14 +18,14 @@ env_files:
     #    - doc/bufexplorer.txt
     #    - LICENSE
 
-archives:
-  - #
-    name_template: "{{ .ProjectName }}-{{ .Version }}"
-    format: zip
-    files:
-      - plugin/bufexplorer.vim
-      - doc/bufexplorer.txt
-      - LICENSE
+source:
+  #
+  name_template: "{{ .ProjectName }}-{{ .Version }}"
+  format: zip
+  files:
+    - plugin/bufexplorer.vim
+    - doc/bufexplorer.txt
+    - LICENSE
 
 checksum:
   name_template: 'checksums.txt'
