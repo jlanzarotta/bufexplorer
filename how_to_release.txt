@@ -1,16 +1,17 @@
-https://goreleaser.com/quick-start/
-
 To make a release...
 
-1. Make changes.
-2. Commit and push changes.
-3. git tag -a v7.4.27 -m "Release v7.4.27."
-4. git push origin v7.4.27
-5. goreleaser release --clean
-6. Go to github and make the release.
+1. Make changes
+2. Commit and push changes
+3. git tag -a 7.4.28 -m "Release 7.4.28"
+4. git push origin 7.4.28
+5. set GH_TOKEN environment variable
+6. 7z a bufexplorer-7.4.28.zip plugin\bufexplorer.vim doc\bufexplorer.txt
+7. gh release 7.4.28 --notes-from-tag bufexplorer-7.4.28.zip
 
 If something happens and the tag is messed up, you will need to delete the
 local and remote tag and release again.  To delete the tag:
 
 1. git tag -d v7.4.27
 2. git push --delete origin v7.4.27
+3. Remove the release.
+
