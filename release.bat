@@ -8,7 +8,7 @@ set /p "GH_TOKEN=" <GITHUB_TOKEN
 git tag -a %1 -m "Release %1."
 git push origin %1
 
-gh release %1 --notes-from-tag
+gh release create %1 --notes-from-tag
 
 goto :done
 
