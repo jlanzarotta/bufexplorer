@@ -11,7 +11,7 @@ To make a release...
 If something happens and the tag is messed up, you will need to delete the
 local and remote tag and release again.  To delete the tag:
 
-1. git tag -d v7.4.27
-2. git push --delete origin v7.4.27
+1. git tag -d 7.4.27
+2. git push --delete origin 7.4.27
 3. Remove the release.
 
