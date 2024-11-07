@@ -6,7 +6,7 @@ To make a release...
 4. git push origin 7.4.28
 5. set GH_TOKEN environment variable
 6. 7z a bufexplorer-7.4.28.zip plugin\bufexplorer.vim doc\bufexplorer.txt
-7. gh release 7.4.28 --notes-from-tag bufexplorer-7.4.28.zip
+7. gh release create 7.4.28 --notes-from-tag bufexplorer-7.4.28.zip
 
 If something happens and the tag is messed up, you will need to delete the
 local and remote tag and release again.  To delete the tag:
