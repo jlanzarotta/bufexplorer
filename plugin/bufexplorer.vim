@@ -687,7 +687,7 @@ function! s:GetBufferInfo(bufnr)
         let bufoutput = substitute(bufoutput."\n", '^.*\n\(\s*'.a:bufnr.'\>.\{-}\)\n.*', '\1', '')
     endif
 
-    let [all, allwidths, listedwidths] = [[], {}, {}]
+    let [all, allwidths, listedwidths] = [{}, {}, {}]
 
     for n in keys(s:types)
         let allwidths[n] = []
@@ -701,8 +701,9 @@ function! s:GetBufferInfo(bufnr)
         " Use first and last components after the split on '"', in case a
         " filename with an embedded '"' is present.
         let b = {"attributes": bits[0], "line": substitute(bits[-1], '\s*', '', '')}
+        let b._bufnr = str2nr(b.attributes)
 
-        let name = bufname(str2nr(b.attributes))
+        let name = bufname(b._bufnr)
         let b["hasNoName"] = empty(name)
         if b.hasNoName
             let name = "[No Name]"
@@ -721,7 +722,7 @@ function! s:GetBufferInfo(bufnr)
             let b.shortname = "<DIRECTORY>"
         endif
 
-        call add(all, b)
+        let all[b._bufnr] = b
 
         for n in keys(s:types)
             call add(allwidths[n], s:StringWidth(b[n]))
@@ -747,7 +748,7 @@ function! s:BuildBufferList()
     let lines = []
 
     " Loop through every buffer.
-    for buf in s:raw_buffer_listing
+    for buf in values(s:raw_buffer_listing)
         " Skip unlisted buffers if we are not to show them.
         if !g:bufExplorerShowUnlisted && buf.attributes =~ "u"
             " Skip unlisted buffers if we are not to show them.
@@ -982,7 +983,7 @@ function! s:DeleteBuffer(buf, mode)
         setlocal nomodifiable
 
         " Delete the buffer from the raw buffer list.
-        call filter(s:raw_buffer_listing, 'v:val.attributes !~ " '.a:buf.' "')
+        unlet s:raw_buffer_listing[a:buf]
     catch
         call s:Error(v:exception)
     endtry
