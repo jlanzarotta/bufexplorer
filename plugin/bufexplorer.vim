@@ -812,12 +812,12 @@ function! s:BuildBufferList()
         " Are we to split the path and file name?
         if g:bufExplorerSplitOutPathName
             let type = (g:bufExplorerShowRelativePath) ? "relativepath" : "path"
-            let path = substitute( buf[type], $HOME."\\>", "~", "" )
+            let path = buf[type]
             let pad  = (g:bufExplorerShowUnlisted) ? s:allpads.shortname : s:listedpads.shortname
             let line .= buf.shortname." ".strpart(pad.path, s:StringWidth(buf.shortname))
         else
-            let type = (g:bufExplorerShowRelativePath) ? "relativename" : "fullname"
-            let path = substitute( buf[type], $HOME."\\>", "~", "" )
+            let type = (g:bufExplorerShowRelativePath) ? "relativename" : "homename"
+            let path = buf[type]
             let line .= path
         endif
 
