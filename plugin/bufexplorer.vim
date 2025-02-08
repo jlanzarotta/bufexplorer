@@ -134,7 +134,7 @@ let s:running = 0
 let s:sort_by = ["number", "name", "fullpath", "mru", "extension"]
 let s:splitMode = ""
 let s:didSplit = 0
-let s:types = {"fullname": ':p', "path": ':p:h', "relativename": ':~:.', "relativepath": ':~:.:h', "shortname": ':t'}
+let s:types = ["fullname", "homename", "path", "relativename", "relativepath", "shortname"]
 
 " Setup the autocommands that handle the MRUList and other stuff. {{{2
 autocmd VimEnter * call s:Setup()
@@ -672,6 +672,44 @@ function! s:CreateHelp()
     return header
 endfunction
 
+" CalculateBufferDetails {{{2
+" Calculate `buf`-related details.
+function! s:CalculateBufferDetails(buf, name)
+    let buf = a:buf
+    let buf.isterminal = getbufvar(buf._bufnr, '&buftype') == 'terminal'
+    if buf.isterminal
+        let buf.fullname = a:name
+        let buf.isdir = 0
+    else
+        let buf.fullname = simplify(fnamemodify(a:name, ':p'))
+        let buf.isdir = getftype(buf.fullname) == "dir"
+    endif
+    if buf.isdir
+        " `buf.fullname` ends with a path separator; this will be
+        " removed via the first `:h` applied to `buf.fullname` (except
+        " for the root directory, where the path separator will remain).
+        let parent = fnamemodify(buf.fullname, ':h:h')
+        let buf.shortname = fnamemodify(buf.fullname, ':h:t')
+        " Special case for root directory: fnamemodify('/', ':h:t') == ''
+        if buf.shortname == ''
+            let buf.shortname = '.'
+        endif
+        " Must perform shortening (`:~`, `:.`) before `:h`.
+        let buf.homename = fnamemodify(buf.fullname, ':~:h')
+        let buf.relativename = fnamemodify(buf.fullname, ':~:.:h')
+    else
+        let parent = fnamemodify(buf.fullname, ':h')
+        let buf.shortname = fnamemodify(buf.fullname, ':t')
+        let buf.homename = fnamemodify(buf.fullname, ':~')
+        let buf.relativename = fnamemodify(buf.fullname, ':~:.')
+    endif
+    " `:p` on `parent` adds back the path separator which permits more
+    " effective shortening (`:~`, `:.`), but `:h` is required afterward
+    " to trim this separator.
+    let buf.path = fnamemodify(parent, ':p:~:h')
+    let buf.relativepath = fnamemodify(parent, ':p:~:.:h')
+endfunction
+
 " GetBufferInfo {{{2
 function! s:GetBufferInfo(bufnr)
     redir => bufoutput
@@ -689,7 +727,7 @@ function! s:GetBufferInfo(bufnr)
 
     let [all, allwidths, listedwidths] = [{}, {}, {}]
 
-    for n in keys(s:types)
+    for n in s:types
         let allwidths[n] = []
         let listedwidths[n] = []
     endfor
@@ -709,19 +747,11 @@ function! s:GetBufferInfo(bufnr)
             let name = "[No Name]"
         endif
 
-        let b.isterminal = getbufvar(b._bufnr, '&buftype') == 'terminal'
-        for [key, val] in items(s:types)
-            let b[key] = fnamemodify(name, val)
-        endfor
-
-        let b.isdir = getftype(b.fullname) == "dir"
-        if b.isdir
-            let b.shortname = "<DIRECTORY>"
-        endif
+        call s:CalculateBufferDetails(b, name)
 
         let all[b._bufnr] = b
 
-        for n in keys(s:types)
+        for n in s:types
             call add(allwidths[n], s:StringWidth(b[n]))
 
             if b.attributes !~ "u"
@@ -732,7 +762,7 @@ function! s:GetBufferInfo(bufnr)
 
     let [s:allpads, s:listedpads] = [{}, {}]
 
-    for n in keys(s:types)
+    for n in s:types
         let s:allpads[n] = repeat(' ', max(allwidths[n]))
         let s:listedpads[n] = repeat(' ', max(listedwidths[n]))
     endfor
