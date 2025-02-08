@@ -718,7 +718,8 @@ function! s:GetBufferInfo(bufnr)
             let b[key] = fnamemodify(name, val)
         endfor
 
-        if getftype(b.fullname) == "dir" && g:bufExplorerShowDirectories == 1
+        let b.isdir = getftype(b.fullname) == "dir"
+        if b.isdir && g:bufExplorerShowDirectories == 1
             let b.shortname = "<DIRECTORY>"
         endif
 
