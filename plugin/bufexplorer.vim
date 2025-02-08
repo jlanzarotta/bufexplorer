@@ -710,20 +710,11 @@ function! s:GetBufferInfo(bufnr)
         endif
 
         let b.isterminal = getbufvar(b._bufnr, '&buftype') == 'terminal'
-        " Filter out term:// buffers if g:bufExplorerShowTerminal is 0.
-        if !g:bufExplorerShowTerminal && b.isterminal
-            continue
-        endif
-
         for [key, val] in items(s:types)
             let b[key] = fnamemodify(name, val)
         endfor
 
         let b.isdir = getftype(b.fullname) == "dir"
-        if !g:bufExplorerShowDirectories && b.isdir
-            continue
-        endif
-
         if b.isdir
             let b.shortname = "<DIRECTORY>"
         endif
@@ -768,6 +759,16 @@ function! s:BuildBufferList()
 
         " Are we to show only buffer(s) for this tab?
         if g:bufExplorerShowTabBuffer && (!s:IsInCurrentTab(str2nr(buf.attributes)))
+            continue
+        endif
+
+        " Skip terminal buffers if we are not to show them.
+        if !g:bufExplorerShowTerminal && buf.isterminal
+            continue
+        endif
+
+        " Skip directory buffers if we are not to show them.
+        if !g:bufExplorerShowDirectories && buf.isdir
             continue
         endif
 
