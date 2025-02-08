@@ -709,8 +709,9 @@ function! s:GetBufferInfo(bufnr)
             let name = "[No Name]"
         endif
 
+        let b.isterminal = getbufvar(b._bufnr, '&buftype') == 'terminal'
         " Filter out term:// buffers if g:bufExplorerShowTerminal is 0.
-        if !g:bufExplorerShowTerminal && name =~ '^term://'
+        if !g:bufExplorerShowTerminal && b.isterminal
             continue
         endif
 
