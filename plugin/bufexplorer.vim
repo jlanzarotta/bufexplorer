@@ -1146,6 +1146,37 @@ function! s:MRUCmp(line1, line2)
     return index(s:MRUList, str2nr(a:line1)) - index(s:MRUList, str2nr(a:line2))
 endfunction
 
+" Key_fullpath {{{2
+function! s:Key_fullpath(line)
+    let _bufnr = str2nr(a:line)
+    let buf = s:raw_buffer_listing[_bufnr]
+    let key = [buf.fullname]
+    return key
+endfunction
+
+" SortByKeyFunc {{{2
+function! s:SortByKeyFunc(keyFunc)
+    let keyedLines = []
+    for line in getline(s:firstBufferLine, "$")
+        let key = eval(a:keyFunc . '(line)')
+        call add(keyedLines, join(key + [line], "\1"))
+    endfor
+
+    " Ignore case when sorting by passing `1`:
+    call sort(keyedLines, 1)
+
+    if g:bufExplorerReverseSort
+        call reverse(keyedLines)
+    endif
+
+    let lines = []
+    for keyedLine in keyedLines
+        call add(lines, split(keyedLine, "\1")[-1])
+    endfor
+
+    call setline(s:firstBufferLine, lines)
+endfunction
+
 " SortReverse {{{2
 function! s:SortReverse()
     let g:bufExplorerReverseSort = !g:bufExplorerReverseSort
@@ -1195,12 +1226,7 @@ function! s:SortListing()
             execute sort 'ir /\zs[^\/\\]\+\ze\s*line/'
         endif
     elseif g:bufExplorerSortBy == "fullpath"
-        if g:bufExplorerSplitOutPathName
-            " Sort twice - first on the file name then on the path.
-            execute sort 'ir /\d.\{7}\zs\f\+\ze/'
-        endif
-
-        execute sort 'ir /\zs\f\+\ze\s\+line/'
+        call s:SortByKeyFunc("<SID>Key_fullpath")
     elseif g:bufExplorerSortBy == "extension"
         " Sort by full path...
         execute sort 'ir /\zs\f\+\ze\s\+line/'
