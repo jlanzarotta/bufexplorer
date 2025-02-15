@@ -1141,11 +1141,6 @@ function! s:UpdateHelpStatus()
     setlocal nomodifiable
 endfunction
 
-" MRUCmp {{{2
-function! s:MRUCmp(line1, line2)
-    return index(s:MRUList, str2nr(a:line1)) - index(s:MRUList, str2nr(a:line2))
-endfunction
-
 " Key_name {{{2
 function! s:Key_name(line)
     let _bufnr = str2nr(a:line)
@@ -1169,6 +1164,17 @@ function! s:Key_extension(line)
     let extension = fnamemodify(buf.shortname, ':e')
     let key = [extension, buf.shortname, buf.fullname]
     return key
+endfunction
+
+" Key_mru {{{2
+function! s:Key_mru(line)
+    let _bufnr = str2nr(a:line)
+    let buf = s:raw_buffer_listing[_bufnr]
+    let pos = index(s:MRUList, _bufnr)
+    if pos < 0
+        let pos = 0
+    endif
+    return [printf('%9d', pos), buf.fullname]
 endfunction
 
 " SortByKeyFunc {{{2
@@ -1240,15 +1246,7 @@ function! s:SortListing()
     elseif g:bufExplorerSortBy == "extension"
         call s:SortByKeyFunc("<SID>Key_extension")
     elseif g:bufExplorerSortBy == "mru"
-        let l = getline(s:firstBufferLine, "$")
-
-        call sort(l, "<SID>MRUCmp")
-
-        if g:bufExplorerReverseSort
-            call reverse(l)
-        endif
-
-        call setline(s:firstBufferLine, l)
+        call s:SortByKeyFunc("<SID>Key_mru")
     endif
 endfunction
 
