@@ -1146,6 +1146,14 @@ function! s:MRUCmp(line1, line2)
     return index(s:MRUList, str2nr(a:line1)) - index(s:MRUList, str2nr(a:line2))
 endfunction
 
+" Key_name {{{2
+function! s:Key_name(line)
+    let _bufnr = str2nr(a:line)
+    let buf = s:raw_buffer_listing[_bufnr]
+    let key = [buf.shortname, buf.fullname]
+    return key
+endfunction
+
 " Key_fullpath {{{2
 function! s:Key_fullpath(line)
     let _bufnr = str2nr(a:line)
@@ -1217,14 +1225,7 @@ function! s:SortListing()
         " Easiest case.
         execute sort 'n'
     elseif g:bufExplorerSortBy == "name"
-        " Sort by full path first
-        execute sort 'ir /\zs\f\+\ze\s\+line/'
-
-        if g:bufExplorerSplitOutPathName
-            execute sort 'ir /\d.\{7}\zs\f\+\ze/'
-        else
-            execute sort 'ir /\zs[^\/\\]\+\ze\s*line/'
-        endif
+        call s:SortByKeyFunc("<SID>Key_name")
     elseif g:bufExplorerSortBy == "fullpath"
         call s:SortByKeyFunc("<SID>Key_fullpath")
     elseif g:bufExplorerSortBy == "extension"
