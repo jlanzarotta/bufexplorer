@@ -1162,6 +1162,15 @@ function! s:Key_fullpath(line)
     return key
 endfunction
 
+" Key_extension {{{2
+function! s:Key_extension(line)
+    let _bufnr = str2nr(a:line)
+    let buf = s:raw_buffer_listing[_bufnr]
+    let extension = fnamemodify(buf.shortname, ':e')
+    let key = [extension, buf.shortname, buf.fullname]
+    return key
+endfunction
+
 " SortByKeyFunc {{{2
 function! s:SortByKeyFunc(keyFunc)
     let keyedLines = []
@@ -1229,17 +1238,7 @@ function! s:SortListing()
     elseif g:bufExplorerSortBy == "fullpath"
         call s:SortByKeyFunc("<SID>Key_fullpath")
     elseif g:bufExplorerSortBy == "extension"
-        " Sort by full path...
-        execute sort 'ir /\zs\f\+\ze\s\+line/'
-
-        " Sort by name...
-        if g:bufExplorerSplitOutPathName
-            " Sort twice - first on the file name then on the path.
-            execute sort 'ir /\d.\{7}\zs\f\+\ze/'
-        endif
-
-        " Sort by extension.
-        execute sort 'ir /\.\zs\w\+\ze\s/'
+        call s:SortByKeyFunc("<SID>Key_extension")
     elseif g:bufExplorerSortBy == "mru"
         let l = getline(s:firstBufferLine, "$")
 
