@@ -1241,19 +1241,7 @@ endfunction
 
 " SortListing {{{2
 function! s:SortListing()
-    let sort = s:firstBufferLine.",$sort".((g:bufExplorerReverseSort == 1) ? "!": "")
-
-    if g:bufExplorerSortBy == "number"
-        call s:SortByKeyFunc("<SID>Key_number")
-    elseif g:bufExplorerSortBy == "name"
-        call s:SortByKeyFunc("<SID>Key_name")
-    elseif g:bufExplorerSortBy == "fullpath"
-        call s:SortByKeyFunc("<SID>Key_fullpath")
-    elseif g:bufExplorerSortBy == "extension"
-        call s:SortByKeyFunc("<SID>Key_extension")
-    elseif g:bufExplorerSortBy == "mru"
-        call s:SortByKeyFunc("<SID>Key_mru")
-    endif
+    call s:SortByKeyFunc("<SID>Key_" . g:bufExplorerSortBy)
 endfunction
 
 " MRUListShow {{{2
