@@ -725,12 +725,7 @@ function! s:GetBufferInfo(bufnr)
         let bufoutput = substitute(bufoutput."\n", '^.*\n\(\s*'.a:bufnr.'\>.\{-}\)\n.*', '\1', '')
     endif
 
-    let [all, allwidths, listedwidths] = [{}, {}, {}]
-
-    for n in s:types
-        let allwidths[n] = []
-        let listedwidths[n] = []
-    endfor
+    let all = {}
 
     " Loop over each line in the buffer.
     for buf in split(bufoutput, '\n')
@@ -750,21 +745,6 @@ function! s:GetBufferInfo(bufnr)
         call s:CalculateBufferDetails(b, name)
 
         let all[b._bufnr] = b
-
-        for n in s:types
-            call add(allwidths[n], s:StringWidth(b[n]))
-
-            if b.attributes !~ "u"
-                call add(listedwidths[n], s:StringWidth(b[n]))
-            endif
-        endfor
-    endfor
-
-    let [s:allpads, s:listedpads] = [{}, {}]
-
-    for n in s:types
-        let s:allpads[n] = repeat(' ', max(allwidths[n]))
-        let s:listedpads[n] = repeat(' ', max(listedwidths[n]))
     endfor
 
     return all
@@ -772,7 +752,7 @@ endfunction
 
 " BuildBufferList {{{2
 function! s:BuildBufferList()
-    let lines = []
+    let table = []
 
     " Loop through every buffer.
     for buf in values(s:raw_buffer_listing)
@@ -802,38 +782,60 @@ function! s:BuildBufferList()
             continue
         endif
 
-        let line = buf.attributes." "
+        let row = [buf.attributes]
 
         if exists("g:loaded_webdevicons")
-            let line .= WebDevIconsGetFileTypeSymbol(buf.fullname, buf.isdir)
-            let line .= " "
+            let row += [WebDevIconsGetFileTypeSymbol(buf.fullname, buf.isdir)]
         endif
 
         " Are we to split the path and file name?
         if g:bufExplorerSplitOutPathName
             let type = (g:bufExplorerShowRelativePath) ? "relativepath" : "path"
-            let path = buf[type]
-            let pad  = (g:bufExplorerShowUnlisted) ? s:allpads.shortname : s:listedpads.shortname
-            let line .= buf.shortname." ".strpart(pad.path, s:StringWidth(buf.shortname))
+            let row += [buf.shortname, buf[type]]
         else
             let type = (g:bufExplorerShowRelativePath) ? "relativename" : "homename"
-            let path = buf[type]
-            let line .= path
+            let row += [buf[type]]
         endif
-
-        let pads = (g:bufExplorerShowUnlisted) ? s:allpads : s:listedpads
-
-        if !empty(pads[type])
-            let line .= strpart(pads[type], s:StringWidth(path))." "
-        endif
-
-        let line .= buf.line
-
-        call add(lines, line)
+        let row += [buf.line]
+        call add(table, row)
     endfor
 
+    let lines = s:MakeLines(table)
     call setline(s:firstBufferLine, lines)
     call s:SortListing()
+endfunction
+
+" MakeLines {{{2
+function! s:MakeLines(table)
+    if len(a:table) == 0
+        return []
+    endif
+    let lines = []
+    " To avoid trailing whitespace, do not pad the final column.
+    let numColumnsToPad = len(a:table[0]) - 1
+    let maxWidths = repeat([0], numColumnsToPad)
+    for row in a:table
+        let i = 0
+        while i < numColumnsToPad
+            let maxWidths[i] = max([maxWidths[i], s:StringWidth(row[i])])
+            let i = i + 1
+        endwhile
+    endfor
+
+    let pads = []
+    for w in maxWidths
+        call add(pads, repeat(' ', w))
+    endfor
+
+    for row in a:table
+        let i = 0
+        while i < numColumnsToPad
+            let row[i] .= strpart(pads[i], s:StringWidth(row[i]))
+            let i = i + 1
+        endwhile
+        call add(lines, join(row, ' '))
+    endfor
+    return lines
 endfunction
 
 " SelectBuffer {{{2
