@@ -805,7 +805,7 @@ function! s:BuildBufferList()
         let line = buf.attributes." "
 
         if exists("g:loaded_webdevicons")
-            let line .= WebDevIconsGetFileTypeSymbol(buf.shortname)
+            let line .= WebDevIconsGetFileTypeSymbol(buf.fullname, buf.isdir)
             let line .= " "
         endif
 
