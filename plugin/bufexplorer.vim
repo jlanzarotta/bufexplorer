@@ -849,96 +849,49 @@ function! s:SelectBuffer(...)
     endif
 
     if bufexists(_bufNbr)
-        if bufnr("#") == _bufNbr && !exists("g:bufExplorerChgWin")
-            return s:Close()
-        endif
-
-        " Get the tab number where this bufer is located in.
+        " Get the tab number where this buffer is located in.
         let tabNbr = s:GetTabNbr(_bufNbr)
-        " Are we supposed to open the selected buffer in a tab?
-        if (a:0 == 1) && (a:1 == "tab")
+        if exists("g:bufExplorerChgWin") && g:bufExplorerChgWin <=winnr("$")
+            execute g:bufExplorerChgWin."wincmd w"
+            execute "keepjumps keepalt silent b!" _bufNbr
 
-            " Restore [BufExplorer] buffer.
-            execute "silent buffer!".s:originBuffer
+            " Are we supposed to open the selected buffer in a tab?
+        elseif (a:0 == 1) && (a:1 == "tab")
+            call s:Close()
 
-            " Was the tab found?
-            if tabNbr == 0
-                " _bufNbr is not opened in any tabs. Open a new tab with the
-                " selected buffer in it.
-                if v:version > 704 || ( v:version == 704 && has('patch2237') )
-                    " new syntax for last tab as of 7.4.2237
-                    execute "$tab split +buffer" . _bufNbr
-                else
-                    execute "999tab split +buffer" . _bufNbr
-                endif
-
-                " Workaround for the issue mentioned in UpdateTabBufData.
-                call s:UpdateTabBufData(_bufNbr)
+            " Open a new tab with the selected buffer in it.
+            if v:version > 704 || ( v:version == 704 && has('patch2237') )
+                " new syntax for last tab as of 7.4.2237
+                execute "$tab split +buffer" . _bufNbr
             else
-                " The _bufNbr is already opened in a tab, go to that tab.
-                execute tabNbr . "tabnext"
-
-                " Focus window.
-                execute s:GetWinNbr(tabNbr, _bufNbr) . "wincmd w"
+                execute "999tab split +buffer" . _bufNbr
             endif
+
+            " Workaround for the issue mentioned in UpdateTabBufData.
+            call s:UpdateTabBufData(_bufNbr)
             " Are we supposed to open the selected buffer in a split?
         elseif (a:0 == 2) && (a:1 == "split")
-            if g:bufExplorerFindActive
-                call s:Close()
+            call s:Close()
+            if (a:2 == "vl")
+                execute "vert topleft sb "._bufNbr
+            elseif (a:2 == "vr")
+                execute "vert belowright sb "._bufNbr
+            elseif (a:2 == "st")
+                execute "topleft sb "._bufNbr
+            else " = sb
+                execute "belowright sb "._bufNbr
             endif
-            " Was the tab found?
-            if tabNbr != 0
-                " Yes, the buffer is located in a tab. Go to that tab instead of
-                " opening split
-                execute tabNbr . "tabnext"
-            else
-                "Nope, the buffer is not in a tab, open it accordingly
-                let _bufName = expand("#"._bufNbr.":p")
-                if (a:2 == "vl")
-                    execute _bufName ?
-                                \ "vert topleft sb ".escape(_bufName, " ") :
-                                \ "vert topleft sb "._bufNbr
-                elseif (a:2 == "vr")
-                    execute _bufName ?
-                                \ "vert belowright sb ".escape(_bufName, " ") :
-                                \ "vert belowright sb "._bufNbr
-                elseif (a:2 == "st")
-                    execute _bufName ?
-                                \ "topleft sb ".escape(_bufName, " ") :
-                                \ "topleft sb "._bufNbr
-                else " = sb
-                    execute _bufName ?
-                                \ "belowright sb ".escape(_bufName, " ") :
-                                \ "belowright sb "._bufNbr
-                endif
-            endif
-
-            " Switch to selected buffer
-            execute "keepalt silent b!" _bufNbr
-            " Default, open in current window
         else
-            " Are we suppose to move to the tab where the active buffer is?
-            if exists("g:bufExplorerChgWin")
-                execute g:bufExplorerChgWin."wincmd w"
-            elseif bufloaded(_bufNbr) && g:bufExplorerFindActive
-                if g:bufExplorerFindActive
-                    call s:Close()
-                endif
-
-                " Was the tab found?
-                if tabNbr != 0
-                    " Yes, the buffer is located in a tab. Go to that tab number.
-                    execute tabNbr . "tabnext"
-                else
-                    "Nope, the buffer is not in a tab. Simply switch to that
-                    "buffer.
-                    let _bufName = expand("#"._bufNbr.":p")
-                    execute _bufName ? "drop ".escape(_bufName, " ") : "buffer "._bufNbr
-                endif
+            " Request to open in current (BufExplorer) window.
+            if g:bufExplorerFindActive && tabNbr > 0
+                " Close BufExplorer window and switch to existing tab/window.
+                call s:Close()
+                execute tabNbr . "tabnext"
+                execute bufwinnr(_bufNbr) . "wincmd w"
+            else
+                " Use BufExplorer window for the buffer.
+                execute "keepjumps keepalt silent b!" _bufNbr
             endif
-
-            " Switch to the selected buffer.
-            execute "keepjumps keepalt silent b!" _bufNbr
         endif
 
         " Make the buffer 'listed' again.
@@ -1055,7 +1008,7 @@ function! s:Close()
     endif
 
     " If we needed to split the main window, close the split one.
-    if s:didSplit == 1 && bufwinnr(s:originBuffer) != -1
+    if s:didSplit
         execute "wincmd c"
     endif
 
@@ -1262,6 +1215,10 @@ endfunction
 
 " GetTabNbr {{{2
 function! s:GetTabNbr(bufNbr)
+    " Prefer current tab.
+    if bufwinnr(a:bufNbr) > 0
+        return tabpagenr()
+    endif
     " Searching buffer bufno, in tabs.
     for i in range(tabpagenr("$"))
         if index(tabpagebuflist(i + 1), a:bufNbr) != -1
