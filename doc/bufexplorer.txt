@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 05 Nov 2024
+*bufexplorer.txt*              Buffer Explorer       Last Change: 16 Feb 2025
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.4.28
+                                Version 7.5.0
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -26,7 +26,7 @@ To install:
   - Download the bufexplorer.zip from one of the following places:
     https://github.com/jlanzarotta/bufexplorer
     http://www.vim.org/scripts/script.php?script_id=42
-    or use a package manager like Vundle.
+    or use a package manager like vim-plug, Vundle, etc..
   - Extract the zip archive into your runtime directory.
     The archive contains plugin/bufexplorer.vim, and doc/bufexplorer.txt.
   - Start Vim or goto an existing instance of Vim.
@@ -269,6 +269,21 @@ The default is 1.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.5.0    February 16, 2025
+     What's Changed
+     - Major patch implemented by Dr. Michael Henry.
+       https://github.com/jlanzarotta/bufexplorer/pull/118
+       Significant rework and restructuring of the s:SelectBuffer() method to
+       demonstrate behaviors described in Github issue #117.
+       https://github.com/jlanzarotta/bufexplorer/issues/117
+       This patch includes fixes which also resolves:
+       - Github issue #81. Previous buffer duplicated in split after openning
+         new buffer in tab.
+         https://github.com/jlanzarotta/bufexplorer/issues/81
+       - Github issue #65. bv plus t does weird things.
+         https://github.com/jlanzarotta/bufexplorer/issues/65
+       - Github issue #52. Find Active Window not working as expected.
+         https://github.com/jlanzarotta/bufexplorer/issues/52
 7.4.28   November 5, 2024
        - Thanks to GitHub user jsvia, for the addition of the new
          bufExplorerShowTerminal feature.  Please refer to the documentation
