@@ -28,6 +28,10 @@ Bufexplorer also offers various options including:
 
 For more about options, sort orders, configuration options, etc. please see the supplied VIM help.
 
+In this example, the <Leader> Key is assigned to [Space].
+
+![bufexplorer](https://github.com/user-attachments/assets/d14a4dc1-5180-48d9-adef-e67e515ab5c3)
+
 ## vim.org
 
 This plugin can also be found at http://www.vim.org/scripts/script.php?script_id=42.
