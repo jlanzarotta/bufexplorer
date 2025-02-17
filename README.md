@@ -28,7 +28,7 @@ Bufexplorer also offers various options including:
 
 For more about options, sort orders, configuration options, etc. please see the supplied VIM help.
 
-In this example, the <Leader> Key is assigned to [Space].
+In this example, the `<Leader>` key is assigned to [Space].
 
 ![ScreenToGif](https://github.com/user-attachments/assets/ae5422b9-59ac-4657-aab5-30e6eb8a3243)
 
