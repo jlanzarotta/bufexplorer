@@ -674,14 +674,19 @@ endfunction
 
 " CalculateBufferDetails {{{2
 " Calculate `buf`-related details.
-function! s:CalculateBufferDetails(buf, name)
+function! s:CalculateBufferDetails(buf)
     let buf = a:buf
+    let name = bufname(buf._bufnr)
+    let buf["hasNoName"] = empty(name)
+    if buf.hasNoName
+        let name = "[No Name]"
+    endif
     let buf.isterminal = getbufvar(buf._bufnr, '&buftype') == 'terminal'
     if buf.isterminal
-        let buf.fullname = a:name
+        let buf.fullname = name
         let buf.isdir = 0
     else
-        let buf.fullname = simplify(fnamemodify(a:name, ':p'))
+        let buf.fullname = simplify(fnamemodify(name, ':p'))
         let buf.isdir = getftype(buf.fullname) == "dir"
     endif
     if buf.isdir
@@ -728,23 +733,16 @@ function! s:GetBufferInfo(bufnr)
     let all = {}
 
     " Loop over each line in the buffer.
-    for buf in split(bufoutput, '\n')
-        let bits = split(buf, '"')
+    for line in split(bufoutput, '\n')
+        let bits = split(line, '"')
 
         " Use first and last components after the split on '"', in case a
         " filename with an embedded '"' is present.
-        let b = {"attributes": bits[0], "line": substitute(bits[-1], '\s*', '', '')}
-        let b._bufnr = str2nr(b.attributes)
+        let buf = {"attributes": bits[0], "line": substitute(bits[-1], '\s*', '', '')}
+        let buf._bufnr = str2nr(buf.attributes)
+        call s:CalculateBufferDetails(buf)
 
-        let name = bufname(b._bufnr)
-        let b["hasNoName"] = empty(name)
-        if b.hasNoName
-            let name = "[No Name]"
-        endif
-
-        call s:CalculateBufferDetails(b, name)
-
-        let all[b._bufnr] = b
+        let all[buf._bufnr] = buf
     endfor
 
     return all
