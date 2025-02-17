@@ -864,12 +864,78 @@ function! s:CalculateBufferDetails(buf)
     endif
     let buf.isterminal = getbufvar(buf._bufnr, '&buftype') == 'terminal'
     if buf.isterminal
-        let buf.fullname = name
-        let buf.isdir = 0
-    else
-        let buf.fullname = simplify(fnamemodify(name, ':p'))
-        let buf.isdir = getftype(buf.fullname) == "dir"
+        " Neovim uses paths with `term://` prefix, where the provided path
+        " is the current working directory when the terminal was launched, e.g.:
+        " - Unix:
+        "   term://~/tmp/sort//1464953:/bin/bash
+        " - Windows:
+        "   term://C:\apps\nvim-win64\bin//6408:C:\Windows\system32\cmd.exe
+        " Vim uses paths starting with `!`, with no provided path, e.g.:
+        " - Unix:
+        "   !/bin/bash
+        " - Windows:
+        "   !C:\Windows\system32\cmd.exe
+
+        " Use the terminal's current working directory as the `path`.
+        " For `shortname`, use `!PID:shellName`, prefixed with `!` as Vim does,
+        " and without the shell's path for brevity, e.g.:
+        "   `/bin/bash` -> `!bash`
+        "   `1464953:/bin/bash` -> `!1464953:bash`
+        "   `C:\Windows\system32\cmd.exe` -> `!cmd.exe`
+        "   `6408:C:\Windows\system32\cmd.exe` -> `!6408:cmd.exe`
+
+        " Neovim-style name format:
+        "   term://(cwd)//(pid):(shellPath)
+        " e.g.:
+        "   term://~/tmp/sort//1464953:/bin/bash
+        " `cwd` is the directory at terminal launch.
+        let termNameParts = matchlist(name, '\v\c^term://(.*)//(\d+):(.*)$')
+        if len(termNameParts) > 0
+            let [cwd, pidStr, shellPath] = termNameParts[1:3]
+            let pid = str2nr(pidStr)
+            let shellName = fnamemodify(shellPath, ':t')
+        else
+            " Default to Vim's current working directory.
+            let cwd = '.'
+            let shellName = fnamemodify(name, ':t')
+            let pid = -1
+            if exists('*term_getjob') && exists('*job_info')
+                let job = term_getjob(buf._bufnr)
+                if job != v:null
+                    let pid = job_info(job).process
+                endif
+            endif
+        endif
+
+        if pid < 0
+            let shortname = '!' . shellName
+        else
+            let shortname = '!' . pid . ':' . shellName
+            " On some systems having a `/proc` filesystem (e.g., Linux, *BSD,
+            " Solaris), each process has a `cwd` symlink for the current working
+            " directory.  `resolve()` will return the actual current working
+            " directory if possible; otherwise, it will return the symlink path
+            " unchanged.
+            let cwd_symlink = '/proc/' . pid . '/cwd'
+            let resolved_cwd = resolve(cwd_symlink)
+            if resolved_cwd != cwd_symlink
+                let cwd = resolved_cwd
+            endif
+        endif
+
+        let slashed_path = fnamemodify(cwd, ':p')
+        let buf.fullname = slashed_path . shortname
+        let buf.shortname = shortname
+        let homepath = fnamemodify(slashed_path, ':~:h')
+        let buf.path = homepath
+        let buf.homename = fnamemodify(buf.fullname, ':~')
+        let buf.relativepath = fnamemodify(slashed_path, ':~:.:h')
+        let buf.relativename = fnamemodify(buf.fullname, ':~:.')
+        return
     endif
+
+    let buf.fullname = simplify(fnamemodify(name, ':p'))
+    let buf.isdir = getftype(buf.fullname) == "dir"
     if buf.isdir
         " `buf.fullname` ends with a path separator; this will be
         " removed via the first `:h` applied to `buf.fullname` (except
