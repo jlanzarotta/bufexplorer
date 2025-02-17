@@ -30,7 +30,7 @@ For more about options, sort orders, configuration options, etc. please see the 
 
 In this example, the <Leader> Key is assigned to [Space].
 
-![bufexplorer](https://github.com/user-attachments/assets/d14a4dc1-5180-48d9-adef-e67e515ab5c3)
+![ScreenToGif](https://github.com/user-attachments/assets/ae5422b9-59ac-4657-aab5-30e6eb8a3243)
 
 ## vim.org
 
