@@ -740,8 +740,6 @@ function! s:GetBufferInfo(bufnr)
         " filename with an embedded '"' is present.
         let buf = {"attributes": bits[0], "line": substitute(bits[-1], '\s*', '', '')}
         let buf._bufnr = str2nr(buf.attributes)
-        call s:CalculateBufferDetails(buf)
-
         let all[buf._bufnr] = buf
     endfor
 
@@ -754,10 +752,19 @@ function! s:BuildBufferList()
 
     " Loop through every buffer.
     for buf in values(s:raw_buffer_listing)
+        " `buf.attributes` must exist, but we defer the expensive work of
+        " calculating other buffer details (e.g., `buf.fullname`) until we know
+        " the user wants to view this buffer.
+
         " Skip unlisted buffers if we are not to show them.
         if !g:bufExplorerShowUnlisted && buf.attributes =~ "u"
             " Skip unlisted buffers if we are not to show them.
             continue
+        endif
+
+        " Ensure buffer details are computed for this buffer.
+        if !has_key(buf, 'fullname')
+            call s:CalculateBufferDetails(buf)
         endif
 
         " Skip 'No Name' buffers if we are not to show them.
