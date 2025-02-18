@@ -134,7 +134,7 @@ let s:running = 0
 let s:sort_by = ["number", "name", "fullpath", "mru", "extension"]
 let s:splitMode = ""
 let s:didSplit = 0
-let s:types = {"fullname": ':p', "path": ':p:h', "relativename": ':~:.', "relativepath": ':~:.:h', "shortname": ':t'}
+let s:types = ["fullname", "homename", "path", "relativename", "relativepath", "shortname"]
 
 " Setup the autocommands that handle the MRUList and other stuff. {{{2
 autocmd VimEnter * call s:Setup()
@@ -672,6 +672,49 @@ function! s:CreateHelp()
     return header
 endfunction
 
+" CalculateBufferDetails {{{2
+" Calculate `buf`-related details.
+function! s:CalculateBufferDetails(buf)
+    let buf = a:buf
+    let name = bufname(buf._bufnr)
+    let buf["hasNoName"] = empty(name)
+    if buf.hasNoName
+        let name = "[No Name]"
+    endif
+    let buf.isterminal = getbufvar(buf._bufnr, '&buftype') == 'terminal'
+    if buf.isterminal
+        let buf.fullname = name
+        let buf.isdir = 0
+    else
+        let buf.fullname = simplify(fnamemodify(name, ':p'))
+        let buf.isdir = getftype(buf.fullname) == "dir"
+    endif
+    if buf.isdir
+        " `buf.fullname` ends with a path separator; this will be
+        " removed via the first `:h` applied to `buf.fullname` (except
+        " for the root directory, where the path separator will remain).
+        let parent = fnamemodify(buf.fullname, ':h:h')
+        let buf.shortname = fnamemodify(buf.fullname, ':h:t')
+        " Special case for root directory: fnamemodify('/', ':h:t') == ''
+        if buf.shortname == ''
+            let buf.shortname = '.'
+        endif
+        " Must perform shortening (`:~`, `:.`) before `:h`.
+        let buf.homename = fnamemodify(buf.fullname, ':~:h')
+        let buf.relativename = fnamemodify(buf.fullname, ':~:.:h')
+    else
+        let parent = fnamemodify(buf.fullname, ':h')
+        let buf.shortname = fnamemodify(buf.fullname, ':t')
+        let buf.homename = fnamemodify(buf.fullname, ':~')
+        let buf.relativename = fnamemodify(buf.fullname, ':~:.')
+    endif
+    " `:p` on `parent` adds back the path separator which permits more
+    " effective shortening (`:~`, `:.`), but `:h` is required afterward
+    " to trim this separator.
+    let buf.path = fnamemodify(parent, ':p:~:h')
+    let buf.relativepath = fnamemodify(parent, ':p:~:.:h')
+endfunction
+
 " GetBufferInfo {{{2
 function! s:GetBufferInfo(bufnr)
     redir => bufoutput
@@ -687,56 +730,17 @@ function! s:GetBufferInfo(bufnr)
         let bufoutput = substitute(bufoutput."\n", '^.*\n\(\s*'.a:bufnr.'\>.\{-}\)\n.*', '\1', '')
     endif
 
-    let [all, allwidths, listedwidths] = [[], {}, {}]
-
-    for n in keys(s:types)
-        let allwidths[n] = []
-        let listedwidths[n] = []
-    endfor
+    let all = {}
 
     " Loop over each line in the buffer.
-    for buf in split(bufoutput, '\n')
-        let bits = split(buf, '"')
+    for line in split(bufoutput, '\n')
+        let bits = split(line, '"')
 
         " Use first and last components after the split on '"', in case a
         " filename with an embedded '"' is present.
-        let b = {"attributes": bits[0], "line": substitute(bits[-1], '\s*', '', '')}
-
-        let name = bufname(str2nr(b.attributes))
-        let b["hasNoName"] = empty(name)
-        if b.hasNoName
-            let name = "[No Name]"
-        endif
-
-        " Filter out term:// buffers if g:bufExplorerShowTerminal is 0.
-        if !g:bufExplorerShowTerminal && name =~ '^term://'
-            continue
-        endif
-
-        for [key, val] in items(s:types)
-            let b[key] = fnamemodify(name, val)
-        endfor
-
-        if getftype(b.fullname) == "dir" && g:bufExplorerShowDirectories == 1
-            let b.shortname = "<DIRECTORY>"
-        endif
-
-        call add(all, b)
-
-        for n in keys(s:types)
-            call add(allwidths[n], s:StringWidth(b[n]))
-
-            if b.attributes !~ "u"
-                call add(listedwidths[n], s:StringWidth(b[n]))
-            endif
-        endfor
-    endfor
-
-    let [s:allpads, s:listedpads] = [{}, {}]
-
-    for n in keys(s:types)
-        let s:allpads[n] = repeat(' ', max(allwidths[n]))
-        let s:listedpads[n] = repeat(' ', max(listedwidths[n]))
+        let buf = {"attributes": bits[0], "line": substitute(bits[-1], '\s*', '', '')}
+        let buf._bufnr = str2nr(buf.attributes)
+        let all[buf._bufnr] = buf
     endfor
 
     return all
@@ -744,14 +748,23 @@ endfunction
 
 " BuildBufferList {{{2
 function! s:BuildBufferList()
-    let lines = []
+    let table = []
 
     " Loop through every buffer.
-    for buf in s:raw_buffer_listing
+    for buf in values(s:raw_buffer_listing)
+        " `buf.attributes` must exist, but we defer the expensive work of
+        " calculating other buffer details (e.g., `buf.fullname`) until we know
+        " the user wants to view this buffer.
+
         " Skip unlisted buffers if we are not to show them.
         if !g:bufExplorerShowUnlisted && buf.attributes =~ "u"
             " Skip unlisted buffers if we are not to show them.
             continue
+        endif
+
+        " Ensure buffer details are computed for this buffer.
+        if !has_key(buf, 'fullname')
+            call s:CalculateBufferDetails(buf)
         endif
 
         " Skip 'No Name' buffers if we are not to show them.
@@ -764,38 +777,70 @@ function! s:BuildBufferList()
             continue
         endif
 
-        let line = buf.attributes." "
+        " Skip terminal buffers if we are not to show them.
+        if !g:bufExplorerShowTerminal && buf.isterminal
+            continue
+        endif
+
+        " Skip directory buffers if we are not to show them.
+        if !g:bufExplorerShowDirectories && buf.isdir
+            continue
+        endif
+
+        let row = [buf.attributes]
 
         if exists("g:loaded_webdevicons")
-            let line .= WebDevIconsGetFileTypeSymbol(buf.shortname)
-            let line .= " "
+            let row += [WebDevIconsGetFileTypeSymbol(buf.fullname, buf.isdir)]
         endif
 
         " Are we to split the path and file name?
         if g:bufExplorerSplitOutPathName
             let type = (g:bufExplorerShowRelativePath) ? "relativepath" : "path"
-            let path = substitute( buf[type], $HOME."\\>", "~", "" )
-            let pad  = (g:bufExplorerShowUnlisted) ? s:allpads.shortname : s:listedpads.shortname
-            let line .= buf.shortname." ".strpart(pad.path, s:StringWidth(buf.shortname))
+            let row += [buf.shortname, buf[type]]
         else
-            let type = (g:bufExplorerShowRelativePath) ? "relativename" : "fullname"
-            let path = substitute( buf[type], $HOME."\\>", "~", "" )
-            let line .= path
+            let type = (g:bufExplorerShowRelativePath) ? "relativename" : "homename"
+            let row += [buf[type]]
         endif
-
-        let pads = (g:bufExplorerShowUnlisted) ? s:allpads : s:listedpads
-
-        if !empty(pads[type])
-            let line .= strpart(pads[type], s:StringWidth(path))." "
-        endif
-
-        let line .= buf.line
-
-        call add(lines, line)
+        let row += [buf.line]
+        call add(table, row)
     endfor
 
+    let lines = s:MakeLines(table)
     call setline(s:firstBufferLine, lines)
     call s:SortListing()
+endfunction
+
+" MakeLines {{{2
+function! s:MakeLines(table)
+    if len(a:table) == 0
+        return []
+    endif
+    let lines = []
+    " To avoid trailing whitespace, do not pad the final column.
+    let numColumnsToPad = len(a:table[0]) - 1
+    let maxWidths = repeat([0], numColumnsToPad)
+    for row in a:table
+        let i = 0
+        while i < numColumnsToPad
+            let maxWidths[i] = max([maxWidths[i], s:StringWidth(row[i])])
+            let i = i + 1
+        endwhile
+    endfor
+
+    let pads = []
+    for w in maxWidths
+        call add(pads, repeat(' ', w))
+    endfor
+
+    for row in a:table
+        let i = 0
+        while i < numColumnsToPad
+            let row[i] .= strpart(pads[i], s:StringWidth(row[i]))
+            let i = i + 1
+        endwhile
+        call add(lines, join(row, ' '))
+    endfor
+    return lines
 endfunction
 
 " SelectBuffer {{{2
@@ -982,7 +1027,7 @@ function! s:DeleteBuffer(buf, mode)
         setlocal nomodifiable
 
         " Delete the buffer from the raw buffer list.
-        call filter(s:raw_buffer_listing, 'v:val.attributes !~ " '.a:buf.' "')
+        unlet s:raw_buffer_listing[a:buf]
     catch
         call s:Error(v:exception)
     endtry
@@ -1103,9 +1148,70 @@ function! s:UpdateHelpStatus()
     setlocal nomodifiable
 endfunction
 
-" MRUCmp {{{2
-function! s:MRUCmp(line1, line2)
-    return index(s:MRUList, str2nr(a:line1)) - index(s:MRUList, str2nr(a:line2))
+" Key_number {{{2
+function! s:Key_number(line)
+    let _bufnr = str2nr(a:line)
+    let key = [printf('%9d', _bufnr)]
+    return key
+endfunction
+
+" Key_name {{{2
+function! s:Key_name(line)
+    let _bufnr = str2nr(a:line)
+    let buf = s:raw_buffer_listing[_bufnr]
+    let key = [buf.shortname, buf.fullname]
+    return key
+endfunction
+
+" Key_fullpath {{{2
+function! s:Key_fullpath(line)
+    let _bufnr = str2nr(a:line)
+    let buf = s:raw_buffer_listing[_bufnr]
+    let key = [buf.fullname]
+    return key
+endfunction
+
+" Key_extension {{{2
+function! s:Key_extension(line)
+    let _bufnr = str2nr(a:line)
+    let buf = s:raw_buffer_listing[_bufnr]
+    let extension = fnamemodify(buf.shortname, ':e')
+    let key = [extension, buf.shortname, buf.fullname]
+    return key
+endfunction
+
+" Key_mru {{{2
+function! s:Key_mru(line)
+    let _bufnr = str2nr(a:line)
+    let buf = s:raw_buffer_listing[_bufnr]
+    let pos = index(s:MRUList, _bufnr)
+    if pos < 0
+        let pos = 0
+    endif
+    return [printf('%9d', pos), buf.fullname]
+endfunction
+
+" SortByKeyFunc {{{2
+function! s:SortByKeyFunc(keyFunc)
+    let keyedLines = []
+    for line in getline(s:firstBufferLine, "$")
+        let key = eval(a:keyFunc . '(line)')
+        call add(keyedLines, join(key + [line], "\1"))
+    endfor
+
+    " Ignore case when sorting by passing `1`:
+    call sort(keyedLines, 1)
+
+    if g:bufExplorerReverseSort
+        call reverse(keyedLines)
+    endif
+
+    let lines = []
+    for keyedLine in keyedLines
+        call add(lines, split(keyedLine, "\1")[-1])
+    endfor
+
+    call setline(s:firstBufferLine, lines)
 endfunction
 
 " SortReverse {{{2
@@ -1142,50 +1248,7 @@ endfunction
 
 " SortListing {{{2
 function! s:SortListing()
-    let sort = s:firstBufferLine.",$sort".((g:bufExplorerReverseSort == 1) ? "!": "")
-
-    if g:bufExplorerSortBy == "number"
-        " Easiest case.
-        execute sort 'n'
-    elseif g:bufExplorerSortBy == "name"
-        " Sort by full path first
-        execute sort 'ir /\zs\f\+\ze\s\+line/'
-
-        if g:bufExplorerSplitOutPathName
-            execute sort 'ir /\d.\{7}\zs\f\+\ze/'
-        else
-            execute sort 'ir /\zs[^\/\\]\+\ze\s*line/'
-        endif
-    elseif g:bufExplorerSortBy == "fullpath"
-        if g:bufExplorerSplitOutPathName
-            " Sort twice - first on the file name then on the path.
-            execute sort 'ir /\d.\{7}\zs\f\+\ze/'
-        endif
-
-        execute sort 'ir /\zs\f\+\ze\s\+line/'
-    elseif g:bufExplorerSortBy == "extension"
-        " Sort by full path...
-        execute sort 'ir /\zs\f\+\ze\s\+line/'
-
-        " Sort by name...
-        if g:bufExplorerSplitOutPathName
-            " Sort twice - first on the file name then on the path.
-            execute sort 'ir /\d.\{7}\zs\f\+\ze/'
-        endif
-
-        " Sort by extension.
-        execute sort 'ir /\.\zs\w\+\ze\s/'
-    elseif g:bufExplorerSortBy == "mru"
-        let l = getline(s:firstBufferLine, "$")
-
-        call sort(l, "<SID>MRUCmp")
-
-        if g:bufExplorerReverseSort
-            call reverse(l)
-        endif
-
-        call setline(s:firstBufferLine, l)
-    endif
+    call s:SortByKeyFunc("<SID>Key_" . g:bufExplorerSortBy)
 endfunction
 
 " MRUListShow {{{2
