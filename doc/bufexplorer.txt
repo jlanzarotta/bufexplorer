@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 16 Feb 2025
+*bufexplorer.txt*              Buffer Explorer       Last Change: 17 Feb 2025
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.5.0
+                                Version 7.6.0
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -269,6 +269,40 @@ The default is 1.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.6.0    February 17, 2025
+     What's Changed
+     - Another Major patch implemented by Dr. Michael Henry.
+       https://github.com/jlanzarotta/bufexplorer/pull/119
+       * Sorting by fullname now depends only on the buffer's absolute path
+         using a new sorting mechanism. Other sort modes have been converted to
+         use this mechanism as well.
+       * Display of directory buffers is now suppressed when
+         g:bufExplorerShowDirectories == 0 as described in the BufExplorer
+         documentation.
+       * Path calculations for the elements in s:types have been normalized.
+         fullpath now has simplify() applied to normalize paths like
+         dir/../file. Trailing path separators for directories have been
+         removed. The shortname <DIRECTORY> for directories has been
+         eliminated; instead, the directory's basename is used as is done for
+         files (except for root directories, where the trailing path separator
+         cannot be removed; a shortname of . is used for this case). A new
+         element, homepath, has been added to s.types; this is fullpath
+         shortened for paths in $HOME and without the trailing path separator.
+         Other displayable paths (path, relativepath, relativename) are
+         similarly shortened for paths in $HOME.
+       * Textual substitution of $HOME -> ~ in paths has been eliminated. This
+         substitution could occur anywhere in the path, not just at the start,
+         causing undesirable anomalies. Shortening for paths in $HOME is now
+         done via homename and associated variables from s:types.
+       * If the devicons plugin is installed, a buffer's buf.isdir status has
+         been added as a parameter passed to that plugin, allowing the plugin
+         to supply a directory icon for buffer directories.
+       * Avoid calculating buffer details until they are needed for display.
+         Users who don't want to see unlisted buffers shouldn't have to pay
+         for the expensive work of calculating buffer details for unlisted
+         buffers, only to have that information ignored. This resolves
+         bufexplorer is slow to open with many unlisted buffers.
+         https://github.com/jlanzarotta/bufexplorer/issues/20
 7.5.0    February 16, 2025
      What's Changed
      - Major patch implemented by Dr. Michael Henry.
