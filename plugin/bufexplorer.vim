@@ -185,6 +185,25 @@ function! s:CatalogBuffers()
     silent execute 'normal! ' . ct . 'gt'
 endfunction
 
+" AssignTabId {{{2
+" Assign a `tabId` to the given tab.
+function! s:AssignTabId(tabNbr)
+    " Create a unique `tabId` based on the current time and an incrementing
+    " counter value that helps ensure uniqueness.
+    let tabId = reltimestr(reltime()) . ':' . s:tabIdCounter
+    call settabvar(a:tabNbr, 'bufexp_tabId', tabId)
+    let s:tabIdCounter = (s:tabIdCounter + 1) % 1000000000
+    return tabId
+endfunction
+
+let s:tabIdCounter = 0
+
+" GetTabId {{{2
+" Retrieve the `tabId` for the given tab (or '' if the tab has no `tabId`).
+function! s:GetTabId(tabNbr)
+    return gettabvar(a:tabNbr, 'bufexp_tabId', '')
+endfunction
+
 " AssociatedTab {{{2
 " Return the number of the tab associated with the specified buffer. If the
 " buffer is associated with more than one tab, the first one found is
