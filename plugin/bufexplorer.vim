@@ -204,6 +204,177 @@ function! s:GetTabId(tabNbr)
     return gettabvar(a:tabNbr, 'bufexp_tabId', '')
 endfunction
 
+" MRU data structure {{{2
+" An MRU data structure is a dictionary that holds a circular doubly linked list
+" of `item` values.  The dictionary contains three keys:
+"   'head': a sentinel `item` representing the head of the list.
+"   'next': a dictionary mapping an `item` to the next `item` in the list.
+"   'prev': a dictionary mapping an `item` to the previous `item` in the list.
+" E.g., an MRU holding buffer numbers will use `0` (an invalid buffer number) as
+" `head`.  With the buffer numbers `1`, `2`, and `3`, an example MRU would be:
+"
+"           +--<---------<---------<---------<---------<+
+"  `next`   |                                           |
+"           +--> +---+ --> +---+ --> +---+ --> +---+ -->+
+"  `head`        | 0 |     | 1 |     | 2 |     | 3 |
+"           +<-- +---+ <-- +---+ <-- +---+ <-- +---+ <--+
+"  `prev`   |                                           |
+"           +->-------->--------->--------->--------->--+
+"
+" `head` allows the chosen sentinel item to differ in value and type; for
+" example, `head` could be the string '.', allowing an MRU of strings (such as
+" for `TabId` values).
+"
+" Note that dictionary keys are always strings.  Integers may be used, but they
+" are converted to strings when used (and `keys(theDictionary)` will be a
+" list of strings, not of integers).
+
+" MRUNew {{{2
+function! s:MRUNew(head)
+    let [next, prev] = [{}, {}]
+    let next[a:head] = a:head
+    let prev[a:head] = a:head
+    return { 'head': a:head, 'next': next, 'prev': prev }
+endfunction
+
+" MRULen {{{2
+function! s:MRULen(mru)
+    " Do not include the always-present `mru.head` item.
+    return len(a:mru.next) - 1
+endfunction
+
+" MRURemoveMustExist {{{2
+"   `item` must exist in `mru`.
+function! s:MRURemoveMustExist(mru, item)
+    let [next, prev] = [a:mru.next, a:mru.prev]
+    let prevItem = prev[a:item]
+    let nextItem = next[a:item]
+    let next[prevItem] = nextItem
+    let prev[nextItem] = prevItem
+    unlet next[a:item]
+    unlet prev[a:item]
+endfunction
+
+" MRURemove {{{2
+"   `item` need not exist in `mru`.
+function! s:MRURemove(mru, item)
+    if has_key(a:mru.next, a:item)
+        call s:MRURemoveMustExist(a:mru, a:item)
+    endif
+endfunction
+
+" MRUAdd {{{2
+function! s:MRUAdd(mru, item)
+    let [next, prev] = [a:mru.next, a:mru.prev]
+    let prevItem = a:mru.head
+    let nextItem = next[prevItem]
+    if a:item != nextItem
+        call s:MRURemove(a:mru, a:item)
+        let next[a:item] = nextItem
+        let prev[a:item] = prevItem
+        let next[prevItem] = a:item
+        let prev[nextItem] = a:item
+    endif
+endfunction
+
+" MRUGetItems {{{2
+"   Return list of up to `maxItems` items in MRU order.
+"   `maxItems == 0` => unlimited.
+function! s:MRUGetItems(mru, maxItems)
+    let [head, next] = [a:mru.head, a:mru.next]
+    let items = []
+    let item = next[head]
+    while item != head
+        if a:maxItems > 0 && len(items) >= a:maxItems
+            break
+        endif
+        call add(items, item)
+        let item = next[item]
+    endwhile
+    return items
+endfunction
+
+" MRUGetOrdering {{{2
+"   Return dictionary mapping up to `maxItems` from `item` to MRU order.
+"   `maxItems == 0` => unlimited.
+function! s:MRUGetOrdering(mru, maxItems)
+    let [head, next] = [a:mru.head, a:mru.next]
+    let items = {}
+    let order = 0
+    let item = next[head]
+    while item != head
+        if a:maxItems > 0 && order >= a:maxItems
+            break
+        endif
+        let items[item] = order
+        let order = order + 1
+        let item = next[item]
+    endwhile
+    return items
+endfunction
+
+" MRU trackers {{{2
+" `.head` value for tab MRU:
+let s:tabIdHead = '.'
+
+" Track MRU buffers globally (independent of tabs).
+let s:bufMru = s:MRUNew(0)
+
+" Track MRU buffers for each tab, indexed by `tabId`.
+"   `s:bufMruByTab[tabId] -> MRU structure`.
+let s:bufMruByTab = {}
+
+" Track MRU tabs for each buffer, indexed by `bufNbr`.
+"   `s:tabMruByBuf[burNbr] -> MRU structure`.
+let s:tabMruByBuf = {}
+
+" MRURemoveBuf {{{2
+function! s:MRURemoveBuf(bufNbr)
+    call s:MRURemove(s:bufMru, a:bufNbr)
+    if has_key(s:tabMruByBuf, a:bufNbr)
+        let mru = s:tabMruByBuf[a:bufNbr]
+        let [head, next] = [mru.head, mru.next]
+        let tabId = next[head]
+        while tabId != head
+            call s:MRURemoveMustExist(s:bufMruByTab[tabId], a:bufNbr)
+            let tabId = next[tabId]
+        endwhile
+        unlet s:tabMruByBuf[a:bufNbr]
+    endif
+endfunction
+
+" MRURemoveTab {{{2
+function! s:MRURemoveTab(tabId)
+    if has_key(s:bufMruByTab, a:tabId)
+        let mru = s:bufMruByTab[a:tabId]
+        let [head, next] = [mru.head, mru.next]
+        let bufNbr = next[head]
+        while bufNbr != head
+            call s:MRURemoveMustExist(s:tabMruByBuf[bufNbr], a:tabId)
+            let bufNbr = next[bufNbr]
+        endwhile
+        unlet s:bufMruByTab[a:tabId]
+    endif
+endfunction
+
+" MRUAddBufTab {{{2
+function! s:MRUAddBufTab(bufNbr, tabId)
+    if s:ShouldIgnore(a:bufNbr)
+        return
+    endif
+    call s:MRUAdd(s:bufMru, a:bufNbr)
+    if !has_key(s:bufMruByTab, a:tabId)
+        let s:bufMruByTab[a:tabId] = s:MRUNew(0)
+    endif
+    let bufMru = s:bufMruByTab[a:tabId]
+    call s:MRUAdd(bufMru, a:bufNbr)
+    if !has_key(s:tabMruByBuf, a:bufNbr)
+        let s:tabMruByBuf[a:bufNbr] = s:MRUNew(s:tabIdHead)
+    endif
+    let tabMru = s:tabMruByBuf[a:bufNbr]
+    call s:MRUAdd(tabMru, a:tabId)
+endfunction
+
 " AssociatedTab {{{2
 " Return the number of the tab associated with the specified buffer. If the
 " buffer is associated with more than one tab, the first one found is
