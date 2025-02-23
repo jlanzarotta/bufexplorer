@@ -149,6 +149,9 @@ function! s:Setup()
     " Now that the MRUList is created, add the other autocmds.
     augroup BufExplorer
         autocmd!
+        autocmd WinEnter        * call s:DoWinEnter()
+        autocmd BufEnter        * call s:DoBufEnter()
+        autocmd BufDelete       * call s:DoBufDelete()
         autocmd BufEnter,BufNew * call s:ActivateBuffer()
         autocmd BufWipeOut * call s:DeactivateBuffer(1)
         autocmd BufDelete * call s:DeactivateBuffer(0)
@@ -373,6 +376,46 @@ function! s:MRUAddBufTab(bufNbr, tabId)
     endif
     let tabMru = s:tabMruByBuf[a:bufNbr]
     call s:MRUAdd(tabMru, a:tabId)
+endfunction
+
+" MRUEnsureTabId {{{2
+function! s:MRUEnsureTabId(tabNbr)
+    let tabId = s:GetTabId(a:tabNbr)
+    if tabId == ''
+        let tabId = s:AssignTabId(a:tabNbr)
+        for bufNbr in tabpagebuflist(a:tabNbr)
+            call s:MRUAddBufTab(bufNbr, tabId)
+        endfor
+    endif
+    return tabId
+endfunction
+
+" DoWinEnter {{{2
+function! s:DoWinEnter()
+    let bufNbr = str2nr(expand("<abuf>"))
+    let tabNbr = tabpagenr()
+    let tabId = s:GetTabId(tabNbr)
+    " Ignore `WinEnter` for a newly created tab; this event comes when creating
+    " a new tab, and the buffer at that moment is one that is about to be
+    " replaced by the buffer to which we are switching; this latter buffer will
+    " be handled by the forthcoming `BufEnter` event.
+    if tabId != ''
+        call s:MRUAddBufTab(bufNbr, tabId)
+    endif
+endfunction
+
+" DoBufEnter {{{2
+function! s:DoBufEnter()
+    let bufNbr = str2nr(expand("<abuf>"))
+    let tabNbr = tabpagenr()
+    let tabId = s:MRUEnsureTabId(tabNbr)
+    call s:MRUAddBufTab(bufNbr, tabId)
+endfunction
+
+" DoBufDelete {{{2
+function! s:DoBufDelete()
+    let bufNbr = str2nr(expand("<abuf>"))
+    call s:MRURemoveBuf(bufNbr)
 endfunction
 
 " AssociatedTab {{{2
@@ -624,6 +667,7 @@ function! BufExplorer()
 
     " Add zero to ensure the variable is treated as a number.
     let s:originBuffer = bufnr("%") + 0
+    let s:tabIdAtLaunch = s:MRUEnsureTabId(tabpagenr())
 
     silent let s:raw_buffer_listing = s:GetBufferInfo(0)
 
@@ -663,6 +707,9 @@ function! BufExplorer()
     " in it.
     execute search("%")
 endfunction
+
+" Tracks `tabId` at BufExplorer launch.
+let s:tabIdAtLaunch = ''
 
 " DisplayBufferList {{{2
 function! s:DisplayBufferList()
