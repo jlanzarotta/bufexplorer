@@ -141,6 +141,9 @@ augroup BufExplorer
     autocmd WinEnter        * call s:DoWinEnter()
     autocmd BufEnter        * call s:DoBufEnter()
     autocmd BufDelete       * call s:DoBufDelete()
+    if exists('##TabClosed')
+        autocmd TabClosed      * call s:DoTabClosed()
+    endif
     autocmd BufWinEnter \[BufExplorer\] call s:Initialize()
     autocmd BufWinLeave \[BufExplorer\] call s:Cleanup()
 augroup END
@@ -424,6 +427,33 @@ function! s:MRUEnsureTabId(tabNbr)
     return tabId
 endfunction
 
+" MRUGarbageCollectBufs {{{2
+"   Requires `s:raw_buffer_listing`.
+function! s:MRUGarbageCollectBufs()
+    for bufNbr in values(s:bufMru.next)
+        if bufNbr != 0 && !has_key(s:raw_buffer_listing, bufNbr)
+            call s:MRURemoveBuf(bufNbr)
+        endif
+    endfor
+endfunction
+
+" MRUGarbageCollectTabs {{{2
+function! s:MRUGarbageCollectTabs()
+    let numTabs = tabpagenr('$')
+    let liveTabIds = {}
+    for tabNbr in range(1, numTabs)
+        let tabId = s:GetTabId(tabNbr)
+        if tabId != ''
+            let liveTabIds[tabId] = 1
+        endif
+    endfor
+    for tabId in keys(s:bufMruByTab)
+        if tabId != s:tabIdHead && !has_key(liveTabIds, tabId)
+            call s:MRURemoveTab(tabId)
+        endif
+    endfor
+endfunction
+
 " DoWinEnter {{{2
 function! s:DoWinEnter()
     let bufNbr = str2nr(expand("<abuf>"))
@@ -450,6 +480,11 @@ endfunction
 function! s:DoBufDelete()
     let bufNbr = str2nr(expand("<abuf>"))
     call s:MRURemoveBuf(bufNbr)
+endfunction
+
+" DoTabClosed {{{2
+function! s:DoTabClosed()
+    call s:MRUGarbageCollectTabs()
 endfunction
 
 " ShouldIgnore {{{2
@@ -582,6 +617,9 @@ function! BufExplorer()
     unlet! s:mruOrder
 
     silent let s:raw_buffer_listing = s:GetBufferInfo(0)
+
+    call s:MRUGarbageCollectBufs()
+    call s:MRUGarbageCollectTabs()
 
     " We may have to split the current window.
     if s:splitMode != ""
