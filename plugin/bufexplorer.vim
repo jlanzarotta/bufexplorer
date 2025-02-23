@@ -136,20 +136,14 @@ let s:didSplit = 0
 let s:types = ["fullname", "homename", "path", "relativename", "relativepath", "shortname"]
 
 " Setup the autocommands that handle stuff. {{{2
-autocmd VimEnter * call s:Setup()
-
-" Setup {{{2
-function! s:Setup()
-    " Add the other autocmds.
-    augroup BufExplorer
-        autocmd!
-        autocmd WinEnter        * call s:DoWinEnter()
-        autocmd BufEnter        * call s:DoBufEnter()
-        autocmd BufDelete       * call s:DoBufDelete()
-        autocmd BufWinEnter \[BufExplorer\] call s:Initialize()
-        autocmd BufWinLeave \[BufExplorer\] call s:Cleanup()
-    augroup END
-endfunction
+augroup BufExplorer
+    autocmd!
+    autocmd WinEnter        * call s:DoWinEnter()
+    autocmd BufEnter        * call s:DoBufEnter()
+    autocmd BufDelete       * call s:DoBufDelete()
+    autocmd BufWinEnter \[BufExplorer\] call s:Initialize()
+    autocmd BufWinLeave \[BufExplorer\] call s:Cleanup()
+augroup END
 
 " AssignTabId {{{2
 " Assign a `tabId` to the given tab.
