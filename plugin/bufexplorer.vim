@@ -437,6 +437,24 @@ endfunction
 " `s:bufMruByTab[tabId]` for an unknown `tabId`.
 let s:alwaysEmptyBufMru = s:MRUNew(0)
 
+" MRUOrderForBuf {{{2
+" Return the position of `bufNbr` in the current MRU ordering.
+" This is a function of the current display mode.  When showing buffers from all
+" tabs, it's the global MRU order; otherwise, it the MRU order for the tab at
+" BufExplorer launch.  The latter includes all buffers seen in this tab, which
+" is sufficient whether `g:bufExplorerOnlyOneTab` is true or false.
+function! s:MRUOrderForBuf(bufNbr)
+    if !exists('s:mruOrder')
+        if g:bufExplorerShowTabBuffer
+            let mru = get(s:bufMruByTab, s:tabIdAtLaunch, s:alwaysEmptyBufMru)
+        else
+            let mru = s:bufMru
+        endif
+        let s:mruOrder = s:MRUGetOrdering(mru, 0)
+    endif
+    return get(s:mruOrder, a:bufNbr, len(s:mruOrder))
+endfunction
+
 " MRUEnsureTabId {{{2
 function! s:MRUEnsureTabId(tabNbr)
     let tabId = s:GetTabId(a:tabNbr)
@@ -727,6 +745,9 @@ function! BufExplorer()
     " Add zero to ensure the variable is treated as a number.
     let s:originBuffer = bufnr("%") + 0
     let s:tabIdAtLaunch = s:MRUEnsureTabId(tabpagenr())
+
+    " Forget any cached MRU ordering from previous invocations.
+    unlet! s:mruOrder
 
     silent let s:raw_buffer_listing = s:GetBufferInfo(0)
 
@@ -1395,6 +1416,9 @@ endfunction
 
 " ToggleShowTabBuffer {{{2
 function! s:ToggleShowTabBuffer()
+    " Forget any cached MRU ordering, as it depends on
+    " `g:bufExplorerShowTabBuffer`.
+    unlet! s:mruOrder
     let g:bufExplorerShowTabBuffer = !g:bufExplorerShowTabBuffer
     call s:RebuildBufferList()
     call s:UpdateHelpStatus()
