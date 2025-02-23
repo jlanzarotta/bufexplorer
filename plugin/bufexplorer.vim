@@ -1321,6 +1321,21 @@ let g:BufExplorer_title = "\[Buf\ List\]"
 call s:Set("g:bufExplorerResize", 1)
 call s:Set("g:bufExplorerMaxHeight", 25) " Handles dynamic resizing of the window.
 
+" Evaluate a Vimscript expression in the context of this file.
+" This enables debugging of script-local variables and functions from outside
+" the plugin, e.g.:
+"   :echo BufExplorer_eval('s:bufMru')
+function! BufExplorer_eval(expr)
+    return eval(a:expr)
+endfunction
+
+" Execute a Vimscript statement in the context of this file.
+" This enables setting script-local variables from outside the plugin, e.g.:
+"   :call BufExplorer_execute('let s:bufMru = s:MRUNew(0)')
+function! BufExplorer_execute(statement)
+    execute a:statement
+endfunction
+
 " function! to start display. Set the mode to 'winmanager' for this buffer.
 " This is to figure out how this plugin was called. In a standalone fashion
 " or by winmanager.
