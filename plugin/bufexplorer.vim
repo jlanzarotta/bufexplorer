@@ -1090,8 +1090,8 @@ function! s:BuildBufferList()
             continue
         endif
 
-        " Are we to show only buffer(s) for this tab?
-        if g:bufExplorerShowTabBuffer && (!s:IsInCurrentTab(str2nr(buf.attributes)))
+        " Should we show this buffer in this tab?
+        if !s:MRUTabShouldShowBuf(s:tabIdAtLaunch, buf._bufnr)
             continue
         endif
 
