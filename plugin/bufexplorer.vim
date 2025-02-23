@@ -378,6 +378,65 @@ function! s:MRUAddBufTab(bufNbr, tabId)
     call s:MRUAdd(tabMru, a:tabId)
 endfunction
 
+" MRUTabForBuf {{{2
+"   Return `tabId` most recently used by `bufNbr`.
+"   If no `tabId` is found for `bufNbr`, return `s:tabIdHead`.
+function! s:MRUTabForBuf(bufNbr)
+    let tabMru = get(s:tabMruByBuf, a:bufNbr, s:alwaysEmptyTabMru)
+    return tabMru.next[tabMru.head]
+endfunction
+
+" An always-empty MRU for tabs as a default when looking up
+" `s:tabMruByBuf[bufNbr]` for an unknown `bufNbr`.
+let s:alwaysEmptyTabMru = s:MRUNew(s:tabIdHead)
+
+" MRUTabHasSeenBuf {{{2
+"   Return true if `tabId` has ever seen `bufNbr`.
+function! s:MRUTabHasSeenBuf(tabId, bufNbr)
+    let mru = get(s:bufMruByTab, a:tabId, s:alwaysEmptyBufMru)
+    return has_key(mru.next, a:bufNbr)
+endfunction
+
+" MRUTabShouldShowBuf {{{2
+"   Return true if `tabId` should show `bufNbr`.
+"   This is a function of current display modes.
+function! s:MRUTabShouldShowBuf(tabId, bufNbr)
+    if !g:bufExplorerShowTabBuffer
+        " We are showing buffers from all tabs.
+        return 1
+    elseif g:bufExplorerOnlyOneTab
+        " We are showing buffers that were most recently seen in this tab.
+        return s:MRUTabForBuf(a:bufNbr) == a:tabId
+    else
+        " We are showing buffers that have ever been seen in this tab.
+        return s:MRUTabHasSeenBuf(a:tabId, a:bufNbr)
+    endif
+endfunction
+
+" MRUListedBuffersForTab {{{2
+"   Return list of up to `maxBuffers` listed buffers in MRU order for the tab.
+"   `maxBuffers == 0` => unlimited.
+function! s:MRUListedBuffersForTab(tabId, maxBuffers)
+    let bufNbrs = []
+    let mru = get(s:bufMruByTab, a:tabId, s:alwaysEmptyBufMru)
+    let [head, next] = [mru.head, mru.next]
+    let bufNbr = next[head]
+    while bufNbr != head
+        if a:maxBuffers > 0 && len(bufNbrs) >= a:maxBuffers
+            break
+        endif
+        if buflisted(bufNbr) && s:MRUTabShouldShowBuf(a:tabId, bufNbr)
+            call add(bufNbrs, bufNbr)
+        endif
+        let bufNbr = next[bufNbr]
+    endwhile
+    return bufNbrs
+endfunction
+
+" An always-empty MRU for buffers as a default when looking up
+" `s:bufMruByTab[tabId]` for an unknown `tabId`.
+let s:alwaysEmptyBufMru = s:MRUNew(0)
+
 " MRUEnsureTabId {{{2
 function! s:MRUEnsureTabId(tabNbr)
     let tabId = s:GetTabId(a:tabNbr)
