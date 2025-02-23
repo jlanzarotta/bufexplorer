@@ -1365,11 +1365,8 @@ endfunction
 
 " Close {{{2
 function! s:Close()
-    " Get only the listed buffers associated with the current tab.
-    let listed = filter(copy(s:MRUList), "s:ListedAndCurrentTab(v:val)")
-    if len(listed) == 0
-        let listed = filter(range(1, bufnr('$')), "s:ListedAndCurrentTab(v:val)")
-    endif
+    " Get only the listed buffers associated with the current tab (up to 2).
+    let listed = s:MRUListedBuffersForTab(s:tabIdAtLaunch, 2)
 
     " If we needed to split the main window, close the split one.
     if s:didSplit
