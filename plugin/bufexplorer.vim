@@ -1505,10 +1505,7 @@ endfunction
 function! s:Key_mru(line)
     let _bufnr = str2nr(a:line)
     let buf = s:raw_buffer_listing[_bufnr]
-    let pos = index(s:MRUList, _bufnr)
-    if pos < 0
-        let pos = 0
-    endif
+    let pos = s:MRUOrderForBuf(_bufnr)
     return [printf('%9d', pos), buf.fullname]
 endfunction
 
