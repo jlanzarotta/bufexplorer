@@ -139,13 +139,8 @@ let s:types = ["fullname", "homename", "path", "relativename", "relativepath", "
 " Setup the autocommands that handle the MRUList and other stuff. {{{2
 autocmd VimEnter * call s:Setup()
 
-" Reset MRUList and buffer->tab associations after loading a session. {{{2
-autocmd SessionLoadPost * call s:Reset()
-
 " Setup {{{2
 function! s:Setup()
-    call s:Reset()
-
     " Now that the MRUList is created, add the other autocmds.
     augroup BufExplorer
         autocmd!
