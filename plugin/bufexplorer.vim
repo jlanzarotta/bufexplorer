@@ -127,7 +127,6 @@ endfunction
 
 " Script variables {{{2
 let s:MRU_Exclude_List = ["[BufExplorer]","__MRU_Files__","[Buf\ List]"]
-let s:MRUList = []
 let s:name = '[BufExplorer]'
 let s:originBuffer = 0
 let s:running = 0
@@ -136,51 +135,20 @@ let s:splitMode = ""
 let s:didSplit = 0
 let s:types = ["fullname", "homename", "path", "relativename", "relativepath", "shortname"]
 
-" Setup the autocommands that handle the MRUList and other stuff. {{{2
+" Setup the autocommands that handle stuff. {{{2
 autocmd VimEnter * call s:Setup()
 
 " Setup {{{2
 function! s:Setup()
-    " Now that the MRUList is created, add the other autocmds.
+    " Add the other autocmds.
     augroup BufExplorer
         autocmd!
         autocmd WinEnter        * call s:DoWinEnter()
         autocmd BufEnter        * call s:DoBufEnter()
         autocmd BufDelete       * call s:DoBufDelete()
-        autocmd BufEnter,BufNew * call s:ActivateBuffer()
-        autocmd BufWipeOut * call s:DeactivateBuffer(1)
-        autocmd BufDelete * call s:DeactivateBuffer(0)
         autocmd BufWinEnter \[BufExplorer\] call s:Initialize()
         autocmd BufWinLeave \[BufExplorer\] call s:Cleanup()
     augroup END
-endfunction
-
-" Reset {{{2
-function! s:Reset()
-    " Build initial MRUList. This makes sure all the files specified on the
-    " command line are picked up correctly. Check buffers exist so this also
-    " works after wiping buffers and loading a session (e.g. sessionman.vim)
-    let s:MRUList = filter(range(1, bufnr('$')), 'bufexists(v:val)')
-
-    " Initialize the association of buffers to tabs for any buffers
-    " that have been created prior to now, e.g., files specified as
-    " vim command line arguments
-    call s:CatalogBuffers()
-endfunction
-
-" CatalogBuffers {{{2
-" Create tab associations for any existing buffers
-function! s:CatalogBuffers()
-    let ct = tabpagenr()
-
-    for tab in range(1, tabpagenr('$'))
-        silent execute 'normal! ' . tab . 'gt'
-        for buf in tabpagebuflist()
-            call s:UpdateTabBufData(buf)
-        endfor
-    endfor
-
-    silent execute 'normal! ' . ct . 'gt'
 endfunction
 
 " AssignTabId {{{2
@@ -488,131 +456,6 @@ endfunction
 function! s:DoBufDelete()
     let bufNbr = str2nr(expand("<abuf>"))
     call s:MRURemoveBuf(bufNbr)
-endfunction
-
-" AssociatedTab {{{2
-" Return the number of the tab associated with the specified buffer. If the
-" buffer is associated with more than one tab, the first one found is
-" returned. If the buffer is not associated with any tabs, -1 is returned.
-function! s:AssociatedTab(bufnr)
-    for tab in range(1, tabpagenr('$'))
-        let list = gettabvar(tab, 'bufexp_buf_list', [])
-        let idx = index(list, a:bufnr)
-        if idx != -1
-            return tab
-        endif
-    endfor
-
-    return -1
-endfunction
-
-" RemoveBufFromOtherTabs {{{2
-" Remove the specified buffer from the buffer lists of all tabs except the
-" current tab.
-function! s:RemoveBufFromOtherTabs(bufnr)
-    for tab in range(1, tabpagenr('$'))
-        if tab == tabpagenr()
-            continue
-        endif
-
-        let list = gettabvar(tab, 'bufexp_buf_list', [])
-        let idx = index(list, a:bufnr)
-        if idx == -1
-            continue
-        endif
-
-        call remove(list, idx)
-        call settabvar(tab, 'bufexp_buf_list', list)
-    endfor
-endfunction
-
-" AddBufToCurrentTab {{{2
-" Add the specified buffer to the list of buffers associated with the current
-" tab.
-function! s:AddBufToCurrentTab(bufnr)
-    if index(t:bufexp_buf_list, a:bufnr) == -1
-        call add(t:bufexp_buf_list, a:bufnr)
-    endif
-endfunction
-
-" IsInCurrentTab {{{2
-" Returns whether the specified buffer is associated with the current tab.
-function! s:IsInCurrentTab(bufnr)
-    " It shouldn't happen that the list of buffers is not defined but if it
-    " does, play it safe and include the buffer.
-    if !exists('t:bufexp_buf_list')
-        return 1
-    endif
-
-    return (index(t:bufexp_buf_list, a:bufnr) != -1)
-endfunction
-
-" UpdateTabBufData {{{2
-" Update the tab buffer data for the specified buffer.
-"
-" The current tab's list is updated. If a buffer is only allowed to be
-" associated with one tab, it is removed  from the lists of any other tabs
-" with which it may have been associated.
-"
-" The associations between tabs and buffers are maintained in separate lists
-" for each tab, which are stored in tab-specific variables
-" 't:bufexp_buf_list'.
-function! s:UpdateTabBufData(bufnr)
-    " The first time we add a tab, Vim uses the current buffer as its starting
-    " page even though we are about to edit a new page, and another BufEnter
-    " for the new page is triggered later. Use this first BufEnter to
-    " initialize the list of buffers, but don't add the buffer number to the
-    " list if it is already associated with another tab.
-    "
-    " Unfortunately, this doesn't work right when the first buffer opened in
-    " the tab should be associated with it, such as when 'tab split +buffer N'
-    " is used.
-    if !exists("t:bufexp_buf_list")
-        let t:bufexp_buf_list = []
-
-        if s:AssociatedTab(a:bufnr) != -1
-            return
-        endif
-    endif
-
-    call s:AddBufToCurrentTab(a:bufnr)
-
-    if g:bufExplorerOnlyOneTab
-        call s:RemoveBufFromOtherTabs(a:bufnr)
-    endif
-endfunction
-
-" ActivateBuffer {{{2
-function! s:ActivateBuffer()
-    let _bufnr = bufnr("%")
-    call s:UpdateTabBufData(_bufnr)
-    call s:MRUPush(_bufnr)
-endfunction
-
-" DeactivateBuffer {{{2
-function! s:DeactivateBuffer(remove)
-    let _bufnr = str2nr(expand("<abuf>"))
-    call s:MRUPop(_bufnr)
-endfunction
-
-" MRUPop {{{2
-function! s:MRUPop(bufnr)
-    call filter(s:MRUList, 'v:val != '.a:bufnr)
-endfunction
-
-" MRUPush {{{2
-function! s:MRUPush(buf)
-    " Skip temporary buffer with buftype set. Don't add the BufExplorer window
-    " to the list.
-    if s:ShouldIgnore(a:buf) == 1
-        return
-    endif
-
-    " Remove the buffer number from the list if it already exists.
-    call s:MRUPop(a:buf)
-
-    " Add the buffer number to the head of the list.
-    call insert(s:MRUList, a:buf)
 endfunction
 
 " ShouldIgnore {{{2
@@ -1224,9 +1067,6 @@ function! s:SelectBuffer(...)
             else
                 execute "999tab split +buffer" . _bufNbr
             endif
-
-            " Workaround for the issue mentioned in UpdateTabBufData.
-            call s:UpdateTabBufData(_bufNbr)
         " Are we supposed to open the selected buffer in a split?
         elseif (a:0 == 2) && (a:1 == "split")
             call s:Close()
@@ -1348,13 +1188,6 @@ function! s:DeleteBuffer(buf, mode)
     catch
         call s:Error(v:exception)
     endtry
-endfunction
-
-" ListedAndCurrentTab {{{2
-" Returns whether the specified buffer is both listed and associated with the
-" current tab.
-function! s:ListedAndCurrentTab(buf)
-    return buflisted(a:buf) && s:IsInCurrentTab(a:buf)
 endfunction
 
 " Close {{{2
@@ -1558,11 +1391,6 @@ endfunction
 " SortListing {{{2
 function! s:SortListing()
     call s:SortByKeyFunc("<SID>Key_" . g:bufExplorerSortBy)
-endfunction
-
-" MRUListShow {{{2
-function! s:MRUListShow()
-    echomsg "MRUList=".string(s:MRUList)
 endfunction
 
 " Error {{{2
