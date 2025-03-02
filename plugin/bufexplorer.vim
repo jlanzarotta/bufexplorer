@@ -808,6 +808,11 @@ function! s:BuildBufferList()
 
     let lines = s:MakeLines(table)
     call setline(s:firstBufferLine, lines)
+    let firstMissingLine = s:firstBufferLine + len(lines)
+    if line('$') >= firstMissingLine
+        " Clear excess lines starting with `firstMissingLine`.
+        execute "silent keepjumps ".firstMissingLine.',$d _'
+    endif
     call s:SortListing()
 endfunction
 
@@ -1095,7 +1100,7 @@ endfunction
 " ToggleShowTabBuffer {{{2
 function! s:ToggleShowTabBuffer()
     let g:bufExplorerShowTabBuffer = !g:bufExplorerShowTabBuffer
-    call s:RebuildBufferList(g:bufExplorerShowTabBuffer)
+    call s:RebuildBufferList()
     call s:UpdateHelpStatus()
 endfunction
 
@@ -1109,7 +1114,7 @@ endfunction
 " ToggleShowUnlisted {{{2
 function! s:ToggleShowUnlisted()
     let g:bufExplorerShowUnlisted = !g:bufExplorerShowUnlisted
-    let num_bufs = s:RebuildBufferList(g:bufExplorerShowUnlisted == 0)
+    let num_bufs = s:RebuildBufferList()
     call s:UpdateHelpStatus()
 endfunction
 
@@ -1120,15 +1125,10 @@ function! s:ToggleFindActive()
 endfunction
 
 " RebuildBufferList {{{2
-function! s:RebuildBufferList(...)
+function! s:RebuildBufferList()
     setlocal modifiable
 
     let curPos = getpos('.')
-
-    if a:0 && a:000[0] && (line('$') >= s:firstBufferLine)
-        " Clear the list first.
-        execute "silent keepjumps ".s:firstBufferLine.',$d _'
-    endif
 
     let num_bufs = s:BuildBufferList()
 
