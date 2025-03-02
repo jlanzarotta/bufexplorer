@@ -173,6 +173,17 @@ The default is to be taken to the active window.
 When a buffer is selected, the functions specified either singly or as a list
 will be called.
 
+                                                      *g:bufExplorerOnlyOneTab*
+To control whether a buffer should be shown on any tab where it has ever been
+used or only on the most-recently-used (MRU) tab (i.e., the tab where the buffer
+was most recently used), use: >
+  let g:bufExplorerOnlyOneTab=0        " Show in all tabs where buffer was used.
+  let g:bufExplorerOnlyOneTab=1        " Show buffer only in MRU tab.
+The default is `1` (show a buffer only on the MRU tab).
+This setting applies only when |g:bufExplorerShowTabBuffer| is true (i.e., when
+BufExplorer shows only those buffers used in the current tab instead of showing
+all buffers).
+
                                                      *g:bufExplorerReverseSort*
 To control whether to sort the buffer in reverse order or not, use: >
   let g:bufExplorerReverseSort=0       " Do not sort in reverse order.

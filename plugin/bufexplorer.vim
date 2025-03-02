@@ -830,7 +830,7 @@ function! s:CreateHelp()
         call add(header, '" <shift-enter> or t : open buffer in another tab')
         call add(header, '" a : toggle find active buffer')
         call add(header, '" b : Fast buffer switching with b<any bufnum>')
-        call add(header, '" B : toggle if to save/use recent tab or not')
+        call add(header, '" B : toggle showing buffers only on their MRU tabs')
         call add(header, '" d : delete buffer')
         call add(header, '" D : wipe buffer')
         call add(header, '" F : open buffer in another window above the current')
@@ -841,7 +841,7 @@ function! s:CreateHelp()
         call add(header, '" R : toggle showing relative or full paths')
         call add(header, '" s : cycle thru "sort by" fields '.string(s:sort_by).'')
         call add(header, '" S : reverse cycle thru "sort by" fields')
-        call add(header, '" T : toggle if to show only buffers for this tab or not')
+        call add(header, '" T : toggle showing all buffers/only buffers used on this tab')
         call add(header, '" u : toggle showing unlisted buffers')
         call add(header, '" V : open buffer in another window on the left of the current')
         call add(header, '" v : open buffer in another window on the right of the current')
@@ -1558,7 +1558,7 @@ call s:Set("g:bufExplorerDisableDefaultKeyMapping", 0)  " Do not disable default
 call s:Set("g:bufExplorerDefaultHelp", 1)               " Show default help?
 call s:Set("g:bufExplorerDetailedHelp", 0)              " Show detailed help?
 call s:Set("g:bufExplorerFindActive", 1)                " When selecting an active buffer, take you to the window where it is active?
-call s:Set("g:bufExplorerOnlyOneTab", 1)                " If ShowTabBuffer = 1, only store the most recent tab for this buffer.
+call s:Set("g:bufExplorerOnlyOneTab", 1)                " Show buffer only on MRU tab? (Applies when `g:bufExplorerShowTabBuffer` is true.)
 call s:Set("g:bufExplorerReverseSort", 0)               " Sort in reverse order by default?
 call s:Set("g:bufExplorerShowDirectories", 1)           " (Dir's are added by commands like ':e .')
 call s:Set("g:bufExplorerShowRelativePath", 0)          " Show listings with relative or absolute paths?
