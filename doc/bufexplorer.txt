@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 17 Feb 2025
+*bufexplorer.txt*              Buffer Explorer       Last Change: 05 Mar 2025
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.6.0
+                                Version 7.7.0
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -280,6 +280,21 @@ The default is 1.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.7.0    March 05, 2025
+     What's Changed
+     - Another Major patch implemented by Dr. Michael Henry.
+       https://github.com/jlanzarotta/bufexplorer/pull/121
+       * Fix issue Bufexplorer MRU sort doesn't work properly if using
+         restore_session.vim #8 "Bufexplorer MRU sort doesn't work properly if
+         using restore_session.vim".
+       * Fix issue Bufexplorer interferes with the startinsert! command #87
+         "Bufexplorer interferes with the startinsert! command".
+       * Treat unlisted buffers as least-recently-used instead of
+         most-recently-used in the MRU sort order.
+       * Replace the undocumented m key (intended for debugging MRU logic)
+         with the BufExplorer_eval() and BufExplorer_execute() general
+         debugging features.
+       * Improve speed of MRU tracking.
 7.6.0    February 17, 2025
      What's Changed
      - Another Major patch implemented by Dr. Michael Henry.
@@ -879,7 +894,7 @@ won't list names.
 ===============================================================================
 COPYRIGHT                                               *bufexplorer-copyright*
 
-Copyright (c) 2001-2024, Jeff Lanzarotta
+Copyright (c) 2001-2025, Jeff Lanzarotta
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
