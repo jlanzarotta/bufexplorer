@@ -129,6 +129,8 @@ endfunction
 let s:MRU_Exclude_List = ["[BufExplorer]","__MRU_Files__","[Buf\ List]"]
 let s:name = '[BufExplorer]'
 let s:originBuffer = 0
+" Buffer number of the BufExplorer window.
+let s:bufExplorerBuffer = 0
 let s:running = 0
 let s:sort_by = ["number", "name", "fullpath", "mru", "extension"]
 let s:splitMode = ""
@@ -650,6 +652,9 @@ function! BufExplorer()
         execute "silent keepjumps hide edit".name
     endif
 
+    " Record BufExplorer's buffer number.
+    let s:bufExplorerBuffer = bufnr('%')
+
     call s:DisplayBufferList()
 
     " Position the cursor in the newly displayed list on the line representing
@@ -942,6 +947,11 @@ function! s:BuildBufferList()
         " `buf.attributes` must exist, but we defer the expensive work of
         " calculating other buffer details (e.g., `buf.fullname`) until we know
         " the user wants to view this buffer.
+
+        " Skip BufExplorer's buffer.
+        if buf._bufnr == s:bufExplorerBuffer
+            continue
+        endif
 
         " Skip unlisted buffers if we are not to show them.
         if !g:bufExplorerShowUnlisted && buf.attributes =~ "u"
