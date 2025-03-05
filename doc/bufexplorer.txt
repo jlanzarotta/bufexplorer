@@ -1,7 +1,7 @@
 *bufexplorer.txt*              Buffer Explorer       Last Change: 05 Mar 2025
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.7.0
+                                Version 7.8.0
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -280,6 +280,9 @@ The default is 1.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.8.0    March 05, 2025
+     After all these many years, bufexplorer now requires Vim version 7.4 or
+     greater.
 7.7.0    March 05, 2025
      What's Changed
      - Another Major patch implemented by Dr. Michael Henry.
