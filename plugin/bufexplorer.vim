@@ -714,7 +714,7 @@ function! s:MapKeys()
     nnoremap <script> <silent> <nowait> <buffer> u             :call <SID>ToggleShowUnlisted()<CR>
     nnoremap <script> <silent> <nowait> <buffer> v             :call <SID>SelectBuffer("split", "vr")<CR>
     nnoremap <script> <silent> <nowait> <buffer> V             :call <SID>SelectBuffer("split", "vl")<CR>
-    nnoremap <script> <silent> <nowait> <buffer> H             :call <SID>ToggleShowTerminal()<CR>
+    nnoremap <script> <silent> <nowait> <buffer> X             :call <SID>ToggleShowTerminal()<CR>
 
 
     for k in ["G", "n", "N", "L", "M", "H"]
@@ -839,6 +839,7 @@ function! s:CreateHelp()
         call add(header, '" u : toggle showing unlisted buffers')
         call add(header, '" V : open buffer in another window on the left of the current')
         call add(header, '" v : open buffer in another window on the right of the current')
+        call add(header, '" X : toggle showing terminal buffers')
     else
         call add(header, '" Press <F1> for Help')
     endif
