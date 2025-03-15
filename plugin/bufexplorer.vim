@@ -607,7 +607,7 @@ function! BufExplorer()
     " Forget any cached MRU ordering from previous invocations.
     unlet! s:mruOrder
 
-    silent let s:raw_buffer_listing = s:GetBufferInfo(0)
+    let s:raw_buffer_listing = s:GetBufferInfo(0)
 
     call s:MRUGarbageCollectBufs()
     call s:MRUGarbageCollectTabs()
@@ -901,8 +901,9 @@ function! s:GetBufferInfo(bufnr)
     redir => bufoutput
 
     " Show all buffers including the unlisted ones. [!] tells Vim to show the
-    " unlisted ones.
-    buffers!
+    " unlisted ones.  `:silent` allows capturing the output via `:redir`, but
+    " prevents display to the user.
+    silent buffers!
     redir END
 
     if a:bufnr > 0
