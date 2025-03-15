@@ -683,6 +683,12 @@ function! s:DisplayBufferList()
     setlocal nomodifiable
 endfunction
 
+" RedisplayBufferList {{{2
+function! s:RedisplayBufferList()
+    call s:RebuildBufferList()
+    call s:UpdateHelpStatus()
+endfunction
+
 " MapKeys {{{2
 function! s:MapKeys()
     if exists("b:displayMode") && b:displayMode == "winmanager"
@@ -1293,22 +1299,19 @@ endfunction
 " ToggleShowTerminal {{{2
 function! s:ToggleShowTerminal()
     let g:bufExplorerShowTerminal = !g:bufExplorerShowTerminal
-    call s:RebuildBufferList()
-    call s:UpdateHelpStatus()
+    call s:RedisplayBufferList()
 endfunction
 
 " ToggleSplitOutPathName {{{2
 function! s:ToggleSplitOutPathName()
     let g:bufExplorerSplitOutPathName = !g:bufExplorerSplitOutPathName
-    call s:RebuildBufferList()
-    call s:UpdateHelpStatus()
+    call s:RedisplayBufferList()
 endfunction
 
 " ToggleShowRelativePath {{{2
 function! s:ToggleShowRelativePath()
     let g:bufExplorerShowRelativePath = !g:bufExplorerShowRelativePath
-    call s:RebuildBufferList()
-    call s:UpdateHelpStatus()
+    call s:RedisplayBufferList()
 endfunction
 
 " ToggleShowTabBuffer {{{2
@@ -1317,22 +1320,19 @@ function! s:ToggleShowTabBuffer()
     " `g:bufExplorerShowTabBuffer`.
     unlet! s:mruOrder
     let g:bufExplorerShowTabBuffer = !g:bufExplorerShowTabBuffer
-    call s:RebuildBufferList()
-    call s:UpdateHelpStatus()
+    call s:RedisplayBufferList()
 endfunction
 
 " ToggleOnlyOneTab {{{2
 function! s:ToggleOnlyOneTab()
     let g:bufExplorerOnlyOneTab = !g:bufExplorerOnlyOneTab
-    call s:RebuildBufferList()
-    call s:UpdateHelpStatus()
+    call s:RedisplayBufferList()
 endfunction
 
 " ToggleShowUnlisted {{{2
 function! s:ToggleShowUnlisted()
     let g:bufExplorerShowUnlisted = !g:bufExplorerShowUnlisted
-    let num_bufs = s:RebuildBufferList()
-    call s:UpdateHelpStatus()
+    call s:RedisplayBufferList()
 endfunction
 
 " ToggleFindActive {{{2
