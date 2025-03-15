@@ -1163,16 +1163,16 @@ function! s:RemoveBuffer(mode)
         call WinManagerSuspendAUs()
     end
 
-    let _bufNbr = str2nr(getline('.'))
+    let bufNbr = str2nr(getline('.'))
 
-    if getbufvar(_bufNbr, '&modified') == 1
+    if getbufvar(bufNbr, '&modified') == 1
         " Calling confirm() requires Vim built with dialog option.
         if !has("dialog_con") && !has("dialog_gui")
-            call s:Error("Sorry, no write since last change for buffer "._bufNbr.", unable to delete")
+            call s:Error("Sorry, no write since last change for buffer ".bufNbr.", unable to delete")
             return
         endif
 
-        let answer = confirm('No write since last change for buffer '._bufNbr.'. Delete anyway?', "&Yes\n&No", 2)
+        let answer = confirm('No write since last change for buffer '.bufNbr.'. Delete anyway?', "&Yes\n&No", 2)
 
         if a:mode == "delete" && answer == 1
             let mode = "force_delete"
@@ -1185,7 +1185,7 @@ function! s:RemoveBuffer(mode)
     endif
 
     " Okay, everything is good, delete or wipe the buffer.
-    call s:DeleteBuffer(_bufNbr, mode)
+    call s:DeleteBuffer(bufNbr, mode)
 
     " Reactivate winmanager autocommand activity.
     if exists("b:displayMode") && b:displayMode == "winmanager"
