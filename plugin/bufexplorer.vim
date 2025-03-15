@@ -1256,7 +1256,19 @@ function! s:DeleteBuffer(bufNbr, mode)
         else
             execute "silent bdelete" a:bufNbr
         endif
+    catch
+        call s:Error(v:exception)
+    endtry
 
+    if bufexists(a:bufNbr)
+        " Buffer is still present.  We may have failed to wipe it, or it may
+        " have changed attributes (as `:bd` only makes a buffer unlisted).
+        " Regather information on this buffer, update the buffer list, and
+        " redisplay.
+        let info = s:GetBufferInfo(a:bufNbr)
+        let s:raw_buffer_listing[a:bufNbr] = info[a:bufNbr]
+        call s:RedisplayBufferList()
+    else
         " Delete the buffer from the list on screen.
         setlocal modifiable
         normal! "_dd
@@ -1264,9 +1276,7 @@ function! s:DeleteBuffer(bufNbr, mode)
 
         " Delete the buffer from the raw buffer list.
         unlet s:raw_buffer_listing[a:bufNbr]
-    catch
-        call s:Error(v:exception)
-    endtry
+    endif
 endfunction
 
 " Close {{{2
