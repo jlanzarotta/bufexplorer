@@ -1243,18 +1243,18 @@ endfunction
 " - "force_delete"
 " - "wipe"
 " - "force_wipe"
-function! s:DeleteBuffer(buf, mode)
+function! s:DeleteBuffer(bufNbr, mode)
     " This routine assumes that the buffer to be removed is on the current line.
     try
         " Wipe/Delete buffer from Vim.
         if a:mode == "wipe"
-            execute "silent bwipe" a:buf
+            execute "silent bwipe" a:bufNbr
         elseif a:mode == "force_wipe"
-            execute "silent bwipe!" a:buf
+            execute "silent bwipe!" a:bufNbr
         elseif a:mode == "force_delete"
-            execute "silent bdelete!" a:buf
+            execute "silent bdelete!" a:bufNbr
         else
-            execute "silent bdelete" a:buf
+            execute "silent bdelete" a:bufNbr
         endif
 
         " Delete the buffer from the list on screen.
@@ -1263,7 +1263,7 @@ function! s:DeleteBuffer(buf, mode)
         setlocal nomodifiable
 
         " Delete the buffer from the raw buffer list.
-        unlet s:raw_buffer_listing[a:buf]
+        unlet s:raw_buffer_listing[a:bufNbr]
     catch
         call s:Error(v:exception)
     endtry
