@@ -697,34 +697,59 @@ endfunction
 
 " MapKeys {{{2
 function! s:MapKeys()
+
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_BufferDelete)             :call <SID>RemoveBuffer("delete")<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_BufferDeleteForced)       :call <SID>RemoveBuffer("force_delete")<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_BufferWipe)               :call <SID>RemoveBuffer("wipe")<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_BufferWipeForced)         :call <SID>RemoveBuffer("force_wipe")<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_Close)                    :call <SID>Close()<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_OpenBuffer)               :call <SID>SelectBuffer()<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_OpenBufferAsk)            :call <SID>SelectBuffer("ask")<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_OpenBufferSplitAbove)     :call <SID>SelectBuffer("split", "st")<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_OpenBufferSplitBelow)     :call <SID>SelectBuffer("split", "sb")<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_OpenBufferSplitLeft)      :call <SID>SelectBuffer("split", "vl")<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_OpenBufferSplitRight)     :call <SID>SelectBuffer("split", "vr")<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_OpenBufferTab)            :call <SID>SelectBuffer("tab")<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_SortByNext)               :call <SID>SortSelect()<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_SortByPrev)               :call <SID>ReverseSortSelect()<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_ToggleFindActive)         :call <SID>ToggleFindActive()<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_ToggleHelp)               :call <SID>ToggleHelp()<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_ToggleOnlyOneTab)         :call <SID>ToggleOnlyOneTab()<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_ToggleReverseSort)        :call <SID>SortReverse()<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_ToggleShowRelativePath)   :call <SID>ToggleShowRelativePath()<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_ToggleShowTabBuffer)      :call <SID>ToggleShowTabBuffer()<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_ToggleShowTerminal)       :call <SID>ToggleShowTerminal()<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_ToggleShowUnlisted)       :call <SID>ToggleShowUnlisted()<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_ToggleSplitOutPathName)   :call <SID>ToggleSplitOutPathName()<CR>
+
     if exists("b:displayMode") && b:displayMode == "winmanager"
         nnoremap <buffer> <silent> <tab> :call <SID>SelectBuffer()<CR>
     endif
 
-    nnoremap <script> <silent> <nowait> <buffer> <2-leftmouse> :call <SID>SelectBuffer()<CR>
-    nnoremap <script> <silent> <nowait> <buffer> <CR>          :call <SID>SelectBuffer()<CR>
-    nnoremap <script> <silent> <nowait> <buffer> <F1>          :call <SID>ToggleHelp()<CR>
-    nnoremap <script> <silent> <nowait> <buffer> <s-cr>        :call <SID>SelectBuffer("tab")<CR>
-    nnoremap <script> <silent> <nowait> <buffer> a             :call <SID>ToggleFindActive()<CR>
-    nnoremap <script> <silent> <nowait> <buffer> b             :call <SID>SelectBuffer("ask")<CR>
-    nnoremap <script> <silent> <nowait> <buffer> B             :call <SID>ToggleOnlyOneTab()<CR>
-    nnoremap <script> <silent> <nowait> <buffer> d             :call <SID>RemoveBuffer("delete")<CR>
-    nnoremap <script> <silent> <nowait> <buffer> D             :call <SID>RemoveBuffer("wipe")<CR>
-    nnoremap <script> <silent> <nowait> <buffer> f             :call <SID>SelectBuffer("split", "sb")<CR>
-    nnoremap <script> <silent> <nowait> <buffer> F             :call <SID>SelectBuffer("split", "st")<CR>
-    nnoremap <script> <silent> <nowait> <buffer> o             :call <SID>SelectBuffer()<CR>
-    nnoremap <script> <silent> <nowait> <buffer> p             :call <SID>ToggleSplitOutPathName()<CR>
-    nnoremap <script> <silent> <nowait> <buffer> q             :call <SID>Close()<CR>
-    nnoremap <script> <silent> <nowait> <buffer> r             :call <SID>SortReverse()<CR>
-    nnoremap <script> <silent> <nowait> <buffer> R             :call <SID>ToggleShowRelativePath()<CR>
-    nnoremap <script> <silent> <nowait> <buffer> s             :call <SID>SortSelect()<CR>
-    nnoremap <script> <silent> <nowait> <buffer> S             :call <SID>ReverseSortSelect()<CR>
-    nnoremap <script> <silent> <nowait> <buffer> t             :call <SID>SelectBuffer("tab")<CR>
-    nnoremap <script> <silent> <nowait> <buffer> T             :call <SID>ToggleShowTabBuffer()<CR>
-    nnoremap <script> <silent> <nowait> <buffer> u             :call <SID>ToggleShowUnlisted()<CR>
-    nnoremap <script> <silent> <nowait> <buffer> v             :call <SID>SelectBuffer("split", "vr")<CR>
-    nnoremap <script> <silent> <nowait> <buffer> V             :call <SID>SelectBuffer("split", "vl")<CR>
-    nnoremap <script> <silent> <nowait> <buffer> X             :call <SID>ToggleShowTerminal()<CR>
+    nmap <nowait> <buffer> <2-leftmouse>    <Plug>(BufExplorer_OpenBuffer)
+    nmap <nowait> <buffer> <CR>             <Plug>(BufExplorer_OpenBuffer)
+    nmap <nowait> <buffer> <F1>             <Plug>(BufExplorer_ToggleHelp)
+    nmap <nowait> <buffer> <s-cr>           <Plug>(BufExplorer_OpenBufferTab)
+    nmap <nowait> <buffer> a                <Plug>(BufExplorer_ToggleFindActive)
+    nmap <nowait> <buffer> b                <Plug>(BufExplorer_OpenBufferAsk)
+    nmap <nowait> <buffer> B                <Plug>(BufExplorer_ToggleOnlyOneTab)
+    nmap <nowait> <buffer> d                <Plug>(BufExplorer_BufferDelete)
+    nmap <nowait> <buffer> D                <Plug>(BufExplorer_BufferWipe)
+    nmap <nowait> <buffer> f                <Plug>(BufExplorer_OpenBufferSplitBelow)
+    nmap <nowait> <buffer> F                <Plug>(BufExplorer_OpenBufferSplitAbove)
+    nmap <nowait> <buffer> o                <Plug>(BufExplorer_OpenBuffer)
+    nmap <nowait> <buffer> p                <Plug>(BufExplorer_ToggleSplitOutPathName)
+    nmap <nowait> <buffer> q                <Plug>(BufExplorer_Close)
+    nmap <nowait> <buffer> r                <Plug>(BufExplorer_ToggleReverseSort)
+    nmap <nowait> <buffer> R                <Plug>(BufExplorer_ToggleShowRelativePath)
+    nmap <nowait> <buffer> s                <Plug>(BufExplorer_SortByNext)
+    nmap <nowait> <buffer> S                <Plug>(BufExplorer_SortByPrev)
+    nmap <nowait> <buffer> t                <Plug>(BufExplorer_OpenBufferTab)
+    nmap <nowait> <buffer> T                <Plug>(BufExplorer_ToggleShowTabBuffer)
+    nmap <nowait> <buffer> u                <Plug>(BufExplorer_ToggleShowUnlisted)
+    nmap <nowait> <buffer> v                <Plug>(BufExplorer_OpenBufferSplitRight)
+    nmap <nowait> <buffer> V                <Plug>(BufExplorer_OpenBufferSplitLeft)
+    nmap <nowait> <buffer> X                <Plug>(BufExplorer_ToggleShowTerminal)
 
 
     for k in ["G", "n", "N", "L", "M", "H"]
