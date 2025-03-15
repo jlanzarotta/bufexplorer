@@ -1170,20 +1170,24 @@ function! s:RemoveBuffer(mode)
     end
 
     let bufNbr = str2nr(getline('.'))
+    let buf = s:raw_buffer_listing[bufNbr]
 
-    if !forced && getbufvar(bufNbr, '&modified')
+    if !forced && (buf.isterminal || getbufvar(bufNbr, '&modified'))
+        if buf.isterminal
+            let msg = "Buffer " . bufNbr . " is a terminal"
+        else
+            let msg = "No write since last change for buffer " . bufNbr
+        endif
         " Calling confirm() requires Vim built with dialog option.
         if !has("dialog_con") && !has("dialog_gui")
-            call s:Error("Sorry, no write since last change for buffer ".bufNbr.", unable to delete")
+            call s:Error(msg . "; cannot remove without 'force'")
             return
         endif
 
-        let answer = confirm('No write since last change for buffer '.bufNbr.'. Delete anyway?', "&Yes\n&No", 2)
+        let answer = confirm(msg . "; Remove anyway?", "&Yes\n&No", 2)
 
-        if a:mode == "delete" && answer == 1
-            let mode = "force_delete"
-        elseif a:mode == "wipe" && answer == 1
-            let mode = "force_wipe"
+        if answer == 1
+            let mode = 'force_' . mode
         else
             return
         endif
