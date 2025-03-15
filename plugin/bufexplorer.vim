@@ -855,6 +855,10 @@ endfunction
 
 " CalculateBufferDetails {{{2
 " Calculate `buf`-related details.
+" Only these fields of `buf` must be defined on entry:
+" - `._bufnr`
+" - `.attributes`
+" - `.line`
 function! s:CalculateBufferDetails(buf)
     let buf = a:buf
     let name = bufname(buf._bufnr)
@@ -897,19 +901,41 @@ function! s:CalculateBufferDetails(buf)
 endfunction
 
 " GetBufferInfo {{{2
-function! s:GetBufferInfo(bufnr)
+" Return dictionary `{ bufNbr : buf }`.
+" - If `onlyBufNbr > 0`, dictionary will contain at most that buffer.
+" On return, only these fields are set for each `buf`:
+" - `._bufnr`
+" - `.attributes`
+" - `.line`
+" Other fields will be populated by `s:CalculateBufferDetails()`.
+function! s:GetBufferInfo(onlyBufNbr)
     redir => bufoutput
 
-    " Show all buffers including the unlisted ones. [!] tells Vim to show the
-    " unlisted ones.  `:silent` allows capturing the output via `:redir`, but
+    " Below, `:silent buffers` allows capturing the output via `:redir` but
     " prevents display to the user.
-    silent buffers!
+
+    if a:onlyBufNbr > 0 && buflisted(a:onlyBufNbr)
+        " We care only about the listed buffer `a:onlyBufNbr`, so no need to
+        " enumerate unlisted buffers.
+        silent buffers
+    else
+        " Use `!` to show all buffers including the unlisted ones.
+        silent buffers!
+    endif
     redir END
 
-    if a:bufnr > 0
+    if a:onlyBufNbr > 0
         " Since we are only interested in this specified buffer remove the
         " other buffers listed.
-        let bufoutput = substitute(bufoutput."\n", '^.*\n\(\s*'.a:bufnr.'\>.\{-}\)\n.*', '\1', '')
+        " Use a very-magic pattern starting with a newline and a run of zero or
+        " more spaces/tabs:
+        let onlyLinePattern = '\v\n\s*'
+        " Continue with the buffer number followed by a non-digit character
+        " (which will be a buffer attribute character such as `u` or ` `).
+        let onlyLinePattern .= a:onlyBufNbr . '\D'
+        " Finish with a run of zero or more non-newline characters plus newline:
+        let onlyLinePattern .= '[^\n]*\n'
+        let bufoutput = matchstr("\n" . bufoutput . "\n", onlyLinePattern)
     endif
 
     let all = {}
