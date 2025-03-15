@@ -1150,6 +1150,11 @@ function! s:SelectBuffer(...)
 endfunction
 
 " RemoveBuffer {{{2
+" Valid `mode` values:
+" - "delete"
+" - "force_delete"
+" - "wipe"
+" - "force_wipe"
 function! s:RemoveBuffer(mode)
     " Are we on a line with a file name?
     if line('.') < s:firstBufferLine
@@ -1157,6 +1162,7 @@ function! s:RemoveBuffer(mode)
     endif
 
     let mode = a:mode
+    let forced = mode =~# '^force_'
 
     " These commands are to temporarily suspend the activity of winmanager.
     if exists("b:displayMode") && b:displayMode == "winmanager"
@@ -1165,7 +1171,7 @@ function! s:RemoveBuffer(mode)
 
     let bufNbr = str2nr(getline('.'))
 
-    if getbufvar(bufNbr, '&modified') == 1
+    if !forced && getbufvar(bufNbr, '&modified')
         " Calling confirm() requires Vim built with dialog option.
         if !has("dialog_con") && !has("dialog_gui")
             call s:Error("Sorry, no write since last change for buffer ".bufNbr.", unable to delete")
@@ -1195,6 +1201,11 @@ function! s:RemoveBuffer(mode)
 endfunction
 
 " DeleteBuffer {{{2
+" Valid `mode` values:
+" - "delete"
+" - "force_delete"
+" - "wipe"
+" - "force_wipe"
 function! s:DeleteBuffer(buf, mode)
     " This routine assumes that the buffer to be removed is on the current line.
     try
