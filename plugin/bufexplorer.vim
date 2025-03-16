@@ -1245,6 +1245,11 @@ endfunction
 " - "force_wipe"
 function! s:DeleteBuffer(bufNbr, mode)
     " This routine assumes that the buffer to be removed is on the current line.
+    if a:mode =~# 'delete$' && bufexists(a:bufNbr) && !buflisted(a:bufNbr)
+        call s:Error('Buffer ' . a:bufNbr
+                \ . ' is unlisted; must `wipe` to remove')
+        return
+    endif
     try
         " Wipe/Delete buffer from Vim.
         if a:mode == "wipe"
