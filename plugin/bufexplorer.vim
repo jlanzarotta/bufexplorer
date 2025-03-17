@@ -650,6 +650,12 @@ function! BufExplorer()
     " the active buffer.  The active buffer is the line with the '%' character
     " in it.
     execute search("%")
+
+    if exists('#User#BufExplorer_Started')
+        " Notify that BufExplorer has started.  This is an opportunity to make
+        " custom buffer-local mappings and the like.
+        doautocmd User BufExplorer_Started
+    endif
 endfunction
 
 " Tracks `tabId` at BufExplorer launch.
