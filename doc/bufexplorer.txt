@@ -103,6 +103,7 @@ Commands to use once exploring:
  u             Toggles the showing of "unlisted" buffers.
  V             Open the selected buffer in another window on the left of the current.
  v             Open the selected buffer in another window on the right of the current.
+ X             Toggles the showing of terminal buffers.
 
 Once invoked, Buffer Explorer displays a sorted list (MRU is the default
 sort method) of all the buffers that are currently opened. You are then
