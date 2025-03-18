@@ -141,6 +141,103 @@ something like the following in your vimrc file:
   nnoremap <silent> <m-F11> :BufExplorerHorizontalSplit<CR>
   nnoremap <silent> <c-F11> :BufExplorerVerticalSplit<CR>
 
+BufExplorer provides the following <Plug> mappings for the operations it
+provides.  The mappings are buffer-local to BufExplorer:
+
+  <Plug>(BufExplorer_BufferDelete)             Delete buffer with confirmation
+  <Plug>(BufExplorer_BufferDeleteForced)       Delete buffer w/o confirmation
+  <Plug>(BufExplorer_BufferWipe)               Wipe buffer with confirmation
+  <Plug>(BufExplorer_BufferWipeForced)         Wipe buffer w/o confirmation
+  <Plug>(BufExplorer_Close)                    Close BufExplorer window
+  <Plug>(BufExplorer_OpenBuffer)               Open buffer
+  <Plug>(BufExplorer_OpenBufferAsk)            Prompt for buffer & open
+  <Plug>(BufExplorer_OpenBufferSplitAbove)     Horizontal split & open above
+  <Plug>(BufExplorer_OpenBufferSplitBelow)     Horizontal split & open below
+  <Plug>(BufExplorer_OpenBufferSplitLeft)      Vertical split & open left
+  <Plug>(BufExplorer_OpenBufferSplitRight)     Vertical split & open right
+  <Plug>(BufExplorer_OpenBufferTab)            Open buffer in new tab
+  <Plug>(BufExplorer_SortByNext)               Select next sort order
+  <Plug>(BufExplorer_SortByPrev)               Select previous sort order
+  <Plug>(BufExplorer_ToggleFindActive)         Toggle finding active buffer
+  <Plug>(BufExplorer_ToggleHelp)               Toggle help information
+  <Plug>(BufExplorer_ToggleOnlyOneTab)         Toggle showing only on MRU tab
+  <Plug>(BufExplorer_ToggleReverseSort)        Reverse current sort order
+  <Plug>(BufExplorer_ToggleShowRelativePath)   Toggle showing relative path
+  <Plug>(BufExplorer_ToggleShowTabBuffer)      Toggle "only this tab" bufs
+  <Plug>(BufExplorer_ToggleShowTerminal)       Toggle showing terminal bufs
+  <Plug>(BufExplorer_ToggleShowUnlisted)       Toggle showing unlisted bufs
+  <Plug>(BufExplorer_ToggleSplitOutPathName)   Toggle splitting out path name
+
+At BufExplorer startup, the following buffer-local mappings are made in
+BufExplorer's buffer:
+
+  nmap <nowait> <buffer> <2-leftmouse> <Plug>(BufExplorer_OpenBuffer)
+  nmap <nowait> <buffer> <CR>     <Plug>(BufExplorer_OpenBuffer)
+  nmap <nowait> <buffer> <F1>     <Plug>(BufExplorer_ToggleHelp)
+  nmap <nowait> <buffer> <s-cr>   <Plug>(BufExplorer_OpenBufferTab)
+  nmap <nowait> <buffer> a        <Plug>(BufExplorer_ToggleFindActive)
+  nmap <nowait> <buffer> b        <Plug>(BufExplorer_OpenBufferAsk)
+  nmap <nowait> <buffer> B        <Plug>(BufExplorer_ToggleOnlyOneTab)
+  nmap <nowait> <buffer> d        <Plug>(BufExplorer_BufferDelete)
+  nmap <nowait> <buffer> D        <Plug>(BufExplorer_BufferWipe)
+  nmap <nowait> <buffer> f        <Plug>(BufExplorer_OpenBufferSplitBelow)
+  nmap <nowait> <buffer> F        <Plug>(BufExplorer_OpenBufferSplitAbove)
+  nmap <nowait> <buffer> o        <Plug>(BufExplorer_OpenBuffer)
+  nmap <nowait> <buffer> p        <Plug>(BufExplorer_ToggleSplitOutPathName)
+  nmap <nowait> <buffer> q        <Plug>(BufExplorer_Close)
+  nmap <nowait> <buffer> r        <Plug>(BufExplorer_ToggleReverseSort)
+  nmap <nowait> <buffer> R        <Plug>(BufExplorer_ToggleShowRelativePath)
+  nmap <nowait> <buffer> s        <Plug>(BufExplorer_SortByNext)
+  nmap <nowait> <buffer> S        <Plug>(BufExplorer_SortByPrev)
+  nmap <nowait> <buffer> t        <Plug>(BufExplorer_OpenBufferTab)
+  nmap <nowait> <buffer> T        <Plug>(BufExplorer_ToggleShowTabBuffer)
+  nmap <nowait> <buffer> u        <Plug>(BufExplorer_ToggleShowUnlisted)
+  nmap <nowait> <buffer> v        <Plug>(BufExplorer_OpenBufferSplitRight)
+  nmap <nowait> <buffer> V        <Plug>(BufExplorer_OpenBufferSplitLeft)
+  nmap <nowait> <buffer> X        <Plug>(BufExplorer_ToggleShowTerminal)
+
+These buffer-local mappings may be adjusted as desired after BufExplorer has
+been launched, typically by use of an autocommand.  At BufExplorer startup, a
+|User| autocommand will be sent with an autocommand pattern of
+`BufExplorer_Started`.  This event may be caught via an |:autocmd|, allowing
+customization of mappings when BufExplorer launches.
+
+Below is an example showing of some of the possibilites.  `UserPrefix_` is an
+arbitrary user-chosen prefix to avoid naming collisions.  When the
+`BufExplorer_Started` event is detected, `UserPrefix_setupBufExplorer()` will
+be called to adjust BufExplorer's mappings: >
+
+  augroup UserPrefix_BufExplorerGroup
+      autocmd!
+      autocmd User BufExplorer_Started call UserPrefix_setupBufExplorer()
+  augroup END
+
+  function! UserPrefix_setupBufExplorer()
+      " Example: Make `d` force-delete (`:bd!`) and `D` force-wipe (`:bw!`),
+      " bypassing the confirmation prompt that BufExplorer normally provides
+      " for modified buffers and terminal buffers:
+      nmap <nowait> <buffer> d <Plug>(BufExplorer_BufferDeleteForced)
+      nmap <nowait> <buffer> D <Plug>(BufExplorer_BufferWipeForced)
+
+      " Example: Map the `<Space>` key to close BufExplorer (like `q`).
+      nmap <nowait> <buffer> <Space> <Plug>(BufExplorer_Close)
+
+      " Example: Map the `<Esc>` key to close BufExplorer (like `q`).
+      " Note: Mapping `<Esc>` works badly in console Vim because `<Esc>` sends
+      " an escape byte, which is also used as the first byte in a number of
+      " multi-byte key codes (e.g., arrow keys).  Vim must wait for
+      " 'ttimeoutlen` to expire to guess whether the escape byte came from
+      " pressing the `<Esc>` key or from some multi-byte key code. Gvim and
+      " Neovim do not have this issue.
+      nmap <nowait> <buffer> <Esc> q
+
+      " Example: Map `l` key to open the buffer (like `<Enter>`).
+      nmap <nowait> <buffer> l <Plug>(BufExplorer_OpenBuffer)
+
+      " Example: Map the `t` key to `<Nop>` to prevent opening in a tab.
+      nmap <nowait> <buffer> t <Nop>
+  endfunction
+<
                                                           *g:bufExplorerChgWin*
 If set, bufexplorer will bring up the selected buffer in the window specified
 by g:bufExplorerChgWin.
