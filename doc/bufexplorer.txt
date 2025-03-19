@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 05 Mar 2025
+*bufexplorer.txt*              Buffer Explorer       Last Change: 19 Mar 2025
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.8.0
+                                Version 7.9.0
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -14,7 +14,7 @@ Plugin for easily exploring (or browsing) Vim|:buffers|.
 |bufexplorer-credits|        Credits
 |bufexplorer-copyright|      Copyright
 
-For Vim version 7.0 and above.
+For Vim version 7.4 and above.
 This plugin is only available if 'compatible' is not set.
 
 {Vi does not have any of this}
@@ -378,6 +378,30 @@ The default is 1.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.9.0    March 19, 2025
+     What's Changed
+     - Another major patch implemented by Dr. Michael Henry.
+       * Improve terminal buffer display and toggling ability.
+         https://github.com/jlanzarotta/bufexplorer/pull/123
+         - Improve the display of terminal buffers to be a uniform
+           /current/working/directory/!PID:shellName on Vim and Neovim.
+         - Enable the ability to toggle the showing of terminal buffers
+           (via the X command).
+       * Buffer removal enhancements.
+         https://github.com/jlanzarotta/bufexplorer/pull/124
+         - Allow deletion/wiping of Neovim terminal buffers (addresses Feature
+           Request: Add an option to do :bd! #69).
+         - Retain buffer until it has been fully wiped.
+         - Improve error message when deleting an unlisted buffer.
+       * Allow customized mappings.
+         https://github.com/jlanzarotta/bufexplorer/pull/125
+         - Provide a mechanism for users to adjust BufExplorer command mappings.
+           This addresses Exit on 'Esc' press #73 and Add l as an additional
+           key to select a buffer #113.
+         - Expose new "forced" delete and wipe actions that may be optionally
+           mapped by the user. This removes confirmation for modified buffers
+           and terminal buffers.
+         - Remove incomplete visual-mode d/D mappings.
 7.8.0    March 05, 2025
      After all these many years, bufexplorer now requires Vim version 7.4 or
      greater.

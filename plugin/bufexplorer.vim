@@ -74,7 +74,7 @@ endif
 "1}}}
 
 " Version number.
-let g:bufexplorer_version = "7.8.0"
+let g:bufexplorer_version = "7.9.0"
 
 " Plugin Code {{{1
 " Check for Vim version {{{2
@@ -697,7 +697,6 @@ endfunction
 
 " MapKeys {{{2
 function! s:MapKeys()
-
     nnoremap <silent> <buffer> <Plug>(BufExplorer_BufferDelete)             :call <SID>RemoveBuffer("delete")<CR>
     nnoremap <silent> <buffer> <Plug>(BufExplorer_BufferDeleteForced)       :call <SID>RemoveBuffer("force_delete")<CR>
     nnoremap <silent> <buffer> <Plug>(BufExplorer_BufferWipe)               :call <SID>RemoveBuffer("wipe")<CR>
@@ -750,7 +749,6 @@ function! s:MapKeys()
     nmap <nowait> <buffer> v                <Plug>(BufExplorer_OpenBufferSplitRight)
     nmap <nowait> <buffer> V                <Plug>(BufExplorer_OpenBufferSplitLeft)
     nmap <nowait> <buffer> X                <Plug>(BufExplorer_ToggleShowTerminal)
-
 
     for k in ["G", "n", "N", "L", "M", "H"]
         execute "nnoremap <buffer> <silent>" k ":keepjumps normal!" k."<CR>"
