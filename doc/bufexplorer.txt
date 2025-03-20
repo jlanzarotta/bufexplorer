@@ -1,4 +1,4 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 19 Mar 2025
+*bufexplorer.txt*              Buffer Explorer       Last Change: 20 Mar 2025
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
                                 Version 7.9.0
@@ -378,7 +378,7 @@ The default is 1.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
-7.9.0    March 19, 2025
+7.9.0    March 20, 2025
      What's Changed
      - Another major patch implemented by Dr. Michael Henry.
        * Improve terminal buffer display and toggling ability.
