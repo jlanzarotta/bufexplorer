@@ -600,6 +600,7 @@ function! BufExplorer()
     endif
 
     let s:tabIdAtLaunch = s:MRUEnsureTabId(tabpagenr())
+    let s:windowAtLaunch = winnr()
 
     " Forget any cached MRU ordering from previous invocations.
     unlet! s:mruOrder
@@ -658,6 +659,9 @@ endfunction
 " Tracks `tabId` at BufExplorer launch.
 let s:tabIdAtLaunch = ''
 
+" Tracks window number at BufExplorer launch.
+let s:windowAtLaunch = 0
+
 " DisplayBufferList {{{2
 function! s:DisplayBufferList()
     setlocal buftype=nofile
@@ -701,6 +705,7 @@ function! s:MapKeys()
     nnoremap <silent> <buffer> <Plug>(BufExplorer_Close)                    :call <SID>Close()<CR>
     nnoremap <silent> <buffer> <Plug>(BufExplorer_OpenBuffer)               :call <SID>SelectBuffer()<CR>
     nnoremap <silent> <buffer> <Plug>(BufExplorer_OpenBufferAsk)            :call <SID>SelectBuffer("ask")<CR>
+    nnoremap <silent> <buffer> <Plug>(BufExplorer_OpenBufferOriginalWindow) :call <SID>SelectBuffer("original_window")<CR>
     nnoremap <silent> <buffer> <Plug>(BufExplorer_OpenBufferSplitAbove)     :call <SID>SelectBuffer("split", "st")<CR>
     nnoremap <silent> <buffer> <Plug>(BufExplorer_OpenBufferSplitBelow)     :call <SID>SelectBuffer("split", "sb")<CR>
     nnoremap <silent> <buffer> <Plug>(BufExplorer_OpenBufferSplitLeft)      :call <SID>SelectBuffer("split", "vl")<CR>
@@ -734,6 +739,7 @@ function! s:MapKeys()
     nmap <nowait> <buffer> f                <Plug>(BufExplorer_OpenBufferSplitBelow)
     nmap <nowait> <buffer> F                <Plug>(BufExplorer_OpenBufferSplitAbove)
     nmap <nowait> <buffer> o                <Plug>(BufExplorer_OpenBuffer)
+    nmap <nowait> <buffer> O                <Plug>(BufExplorer_OpenBufferOriginalWindow)
     nmap <nowait> <buffer> p                <Plug>(BufExplorer_ToggleSplitOutPathName)
     nmap <nowait> <buffer> q                <Plug>(BufExplorer_Close)
     nmap <nowait> <buffer> r                <Plug>(BufExplorer_ToggleReverseSort)
@@ -859,6 +865,7 @@ function! s:CreateHelp()
         call add(header, '" D : wipe buffer')
         call add(header, '" F : open buffer in another window above the current')
         call add(header, '" f : open buffer in another window below the current')
+        call add(header, '" O : open buffer in original window')
         call add(header, '" p : toggle splitting of file and path name')
         call add(header, '" q : quit')
         call add(header, '" r : reverse sort')
@@ -1159,6 +1166,15 @@ function! s:MakeLines(table)
 endfunction
 
 " SelectBuffer {{{2
+" Valid arguments:
+"   `()`                    Open in current window.
+"   `("ask")`               Prompt for buffer, then open in current window.
+"   `("original_window")`   Open in original window.
+"   `("split", "st")`       Open in horizontal split above current window.
+"   `("split", "sb")`       Open in horizontal split below current window.
+"   `("split", "vl")`       Open in vertical split left of current window.
+"   `("split", "vr")`       Open in vertical split right of current window.
+"   `("tab")`               Open in a new tab.
 function! s:SelectBuffer(...)
     " Sometimes messages are not cleared when we get here so it looks like an
     " error has occurred when it really has not.
@@ -1234,6 +1250,11 @@ function! s:SelectBuffer(...)
             else " = sb
                 execute "belowright sb "._bufNbr
             endif
+        " Are we supposed to open the selected buffer in the original window?
+        elseif (a:0 == 1) && (a:1 == "original_window")
+            call s:Close()
+            execute s:windowAtLaunch . "wincmd w"
+            execute "keepjumps keepalt silent b!" _bufNbr
         else
             " Request to open in current (BufExplorer) window.
             if g:bufExplorerFindActive && tabNbr > 0

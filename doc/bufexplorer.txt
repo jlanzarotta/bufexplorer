@@ -88,6 +88,8 @@ Commands to use once exploring:
  f             Open selected buffer in another window below the current.
  o             Opens the buffer that is under the cursor into the current
                window.
+ O             Opens the buffer that is under the cursor into the window where
+               BufExplorer was originally launched.
  p             Toggles the showing of a split filename/pathname.
  q             Exit/Close bufexplorer.
  r             Reverses the order the buffers are listed in.
@@ -151,6 +153,7 @@ provides.  The mappings are buffer-local to BufExplorer:
   <Plug>(BufExplorer_Close)                    Close BufExplorer window
   <Plug>(BufExplorer_OpenBuffer)               Open buffer
   <Plug>(BufExplorer_OpenBufferAsk)            Prompt for buffer & open
+  <Plug>(BufExplorer_OpenBufferOriginalWindow) Open buffer in original window
   <Plug>(BufExplorer_OpenBufferSplitAbove)     Horizontal split & open above
   <Plug>(BufExplorer_OpenBufferSplitBelow)     Horizontal split & open below
   <Plug>(BufExplorer_OpenBufferSplitLeft)      Vertical split & open left
@@ -183,6 +186,7 @@ BufExplorer's buffer:
   nmap <nowait> <buffer> f        <Plug>(BufExplorer_OpenBufferSplitBelow)
   nmap <nowait> <buffer> F        <Plug>(BufExplorer_OpenBufferSplitAbove)
   nmap <nowait> <buffer> o        <Plug>(BufExplorer_OpenBuffer)
+  nmap <nowait> <buffer> O        <Plug>(BufExplorer_OpenBufferOriginalWindow)
   nmap <nowait> <buffer> p        <Plug>(BufExplorer_ToggleSplitOutPathName)
   nmap <nowait> <buffer> q        <Plug>(BufExplorer_Close)
   nmap <nowait> <buffer> r        <Plug>(BufExplorer_ToggleReverseSort)
