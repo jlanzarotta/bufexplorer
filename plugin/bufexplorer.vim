@@ -1349,6 +1349,18 @@ endfunction
 
 " Close {{{2
 function! s:Close()
+    let [tabNbr, winNbr] = s:FindBufExplorer()
+    if tabNbr == 0
+        return
+    endif
+    let [curTabNbr, curWinNbr] = [tabpagenr(), winnr()]
+    if [tabNbr, winNbr] != [curTabNbr, curWinNbr]
+        " User has switched away from the original BufExplorer window.
+        " It's unclear how to do better than simply wiping out the
+        " BufExplorer buffer.
+        execute 'bwipeout ' . s:bufExplorerBuffer
+        return
+    endif
     " Get only the listed buffers associated with the current tab (up to 2).
     let listed = s:MRUListedBuffersForTab(s:tabIdAtLaunch, 2)
 
