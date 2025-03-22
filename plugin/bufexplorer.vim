@@ -1377,6 +1377,23 @@ function! s:Close()
     echo
 endfunction
 
+" FindBufExplorer {{{2
+" Return `[tabNbr, winNbr]`; both numbers will be zero if not found.
+function! s:FindBufExplorer()
+    let result = [0, 0]
+    if s:running
+        let numTabs = tabpagenr('$')
+        for tabNbr in range(1, numTabs)
+            let winNbr = index(tabpagebuflist(tabNbr), s:bufExplorerBuffer) + 1
+            if winNbr > 0
+                let result = [tabNbr, winNbr]
+                break
+            endif
+        endfor
+    endif
+    return result
+endfunction
+
 " ToggleShowTerminal {{{2
 function! s:ToggleShowTerminal()
     let g:bufExplorerShowTerminal = !g:bufExplorerShowTerminal
