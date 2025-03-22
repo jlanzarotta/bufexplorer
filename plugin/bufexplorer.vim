@@ -96,6 +96,7 @@ endif
 " Command actions {{{2
 let s:actions = [
         \ 'current',
+        \ 'close',
         \ ]
 
 " Command-line completion function for `s:actions`.
@@ -608,6 +609,11 @@ function! BufExplorer(...)
 
     if index(s:actions, action) < 0
         echoerr 'Invalid action ' . action
+        return
+    endif
+
+    if action == 'close'
+        call s:Close()
         return
     endif
 
