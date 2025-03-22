@@ -99,6 +99,10 @@ let s:actions = [
         \ 'close',
         \ 'split',
         \ 'vsplit',
+        \ 'above',
+        \ 'below',
+        \ 'left',
+        \ 'right',
         \ ]
 
 " Command-line completion function for `s:actions`.
@@ -661,6 +665,10 @@ function! BufExplorer(...)
     let actionMap = {
             \ 'split'   : ['split', g:bufExplorerSplitBelow],
             \ 'vsplit'  : ['vsplit', g:bufExplorerSplitRight],
+            \ 'above'   : ['split', 0],
+            \ 'below'   : ['split', 1],
+            \ 'left'    : ['vsplit', 0],
+            \ 'right'   : ['vsplit', 1],
             \ 'current' : ['', 0],
             \}
     let [splitMode, botRight] = actionMap[action]
