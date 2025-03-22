@@ -117,7 +117,6 @@ endfunction
 " Script variables {{{2
 let s:MRU_Exclude_List = ["[BufExplorer]","__MRU_Files__","[Buf\ List]"]
 let s:name = '[BufExplorer]'
-let s:originBuffer = 0
 " Buffer number of the BufExplorer window.
 let s:bufExplorerBuffer = 0
 let s:running = 0
@@ -600,8 +599,6 @@ function! BufExplorer()
         return
     endif
 
-    " Add zero to ensure the variable is treated as a number.
-    let s:originBuffer = bufnr("%") + 0
     let s:tabIdAtLaunch = s:MRUEnsureTabId(tabpagenr())
 
     " Forget any cached MRU ordering from previous invocations.
