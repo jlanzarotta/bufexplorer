@@ -93,8 +93,19 @@ if v:version < 704
     finish
 endif
 
+" Command actions {{{2
+let s:actions = [
+        \ 'current',
+        \ ]
+
+" Command-line completion function for `s:actions`.
+function! s:ActionArgs(ArgLead, CmdLine, CursorPos)
+    return join(s:actions, "\n")
+endfunction
+
 " Create commands {{{2
-command! BufExplorer :call BufExplorer()
+command! -nargs=? -complete=custom,<SID>ActionArgs
+        \ BufExplorer :call BufExplorer(<f-args>)
 command! ToggleBufExplorer :call ToggleBufExplorer()
 command! BufExplorerHorizontalSplit :call BufExplorerHorizontalSplit()
 command! BufExplorerVerticalSplit :call BufExplorerVerticalSplit()
@@ -581,7 +592,25 @@ function! ToggleBufExplorer()
 endfunction
 
 " BufExplorer {{{2
-function! BufExplorer()
+" Args: `([action])`
+" Optional `action` argument must be taken from `s:actions`.  If not present,
+" `action` defaults to `g:bufExplorerDefaultAction`.
+function! BufExplorer(...)
+    if a:0 >= 1
+        let action = a:1
+    else
+        let action = g:bufExplorerDefaultAction
+    endif
+    if a:0 >= 2
+        echoerr 'Too many arguments'
+        return
+    endif
+
+    if index(s:actions, action) < 0
+        echoerr 'Invalid action ' . action
+        return
+    endif
+
     let [tabNbr, winNbr] = s:FindBufExplorer()
     if tabNbr > 0
         execute 'keepjumps ' . tabNbr . 'tabnext'
@@ -1703,6 +1732,7 @@ endfunction
 
 " Default values {{{2
 call s:Set("g:bufExplorerDisableDefaultKeyMapping", 0)  " Do not disable default key mappings.
+call s:Set("g:bufExplorerDefaultAction", 'current')     " Default action for `:BufExplorer` with no args.
 call s:Set("g:bufExplorerDefaultHelp", 1)               " Show default help?
 call s:Set("g:bufExplorerDetailedHelp", 0)              " Show detailed help?
 call s:Set("g:bufExplorerFindActive", 1)                " When selecting an active buffer, take you to the window where it is active?
