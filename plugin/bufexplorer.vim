@@ -582,21 +582,18 @@ endfunction
 
 " BufExplorer {{{2
 function! BufExplorer()
+    let [tabNbr, winNbr] = s:FindBufExplorer()
+    if tabNbr > 0
+        execute 'keepjumps ' . tabNbr . 'tabnext'
+        execute 'keepjumps ' . winNbr . 'wincmd w'
+        return
+    endif
+
     let name = s:name
 
     if !has("win32")
         " On non-Windows boxes, escape the name so that is shows up correctly.
         let name = escape(name, "[]")
-    endif
-
-    " Make sure there is only one explorer open at a time.
-    if s:running == 1
-        " Go to the open buffer.
-        if has("gui")
-            execute "drop" name
-        endif
-
-        return
     endif
 
     let s:tabIdAtLaunch = s:MRUEnsureTabId(tabpagenr())
