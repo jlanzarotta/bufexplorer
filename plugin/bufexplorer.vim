@@ -97,6 +97,8 @@ endif
 let s:actions = [
         \ 'current',
         \ 'close',
+        \ 'split',
+        \ 'vsplit',
         \ ]
 
 " Command-line completion function for `s:actions`.
@@ -134,7 +136,6 @@ let s:name = '[BufExplorer]'
 let s:bufExplorerBuffer = 0
 let s:running = 0
 let s:sort_by = ["number", "name", "fullpath", "mru", "extension"]
-let s:splitMode = ""
 let s:didSplit = 0
 let s:types = ["fullname", "homename", "path", "relativename", "relativepath", "shortname"]
 
@@ -541,7 +542,6 @@ function! s:Cleanup()
     endif
 
     let s:running = 0
-    let s:splitMode = ""
     let s:didSplit = 0
 
     delmarks!
@@ -572,16 +572,12 @@ endfunction
 
 " BufExplorerHorizontalSplit {{{2
 function! BufExplorerHorizontalSplit()
-    let s:splitMode = "sp"
-    execute "BufExplorer"
-    let s:splitMode = ""
+    call BufExplorer('split')
 endfunction
 
 " BufExplorerVerticalSplit {{{2
 function! BufExplorerVerticalSplit()
-    let s:splitMode = "vsp"
-    execute "BufExplorer"
-    let s:splitMode = ""
+    call BufExplorer('vsplit')
 endfunction
 
 " ToggleBufExplorer {{{2
@@ -662,19 +658,19 @@ function! BufExplorer(...)
     call s:MRUGarbageCollectTabs()
 
     " We may have to split the current window.
-    if s:splitMode != ""
+    if action != 'current'
         " Save off the original settings.
         let [_splitbelow, _splitright] = [&splitbelow, &splitright]
 
         " Set the setting to ours.
         let [&splitbelow, &splitright] = [g:bufExplorerSplitBelow, g:bufExplorerSplitRight]
-        let _size = (s:splitMode == "sp") ? g:bufExplorerSplitHorzSize : g:bufExplorerSplitVertSize
+        let _size = (action == "split") ? g:bufExplorerSplitHorzSize : g:bufExplorerSplitVertSize
 
         " Split the window either horizontally or vertically.
         if _size <= 0
-            execute 'keepalt ' . s:splitMode
+            execute 'keepalt ' . action
         else
-            execute 'keepalt ' . _size . s:splitMode
+            execute 'keepalt ' . _size . action
         endif
 
         " Restore the original settings.
