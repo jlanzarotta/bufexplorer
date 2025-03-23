@@ -107,7 +107,8 @@ endfunction
 " Create commands {{{2
 command! -nargs=? -complete=custom,<SID>ActionArgs
         \ BufExplorer :call BufExplorer(<f-args>)
-command! ToggleBufExplorer :call ToggleBufExplorer()
+command! -nargs=? -complete=custom,<SID>ActionArgs
+        \ ToggleBufExplorer :call ToggleBufExplorer(<f-args>)
 command! BufExplorerHorizontalSplit :call BufExplorerHorizontalSplit()
 command! BufExplorerVerticalSplit :call BufExplorerVerticalSplit()
 
@@ -584,12 +585,30 @@ function! BufExplorerVerticalSplit()
 endfunction
 
 " ToggleBufExplorer {{{2
-function! ToggleBufExplorer()
-    if exists("s:running") && s:running == 1 && bufname(winbufnr(0)) == s:name
-        call s:Close()
+" Args: `([action])`
+" Optional `action` argument must be taken from `s:actions`.  If not present,
+" `action` defaults to `g:bufExplorerDefaultAction`.
+function! ToggleBufExplorer(...)
+    if a:0 >= 1
+        let action = a:1
     else
-        call BufExplorer()
+        let action = g:bufExplorerDefaultAction
     endif
+    if a:0 >= 2
+        echoerr 'Too many arguments'
+        return
+    endif
+
+    if index(s:actions, action) < 0
+        echoerr 'Invalid action ' . action
+        return
+    endif
+
+    if s:running && bufnr('%') == s:bufExplorerBuffer
+        let action = 'close'
+    endif
+
+    call BufExplorer(action)
 endfunction
 
 " BufExplorer {{{2
