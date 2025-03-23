@@ -657,24 +657,23 @@ function! BufExplorer(...)
     call s:MRUGarbageCollectBufs()
     call s:MRUGarbageCollectTabs()
 
+    " `{ action: [splitMode, botRight] }`.
+    let actionMap = {
+            \ 'split'   : ['split', g:bufExplorerSplitBelow],
+            \ 'vsplit'  : ['vsplit', g:bufExplorerSplitRight],
+            \ 'current' : ['', 0],
+            \}
+    let [splitMode, botRight] = actionMap[action]
+
     " We may have to split the current window.
-    if action != 'current'
-        " Save off the original settings.
-        let [_splitbelow, _splitright] = [&splitbelow, &splitright]
-
-        " Set the setting to ours.
-        let [&splitbelow, &splitright] = [g:bufExplorerSplitBelow, g:bufExplorerSplitRight]
-        let _size = (action == "split") ? g:bufExplorerSplitHorzSize : g:bufExplorerSplitVertSize
-
-        " Split the window either horizontally or vertically.
-        if _size <= 0
-            execute 'keepalt ' . action
-        else
-            execute 'keepalt ' . _size . action
+    if splitMode != ''
+        let size = splitMode == 'split' ? g:bufExplorerSplitHorzSize : g:bufExplorerSplitVertSize
+        let cmd = 'keepalt ' . (botRight ? 'botright ' : 'topleft ')
+        if size > 0
+            let cmd .= size
         endif
-
-        " Restore the original settings.
-        let [&splitbelow, &splitright] = [_splitbelow, _splitright]
+        let cmd .= splitMode
+        execute cmd
 
         " Remember that a split was triggered
         let s:didSplit = 1
