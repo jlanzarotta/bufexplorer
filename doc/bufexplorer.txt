@@ -60,10 +60,6 @@ windows) in the newly split window.  When <Leader>be is issued, bufexplorer
 opens the bufexplorer contents in the current window and the buffer the user
 selects is opened in the current window.
 
-Note: If the current buffer is modified when bufexplorer started, the current
-      window is always split and the new bufexplorer is displayed in that new
-      window.
-
 Commands to use once exploring:
 
  <F1>          Toggle help information.
