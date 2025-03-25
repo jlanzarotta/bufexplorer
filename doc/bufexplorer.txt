@@ -8,6 +8,7 @@ Plugin for easily exploring (or browsing) Vim|:buffers|.
 |bufexplorer-installation|   Installation
 |bufexplorer-usage|          Usage
 |bufexplorer-windowlayout|   Window Layout
+|bufexplorer-commands|       Commands
 |bufexplorer-customization|  Customization
 |bufexplorer-changelog|      Change Log
 |bufexplorer-todo|           Todo
@@ -49,6 +50,8 @@ To start exploring in a newly split horizontal window, use: >
 To start exploring in a newly split vertical window, use: >
  <Leader>bv   or   :BufExplorerVerticalSplit   or   Your custom key mapping
 
+For full information on these flexible commands, see |bufexplorer-commands|.
+
 If you would like to use something other than the default leader key - '\' -
 you may simply change the leader (see |mapleader|).
 
@@ -59,10 +62,6 @@ bufexplorer show the buffer they are about to select (from the bufexplorer
 windows) in the newly split window.  When <Leader>be is issued, bufexplorer
 opens the bufexplorer contents in the current window and the buffer the user
 selects is opened in the current window.
-
-Note: If the current buffer is modified when bufexplorer started, the current
-      window is always split and the new bufexplorer is displayed in that new
-      window.
 
 Commands to use once exploring:
 
@@ -113,6 +112,74 @@ able to move the cursor to the line containing the buffer's name you are
 wanting to act upon. Once you have selected the buffer you would like,
 you can then either open it, close it (delete), resort the list, reverse
 the sort, quit exploring and so on...
+
+===============================================================================
+COMMANDS                                            *bufexplorer-commands*
+
+:BufExplorer [action]                               *:BufExplorer*
+                Open or close BufExplorer.
+
+`:BufExplorer` accepts an optional "action" argument as follows:
+
+  current   Open BufExplorer in the current window
+  split     Open BufExplorer in a new horizontal split
+  vsplit    Open BufExplorer in a new vertical split
+  above     Open BufExplorer in a new horizontal split above the current window
+  below     Open BufExplorer in a new horizontal split below the current window
+  left      Open BufExplorer in a new vertical split left of the current window
+  right     Open BufExplorer in a new vertical split right of the current window
+  close     Close BufExplorer
+
+If the action argument is not provided, then the value of
+|g:bufExplorerDefaultAction| will be used; by default, this variable contains
+`current` and thus `:Bufexplorer` is the same as `:BufExplorer current`.
+
+Note that this means the behavior of the default mapping <Leader>be (which maps
+to `:BufExplorer`) is determined by |g:bufExplorerDefaultAction|.
+
+The `close` action will close BufExplorer regardless of the tab page or window
+where it was left running.
+
+For actions other than `close`, the `:BufExplorer` command will switch to any
+existing BufExplorer window instead of launching a new instance of BufExplorer.
+
+The actions `above`, `below`, `left`, and `right` specify the type of split
+(horizontal or vertical) to create and where the new window should be placed
+relative to the current window.
+
+The `split` action makes a horizontal split; the position of the split is
+controlled by |g:bufExplorerSplitBelow| (true means `below`, false means
+`above`).
+
+The `vsplit` action makes a vertical split; the position of the split is
+controlled by |g:bufExplorerSplitRight| (true means `right`, false means
+`left`).
+
+Tab completion is provided.  For example, typing `:BufExplorer v` and then
+pressing the <Tab> key will complete the action argument to become `vsplit`.
+
+:ToggleBufExplorer [action]                         *:ToggleBufExplorer*
+                Toggle open/closed BufExplorer.
+
+In most ways, this command is identical to |:BufExplorer|, and the invocation
+`:ToggleBufExplorer action` is equivalent to `:BufExplorer action`; however, if
+BufExplorer is already running in the current window, `action` is converted to
+`close` before chaining to `:BufExplorer action`.  If BufExplorer is running in
+a different window and the action is not `close`, switch to that already-running
+BufExplorer window.
+
+Note that the behavior of the default mapping <Leader>bt (which maps to
+`:ToggleBufExplorer`) is determined by |g:bufExplorerDefaultAction|.
+
+:BufExplorerHorizontalSplit                         *:BufExplorerHorizontalSplit*
+                Open BufExplorer in a new horizontal split.
+
+This is equivalent to `:BufExplorer split`.
+
+:BufExplorerVerticalSplit                           *:BufExplorerVerticalSplit*
+                Open BufExplorer in a new vertical split.
+
+This is equivalent to `:BufExplorer vsplit`.
 
 ===============================================================================
 WINDOW LAYOUT                                       *bufexplorer-windowlayout*
@@ -245,6 +312,19 @@ be called to adjust BufExplorer's mappings: >
                                                           *g:bufExplorerChgWin*
 If set, bufexplorer will bring up the selected buffer in the window specified
 by g:bufExplorerChgWin.
+
+                                                   *g:bufExplorerDefaultAction*
+Specify the default action for |:BufExplorer| and |:ToggleBufExplorer|.  For
+example: >
+  let g:bufExplorerDefaultAction = 'current'  " Open in current window.
+  let g:bufExplorerDefaultAction = 'split'    " Open in new horizontal split.
+  let g:bufExplorerDefaultAction = 'vsplit'   " Open in new vertical split.
+  let g:bufExplorerDefaultAction = 'above'    " Open in horizontal split above.
+  let g:bufExplorerDefaultAction = 'below'    " Open in horizontal split below.
+  let g:bufExplorerDefaultAction = 'left'     " Open in vertical split to left.
+  let g:bufExplorerDefaultAction = 'right'    " Open in vertical split to right.
+The default is `current` (open in current window). See |:BufExplorer| for more
+details.
 
                                                      *g:bufExplorerDefaultHelp*
 To control whether the default help is displayed or not, use: >

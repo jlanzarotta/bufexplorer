@@ -93,9 +93,28 @@ if v:version < 704
     finish
 endif
 
+" Command actions {{{2
+let s:actions = [
+        \ 'current',
+        \ 'close',
+        \ 'split',
+        \ 'vsplit',
+        \ 'above',
+        \ 'below',
+        \ 'left',
+        \ 'right',
+        \ ]
+
+" Command-line completion function for `s:actions`.
+function! s:ActionArgs(ArgLead, CmdLine, CursorPos)
+    return join(s:actions, "\n")
+endfunction
+
 " Create commands {{{2
-command! BufExplorer :call BufExplorer()
-command! ToggleBufExplorer :call ToggleBufExplorer()
+command! -nargs=? -complete=custom,<SID>ActionArgs
+        \ BufExplorer :call BufExplorer(<f-args>)
+command! -nargs=? -complete=custom,<SID>ActionArgs
+        \ ToggleBufExplorer :call ToggleBufExplorer(<f-args>)
 command! BufExplorerHorizontalSplit :call BufExplorerHorizontalSplit()
 command! BufExplorerVerticalSplit :call BufExplorerVerticalSplit()
 
@@ -121,7 +140,6 @@ let s:name = '[BufExplorer]'
 let s:bufExplorerBuffer = 0
 let s:running = 0
 let s:sort_by = ["number", "name", "fullpath", "mru", "extension"]
-let s:splitMode = ""
 let s:didSplit = 0
 let s:types = ["fullname", "homename", "path", "relativename", "relativepath", "shortname"]
 
@@ -528,7 +546,6 @@ function! s:Cleanup()
     endif
 
     let s:running = 0
-    let s:splitMode = ""
     let s:didSplit = 0
 
     delmarks!
@@ -559,44 +576,78 @@ endfunction
 
 " BufExplorerHorizontalSplit {{{2
 function! BufExplorerHorizontalSplit()
-    let s:splitMode = "sp"
-    execute "BufExplorer"
-    let s:splitMode = ""
+    call BufExplorer('split')
 endfunction
 
 " BufExplorerVerticalSplit {{{2
 function! BufExplorerVerticalSplit()
-    let s:splitMode = "vsp"
-    execute "BufExplorer"
-    let s:splitMode = ""
+    call BufExplorer('vsplit')
 endfunction
 
 " ToggleBufExplorer {{{2
-function! ToggleBufExplorer()
-    if exists("s:running") && s:running == 1 && bufname(winbufnr(0)) == s:name
-        call s:Close()
+" Args: `([action])`
+" Optional `action` argument must be taken from `s:actions`.  If not present,
+" `action` defaults to `g:bufExplorerDefaultAction`.
+function! ToggleBufExplorer(...)
+    if a:0 >= 1
+        let action = a:1
     else
-        call BufExplorer()
+        let action = g:bufExplorerDefaultAction
     endif
+    if a:0 >= 2
+        echoerr 'Too many arguments'
+        return
+    endif
+
+    if index(s:actions, action) < 0
+        echoerr 'Invalid action ' . action
+        return
+    endif
+
+    if s:running && bufnr('%') == s:bufExplorerBuffer
+        let action = 'close'
+    endif
+
+    call BufExplorer(action)
 endfunction
 
 " BufExplorer {{{2
-function! BufExplorer()
+" Args: `([action])`
+" Optional `action` argument must be taken from `s:actions`.  If not present,
+" `action` defaults to `g:bufExplorerDefaultAction`.
+function! BufExplorer(...)
+    if a:0 >= 1
+        let action = a:1
+    else
+        let action = g:bufExplorerDefaultAction
+    endif
+    if a:0 >= 2
+        echoerr 'Too many arguments'
+        return
+    endif
+
+    if index(s:actions, action) < 0
+        echoerr 'Invalid action ' . action
+        return
+    endif
+
+    if action == 'close'
+        call s:Close()
+        return
+    endif
+
+    let [tabNbr, winNbr] = s:FindBufExplorer()
+    if tabNbr > 0
+        execute 'keepjumps ' . tabNbr . 'tabnext'
+        execute 'keepjumps ' . winNbr . 'wincmd w'
+        return
+    endif
+
     let name = s:name
 
     if !has("win32")
         " On non-Windows boxes, escape the name so that is shows up correctly.
         let name = escape(name, "[]")
-    endif
-
-    " Make sure there is only one explorer open at a time.
-    if s:running == 1
-        " Go to the open buffer.
-        if has("gui")
-            execute "drop" name
-        endif
-
-        return
     endif
 
     let s:tabIdAtLaunch = s:MRUEnsureTabId(tabpagenr())
@@ -610,24 +661,27 @@ function! BufExplorer()
     call s:MRUGarbageCollectBufs()
     call s:MRUGarbageCollectTabs()
 
+    " `{ action: [splitMode, botRight] }`.
+    let actionMap = {
+            \ 'split'   : ['split', g:bufExplorerSplitBelow],
+            \ 'vsplit'  : ['vsplit', g:bufExplorerSplitRight],
+            \ 'above'   : ['split', 0],
+            \ 'below'   : ['split', 1],
+            \ 'left'    : ['vsplit', 0],
+            \ 'right'   : ['vsplit', 1],
+            \ 'current' : ['', 0],
+            \}
+    let [splitMode, botRight] = actionMap[action]
+
     " We may have to split the current window.
-    if s:splitMode != ""
-        " Save off the original settings.
-        let [_splitbelow, _splitright] = [&splitbelow, &splitright]
-
-        " Set the setting to ours.
-        let [&splitbelow, &splitright] = [g:bufExplorerSplitBelow, g:bufExplorerSplitRight]
-        let _size = (s:splitMode == "sp") ? g:bufExplorerSplitHorzSize : g:bufExplorerSplitVertSize
-
-        " Split the window either horizontally or vertically.
-        if _size <= 0
-            execute 'keepalt ' . s:splitMode
-        else
-            execute 'keepalt ' . _size . s:splitMode
+    if splitMode != ''
+        let size = splitMode == 'split' ? g:bufExplorerSplitHorzSize : g:bufExplorerSplitVertSize
+        let cmd = 'keepalt ' . (botRight ? 'botright ' : 'topleft ')
+        if size > 0
+            let cmd .= size
         endif
-
-        " Restore the original settings.
-        let [&splitbelow, &splitright] = [_splitbelow, _splitright]
+        let cmd .= splitMode
+        execute cmd
 
         " Remember that a split was triggered
         let s:didSplit = 1
@@ -1352,6 +1406,18 @@ endfunction
 
 " Close {{{2
 function! s:Close()
+    let [tabNbr, winNbr] = s:FindBufExplorer()
+    if tabNbr == 0
+        return
+    endif
+    let [curTabNbr, curWinNbr] = [tabpagenr(), winnr()]
+    if [tabNbr, winNbr] != [curTabNbr, curWinNbr]
+        " User has switched away from the original BufExplorer window.
+        " It's unclear how to do better than simply wiping out the
+        " BufExplorer buffer.
+        execute 'bwipeout ' . s:bufExplorerBuffer
+        return
+    endif
     " Get only the listed buffers associated with the current tab (up to 2).
     let listed = s:MRUListedBuffersForTab(s:tabIdAtLaunch, 2)
 
@@ -1375,6 +1441,23 @@ function! s:Close()
 
     " Clear any messages.
     echo
+endfunction
+
+" FindBufExplorer {{{2
+" Return `[tabNbr, winNbr]`; both numbers will be zero if not found.
+function! s:FindBufExplorer()
+    let result = [0, 0]
+    if s:running
+        let numTabs = tabpagenr('$')
+        for tabNbr in range(1, numTabs)
+            let winNbr = index(tabpagebuflist(tabNbr), s:bufExplorerBuffer) + 1
+            if winNbr > 0
+                let result = [tabNbr, winNbr]
+                break
+            endif
+        endfor
+    endif
+    return result
 endfunction
 
 " ToggleShowTerminal {{{2
@@ -1677,6 +1760,7 @@ endfunction
 
 " Default values {{{2
 call s:Set("g:bufExplorerDisableDefaultKeyMapping", 0)  " Do not disable default key mappings.
+call s:Set("g:bufExplorerDefaultAction", 'current')     " Default action for `:BufExplorer` with no args.
 call s:Set("g:bufExplorerDefaultHelp", 1)               " Show default help?
 call s:Set("g:bufExplorerDetailedHelp", 0)              " Show detailed help?
 call s:Set("g:bufExplorerFindActive", 1)                " When selecting an active buffer, take you to the window where it is active?
