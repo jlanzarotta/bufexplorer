@@ -1,7 +1,7 @@
 *bufexplorer.txt*              Buffer Explorer       Last Change: 20 Mar 2025
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.9.0
+                                Version 7.10.0
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -462,6 +462,38 @@ The default is 1.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.10.0   March 25, 2025
+     What's Changed
+     - Another major patch implemented by Dr. Michael Henry.
+       * Use a separate syntax/bufexplorer.vim file for syntax highlighting.
+         https://github.com/jlanzarotta/bufexplorer/pull/127
+         - Instead of setting up syntax highlighting for BufExplorer via a
+           function call, place syntax-related code into
+           syntax/bufexplorer.vim.
+         - This addresses issue Rainbow_csv interferes with syntax of
+           BufExplorer #82, wherein BufExplorer syntax highlighting becomes
+           disabled when the rainbow_csv plugin executes an "ugly hack" that
+           invokes :set filetype=bufexplorer.
+       * Add 'O' command to open in the original window at BufExplorer launch.
+         https://github.com/jlanzarotta/bufexplorer/pull/128
+         - Add new O command to open the buffer under the cursor into the
+           window where BufExplorer was originally launched.
+         - This addresses issue Open buffer in previous buffer #55.
+       * Flexibly open, close, and toggle BufExplorer windows and splits.
+         https://github.com/jlanzarotta/bufexplorer/pull/129
+         - Add action argument to :BufExplorer and :ToggleBufExplorer commands
+           for flexible control of BufExplorer window opening and closing:
+           * Switch to a running BufExplorer window even if GUI support is not
+             available.
+           * Close BufExplorer even if running in a different window.
+           * Toggle BufExplorer window with flexible split modes.
+         - Make default action configurable.
+         - Address issues:
+           * Can <leader>\be do a toggle instead? #3
+           * Add variable setting, instead of command for
+             BufExplorerVerticalSplit #94.
+           * How close BufExplorer is if it has opened in another tab? #95.
+           * Support toggle for vertical/horizontal splits #106.
 7.9.0    March 20, 2025
      What's Changed
      - Another major patch implemented by Dr. Michael Henry.
