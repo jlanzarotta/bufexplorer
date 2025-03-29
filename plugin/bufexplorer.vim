@@ -954,10 +954,10 @@ endfunction
 " - `.line`
 function! s:CalculateBufferDetails(buf)
     let buf = a:buf
-    let name = bufname(buf.bufNbr)
-    let buf["hasNoName"] = empty(name)
+    let rawpath = bufname(buf.bufNbr)
+    let buf["hasNoName"] = empty(rawpath)
     if buf.hasNoName
-        let name = "[No Name]"
+        let rawpath = "[No Name]"
     endif
     let buf.isterminal = getbufvar(buf.bufNbr, '&buftype') == 'terminal'
     if buf.isterminal
@@ -986,7 +986,7 @@ function! s:CalculateBufferDetails(buf)
         " e.g.:
         "   term://~/tmp/sort//1464953:/bin/bash
         " `cwd` is the directory at terminal launch.
-        let termNameParts = matchlist(name, '\v\c^term://(.*)//(\d+):(.*)$')
+        let termNameParts = matchlist(rawpath, '\v\c^term://(.*)//(\d+):(.*)$')
         if len(termNameParts) > 0
             let [cwd, pidStr, shellPath] = termNameParts[1:3]
             let pid = str2nr(pidStr)
@@ -994,7 +994,7 @@ function! s:CalculateBufferDetails(buf)
         else
             " Default to Vim's current working directory.
             let cwd = '.'
-            let shellName = fnamemodify(name, ':t')
+            let shellName = fnamemodify(rawpath, ':t')
             let pid = -1
             if exists('*term_getjob') && exists('*job_info')
                 let job = term_getjob(buf.bufNbr)
@@ -1031,7 +1031,7 @@ function! s:CalculateBufferDetails(buf)
         return
     endif
 
-    let buf.fullname = simplify(fnamemodify(name, ':p'))
+    let buf.fullname = simplify(fnamemodify(rawpath, ':p'))
     let buf.isdir = getftype(buf.fullname) == "dir"
     if buf.isdir
         " `buf.fullname` ends with a path separator; this will be
