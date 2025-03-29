@@ -901,17 +901,17 @@ endfunction
 " CalculateBufferDetails {{{2
 " Calculate `buf`-related details.
 " Only these fields of `buf` must be defined on entry:
-" - `._bufnr`
+" - `.bufNbr`
 " - `.attributes`
 " - `.line`
 function! s:CalculateBufferDetails(buf)
     let buf = a:buf
-    let name = bufname(buf._bufnr)
+    let name = bufname(buf.bufNbr)
     let buf["hasNoName"] = empty(name)
     if buf.hasNoName
         let name = "[No Name]"
     endif
-    let buf.isterminal = getbufvar(buf._bufnr, '&buftype') == 'terminal'
+    let buf.isterminal = getbufvar(buf.bufNbr, '&buftype') == 'terminal'
     if buf.isterminal
         " Neovim uses paths with `term://` prefix, where the provided path
         " is the current working directory when the terminal was launched, e.g.:
@@ -949,7 +949,7 @@ function! s:CalculateBufferDetails(buf)
             let shellName = fnamemodify(name, ':t')
             let pid = -1
             if exists('*term_getjob') && exists('*job_info')
-                let job = term_getjob(buf._bufnr)
+                let job = term_getjob(buf.bufNbr)
                 if job != v:null
                     let pid = job_info(job).process
                 endif
@@ -1015,7 +1015,7 @@ endfunction
 " Return dictionary `{ bufNbr : buf }`.
 " - If `onlyBufNbr > 0`, dictionary will contain at most that buffer.
 " On return, only these fields are set for each `buf`:
-" - `._bufnr`
+" - `.bufNbr`
 " - `.attributes`
 " - `.line`
 " Other fields will be populated by `s:CalculateBufferDetails()`.
@@ -1058,8 +1058,8 @@ function! s:GetBufferInfo(onlyBufNbr)
         " Use first and last components after the split on '"', in case a
         " filename with an embedded '"' is present.
         let buf = {"attributes": bits[0], "line": substitute(bits[-1], '\s*', '', '')}
-        let buf._bufnr = str2nr(buf.attributes)
-        let all[buf._bufnr] = buf
+        let buf.bufNbr = str2nr(buf.attributes)
+        let all[buf.bufNbr] = buf
     endfor
 
     return all
@@ -1076,7 +1076,7 @@ function! s:BuildBufferList()
         " the user wants to view this buffer.
 
         " Skip BufExplorer's buffer.
-        if buf._bufnr == s:bufExplorerBuffer
+        if buf.bufNbr == s:bufExplorerBuffer
             continue
         endif
 
@@ -1097,7 +1097,7 @@ function! s:BuildBufferList()
         endif
 
         " Should we show this buffer in this tab?
-        if !s:MRUTabShouldShowBuf(s:tabIdAtLaunch, buf._bufnr)
+        if !s:MRUTabShouldShowBuf(s:tabIdAtLaunch, buf.bufNbr)
             continue
         endif
 
@@ -1531,31 +1531,31 @@ endfunction
 
 " Key_number {{{2
 function! s:Key_number(line)
-    let _bufnr = str2nr(a:line)
-    let key = [printf('%9d', _bufnr)]
+    let bufNbr = str2nr(a:line)
+    let key = [printf('%9d', bufNbr)]
     return key
 endfunction
 
 " Key_name {{{2
 function! s:Key_name(line)
-    let _bufnr = str2nr(a:line)
-    let buf = s:raw_buffer_listing[_bufnr]
+    let bufNbr = str2nr(a:line)
+    let buf = s:raw_buffer_listing[bufNbr]
     let key = [buf.shortname, buf.fullname]
     return key
 endfunction
 
 " Key_fullpath {{{2
 function! s:Key_fullpath(line)
-    let _bufnr = str2nr(a:line)
-    let buf = s:raw_buffer_listing[_bufnr]
+    let bufNbr = str2nr(a:line)
+    let buf = s:raw_buffer_listing[bufNbr]
     let key = [buf.fullname]
     return key
 endfunction
 
 " Key_extension {{{2
 function! s:Key_extension(line)
-    let _bufnr = str2nr(a:line)
-    let buf = s:raw_buffer_listing[_bufnr]
+    let bufNbr = str2nr(a:line)
+    let buf = s:raw_buffer_listing[bufNbr]
     let extension = fnamemodify(buf.shortname, ':e')
     let key = [extension, buf.shortname, buf.fullname]
     return key
@@ -1563,9 +1563,9 @@ endfunction
 
 " Key_mru {{{2
 function! s:Key_mru(line)
-    let _bufnr = str2nr(a:line)
-    let buf = s:raw_buffer_listing[_bufnr]
-    let pos = s:MRUOrderForBuf(_bufnr)
+    let bufNbr = str2nr(a:line)
+    let buf = s:raw_buffer_listing[bufNbr]
+    let pos = s:MRUOrderForBuf(bufNbr)
     return [printf('%9d', pos), buf.fullname]
 endfunction
 
