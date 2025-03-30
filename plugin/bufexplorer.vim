@@ -950,7 +950,7 @@ endfunction
 " Calculate `buf`-related details.
 " Only these fields of `buf` must be defined on entry:
 " - `.bufNbr`
-" - `.attributes`
+" - `.numberindicators`
 " - `.line`
 function! s:CalculateBufferDetails(buf)
     let buf = a:buf
@@ -1065,7 +1065,7 @@ endfunction
 " - If `onlyBufNbr > 0`, dictionary will contain at most that buffer.
 " On return, only these fields are set for each `buf`:
 " - `.bufNbr`
-" - `.attributes`
+" - `.numberindicators`
 " - `.line`
 " Other fields will be populated by `s:CalculateBufferDetails()`.
 function! s:GetBufferInfo(onlyBufNbr)
@@ -1091,7 +1091,7 @@ function! s:GetBufferInfo(onlyBufNbr)
         " more spaces/tabs:
         let onlyLinePattern = '\v\n\s*'
         " Continue with the buffer number followed by a non-digit character
-        " (which will be a buffer attribute character such as `u` or ` `).
+        " (which will be a buffer indicator character such as `u` or ` `).
         let onlyLinePattern .= a:onlyBufNbr . '\D'
         " Finish with a run of zero or more non-newline characters plus newline:
         let onlyLinePattern .= '[^\n]*\n'
@@ -1106,8 +1106,12 @@ function! s:GetBufferInfo(onlyBufNbr)
 
         " Use first and last components after the split on '"', in case a
         " filename with an embedded '"' is present.
-        let buf = {"attributes": bits[0], "line": substitute(bits[-1], '\s*', '', '')}
-        let buf.bufNbr = str2nr(buf.attributes)
+        let buf = {
+                \ "numberindicators": bits[0],
+                \ "line": substitute(bits[-1],
+                \ '\s*', '', '')
+                \}
+        let buf.bufNbr = str2nr(buf.numberindicators)
         let all[buf.bufNbr] = buf
     endfor
 
@@ -1120,7 +1124,7 @@ function! s:BuildBufferList()
 
     " Loop through every buffer.
     for buf in values(s:raw_buffer_listing)
-        " `buf.attributes` must exist, but we defer the expensive work of
+        " `buf.numberindicators` must exist, but we defer the expensive work of
         " calculating other buffer details (e.g., `buf.fullpath`) until we know
         " the user wants to view this buffer.
 
@@ -1130,7 +1134,7 @@ function! s:BuildBufferList()
         endif
 
         " Skip unlisted buffers if we are not to show them.
-        if !g:bufExplorerShowUnlisted && buf.attributes =~ "u"
+        if !g:bufExplorerShowUnlisted && buf.numberindicators =~ "u"
             " Skip unlisted buffers if we are not to show them.
             continue
         endif
@@ -1160,7 +1164,7 @@ function! s:BuildBufferList()
             continue
         endif
 
-        let row = [buf.attributes]
+        let row = [buf.numberindicators]
 
         if exists("g:loaded_webdevicons")
             let row += [WebDevIconsGetFileTypeSymbol(buf.fullpath, buf.isdir)]
@@ -1435,7 +1439,7 @@ function! s:DeleteBuffer(bufNbr, mode)
 
     if bufexists(a:bufNbr)
         " Buffer is still present.  We may have failed to wipe it, or it may
-        " have changed attributes (as `:bd` only makes a buffer unlisted).
+        " have changed indicators (as `:bd` only makes a buffer unlisted).
         " Regather information on this buffer, update the buffer list, and
         " redisplay.
         let info = s:GetBufferInfo(a:bufNbr)
