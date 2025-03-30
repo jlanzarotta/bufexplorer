@@ -1573,7 +1573,7 @@ endfunction
 " SortByKeyFunc {{{2
 function! s:SortByKeyFunc(keyFunc)
     let keyedLines = []
-    for line in getline(s:firstBufferLine, "$")
+    for line in getline(s:firstBufferLine, s:BufferNumLines())
         let key = eval(a:keyFunc . '(line)')
         call add(keyedLines, join(key + [line], "\1"))
     endfor
