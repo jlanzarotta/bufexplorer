@@ -1026,8 +1026,7 @@ function! s:CalculateBufferDetails(buf)
         let slashed_path = fnamemodify(cwd, ':p')
         let buf.fullname = slashed_path . shortname
         let buf.shortname = shortname
-        let homepath = fnamemodify(slashed_path, ':~:h')
-        let buf.homereldir = homepath
+        let buf.homereldir = fnamemodify(slashed_path, ':~:h')
         let buf.homename = fnamemodify(buf.fullname, ':~')
         let buf.relativepath = fnamemodify(slashed_path, ':~:.:h')
         let buf.relativename = fnamemodify(buf.fullname, ':~:.')
