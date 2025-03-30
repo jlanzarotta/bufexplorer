@@ -1044,8 +1044,10 @@ function! s:CalculateBufferDetails(buf)
         " Must perform shortening (`:~`, `:.`) before `:h`.
         let buf.homerelpath = fnamemodify(fullpath, ':~:h')
         let buf.relativepath = fnamemodify(fullpath, ':~:.:h')
-        let parent = fnamemodify(fullpath, ':h:h')
-        let buf.name = fnamemodify(fullpath, ':h:t')
+        " Remove trailing slash.
+        let fullpath = fnamemodify(fullpath, ':h')
+        let parent = fnamemodify(fullpath, ':h')
+        let buf.name = fnamemodify(fullpath, ':t')
         " Special case for root directory: fnamemodify('/', ':h:t') == ''
         if buf.name == ''
             let buf.name = '.'
