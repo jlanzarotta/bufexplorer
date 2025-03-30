@@ -962,6 +962,7 @@ function! s:CalculateBufferDetails(buf)
     else
         let buf.isdir = getftype(rawpath) == 'dir'
     endif
+    let buf.rawpath = rawpath
     let buf.isterminal = getbufvar(buf.bufNbr, '&buftype') == 'terminal'
     if buf.isterminal
         " Neovim uses paths with `term://` prefix, where the provided dir path
