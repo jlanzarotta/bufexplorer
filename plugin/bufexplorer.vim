@@ -1027,7 +1027,7 @@ function! s:CalculateBufferDetails(buf)
         let buf.fullpath = slashed_path . shortname
         let buf.shortname = shortname
         let buf.homereldir = fnamemodify(slashed_path, ':~:h')
-        let buf.homename = fnamemodify(buf.fullpath, ':~')
+        let buf.homerelpath = fnamemodify(buf.fullpath, ':~')
         let buf.relativedir = fnamemodify(slashed_path, ':~:.:h')
         let buf.relativename = fnamemodify(buf.fullpath, ':~:.')
         return
@@ -1045,12 +1045,12 @@ function! s:CalculateBufferDetails(buf)
             let buf.shortname = '.'
         endif
         " Must perform shortening (`:~`, `:.`) before `:h`.
-        let buf.homename = fnamemodify(buf.fullpath, ':~:h')
+        let buf.homerelpath = fnamemodify(buf.fullpath, ':~:h')
         let buf.relativename = fnamemodify(buf.fullpath, ':~:.:h')
     else
         let parent = fnamemodify(buf.fullpath, ':h')
         let buf.shortname = fnamemodify(buf.fullpath, ':t')
-        let buf.homename = fnamemodify(buf.fullpath, ':~')
+        let buf.homerelpath = fnamemodify(buf.fullpath, ':~')
         let buf.relativename = fnamemodify(buf.fullpath, ':~:.')
     endif
     " `:p` on `parent` adds back the path separator which permits more
@@ -1171,7 +1171,7 @@ function! s:BuildBufferList()
             let type = (g:bufExplorerShowRelativePath) ? "relativedir" : "homereldir"
             let row += [buf.shortname, buf[type]]
         else
-            let type = (g:bufExplorerShowRelativePath) ? "relativename" : "homename"
+            let type = (g:bufExplorerShowRelativePath) ? "relativename" : "homerelpath"
             let row += [buf[type]]
         endif
         let row += [buf.line]
