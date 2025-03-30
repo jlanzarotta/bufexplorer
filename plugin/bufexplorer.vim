@@ -1212,7 +1212,10 @@ function! s:SelectBuffer(...)
             return
         endif
 
-        let _bufNbr = str2nr(getline('.'))
+        let _bufNbr = s:GetBufNbrAtCursor()
+        if _bufNbr == 0
+            return
+        endif
 
         " Check and see if we are running BufferExplorer via WinManager.
         if exists("b:displayMode") && b:displayMode == "winmanager"
@@ -1322,7 +1325,10 @@ function! s:RemoveBuffer(mode)
         call WinManagerSuspendAUs()
     end
 
-    let bufNbr = str2nr(getline('.'))
+    let bufNbr = s:GetBufNbrAtCursor()
+    if bufNbr == 0
+        return
+    endif
     let buf = s:raw_buffer_listing[bufNbr]
 
     if !forced && (buf.isterminal || getbufvar(bufNbr, '&modified'))
@@ -1628,6 +1634,22 @@ endfunction
 " SortListing {{{2
 function! s:SortListing()
     call s:SortByKeyFunc("<SID>Key_" . g:bufExplorerSortBy)
+endfunction
+
+" GetBufNbrAtCursor {{{2
+" Return `bufNbr` at cursor; return 0 if no buffer on that line.
+function! s:GetBufNbrAtCursor()
+    return s:GetBufNbrAtLine(line('.'))
+endfunction
+
+" GetBufNbrAtLine {{{2
+" Return `bufNbr` at `lineNbr`; return 0 if no buffer on that line.
+function! s:GetBufNbrAtLine(lineNbr)
+    if a:lineNbr < s:firstBufferLine || a:lineNbr > s:BufferNumLines()
+        return 0
+    endif
+    let lineText = getline(a:lineNbr)
+    return str2nr(lineText)
 endfunction
 
 " BufferNumLines {{{2
