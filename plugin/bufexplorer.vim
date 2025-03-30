@@ -1024,34 +1024,34 @@ function! s:CalculateBufferDetails(buf)
         endif
 
         let slashed_path = fnamemodify(cwd, ':p')
-        let buf.fullname = slashed_path . shortname
+        let buf.fullpath = slashed_path . shortname
         let buf.shortname = shortname
         let buf.homereldir = fnamemodify(slashed_path, ':~:h')
-        let buf.homename = fnamemodify(buf.fullname, ':~')
+        let buf.homename = fnamemodify(buf.fullpath, ':~')
         let buf.relativedir = fnamemodify(slashed_path, ':~:.:h')
-        let buf.relativename = fnamemodify(buf.fullname, ':~:.')
+        let buf.relativename = fnamemodify(buf.fullpath, ':~:.')
         return
     endif
 
-    let buf.fullname = simplify(fnamemodify(rawpath, ':p'))
+    let buf.fullpath = simplify(fnamemodify(rawpath, ':p'))
     if buf.isdir
-        " `buf.fullname` ends with a path separator; this will be
-        " removed via the first `:h` applied to `buf.fullname` (except
+        " `buf.fullpath` ends with a path separator; this will be
+        " removed via the first `:h` applied to `buf.fullpath` (except
         " for the root directory, where the path separator will remain).
-        let parent = fnamemodify(buf.fullname, ':h:h')
-        let buf.shortname = fnamemodify(buf.fullname, ':h:t')
+        let parent = fnamemodify(buf.fullpath, ':h:h')
+        let buf.shortname = fnamemodify(buf.fullpath, ':h:t')
         " Special case for root directory: fnamemodify('/', ':h:t') == ''
         if buf.shortname == ''
             let buf.shortname = '.'
         endif
         " Must perform shortening (`:~`, `:.`) before `:h`.
-        let buf.homename = fnamemodify(buf.fullname, ':~:h')
-        let buf.relativename = fnamemodify(buf.fullname, ':~:.:h')
+        let buf.homename = fnamemodify(buf.fullpath, ':~:h')
+        let buf.relativename = fnamemodify(buf.fullpath, ':~:.:h')
     else
-        let parent = fnamemodify(buf.fullname, ':h')
-        let buf.shortname = fnamemodify(buf.fullname, ':t')
-        let buf.homename = fnamemodify(buf.fullname, ':~')
-        let buf.relativename = fnamemodify(buf.fullname, ':~:.')
+        let parent = fnamemodify(buf.fullpath, ':h')
+        let buf.shortname = fnamemodify(buf.fullpath, ':t')
+        let buf.homename = fnamemodify(buf.fullpath, ':~')
+        let buf.relativename = fnamemodify(buf.fullpath, ':~:.')
     endif
     " `:p` on `parent` adds back the path separator which permits more
     " effective shortening (`:~`, `:.`), but `:h` is required afterward
@@ -1121,7 +1121,7 @@ function! s:BuildBufferList()
     " Loop through every buffer.
     for buf in values(s:raw_buffer_listing)
         " `buf.attributes` must exist, but we defer the expensive work of
-        " calculating other buffer details (e.g., `buf.fullname`) until we know
+        " calculating other buffer details (e.g., `buf.fullpath`) until we know
         " the user wants to view this buffer.
 
         " Skip BufExplorer's buffer.
@@ -1136,7 +1136,7 @@ function! s:BuildBufferList()
         endif
 
         " Ensure buffer details are computed for this buffer.
-        if !has_key(buf, 'fullname')
+        if !has_key(buf, 'fullpath')
             call s:CalculateBufferDetails(buf)
         endif
 
@@ -1163,7 +1163,7 @@ function! s:BuildBufferList()
         let row = [buf.attributes]
 
         if exists("g:loaded_webdevicons")
-            let row += [WebDevIconsGetFileTypeSymbol(buf.fullname, buf.isdir)]
+            let row += [WebDevIconsGetFileTypeSymbol(buf.fullpath, buf.isdir)]
         endif
 
         " Are we to split the path and file name?
@@ -1589,7 +1589,7 @@ endfunction
 function! s:Key_name(line)
     let bufNbr = str2nr(a:line)
     let buf = s:raw_buffer_listing[bufNbr]
-    let key = [buf.shortname, buf.fullname]
+    let key = [buf.shortname, buf.fullpath]
     return key
 endfunction
 
@@ -1597,7 +1597,7 @@ endfunction
 function! s:Key_fullpath(line)
     let bufNbr = str2nr(a:line)
     let buf = s:raw_buffer_listing[bufNbr]
-    let key = [buf.fullname]
+    let key = [buf.fullpath]
     return key
 endfunction
 
@@ -1606,7 +1606,7 @@ function! s:Key_extension(line)
     let bufNbr = str2nr(a:line)
     let buf = s:raw_buffer_listing[bufNbr]
     let extension = fnamemodify(buf.shortname, ':e')
-    let key = [extension, buf.shortname, buf.fullname]
+    let key = [extension, buf.shortname, buf.fullpath]
     return key
 endfunction
 
@@ -1615,7 +1615,7 @@ function! s:Key_mru(line)
     let bufNbr = str2nr(a:line)
     let buf = s:raw_buffer_listing[bufNbr]
     let pos = s:MRUOrderForBuf(bufNbr)
-    return [printf('%9d', pos), buf.fullname]
+    return [printf('%9d', pos), buf.fullpath]
 endfunction
 
 " SortByKeyFunc {{{2
