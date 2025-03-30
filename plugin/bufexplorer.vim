@@ -1130,6 +1130,7 @@ endfunction
 " BuildBufferList {{{2
 function! s:BuildBufferList()
     let table = []
+    let s:displayedBufNbrs = []
 
     " Loop through every buffer.
     for buf in values(s:raw_buffer_listing)
@@ -1189,6 +1190,7 @@ function! s:BuildBufferList()
         endif
         let row += [buf.line]
         call add(table, row)
+        call add(s:displayedBufNbrs, buf.bufNbr)
     endfor
 
     let lines = s:MakeLines(table)
@@ -1200,6 +1202,9 @@ function! s:BuildBufferList()
     endif
     call s:SortListing()
 endfunction
+
+" Buffer numbers for buffers displayed in the BufExplorer window.
+let s:displayedBufNbrs = []
 
 " MakeLines {{{2
 function! s:MakeLines(table)
