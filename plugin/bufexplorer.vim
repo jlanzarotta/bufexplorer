@@ -977,7 +977,7 @@ function! s:CalculateBufferDetails(buf)
         "   !C:\Windows\system32\cmd.exe
 
         " Use the terminal's current working directory as `fulldir`.
-        " For `shortname`, use `!PID:shellName`, prefixed with `!` as Vim does,
+        " For `name`, use `!PID:shellName`, prefixed with `!` as Vim does,
         " and without the shell's dir path for brevity, e.g.:
         "   `/bin/bash` -> `!bash`
         "   `1464953:/bin/bash` -> `!1464953:bash`
@@ -1008,9 +1008,9 @@ function! s:CalculateBufferDetails(buf)
         endif
 
         if pid < 0
-            let shortname = '!' . shellName
+            let name = '!' . shellName
         else
-            let shortname = '!' . pid . ':' . shellName
+            let name = '!' . pid . ':' . shellName
             " On some systems having a `/proc` filesystem (e.g., Linux, *BSD,
             " Solaris), each process has a `cwd` symlink for the current working
             " directory.  `resolve()` will return the actual current working
@@ -1024,8 +1024,8 @@ function! s:CalculateBufferDetails(buf)
         endif
 
         let slashed_path = fnamemodify(cwd, ':p')
-        let buf.fullpath = slashed_path . shortname
-        let buf.shortname = shortname
+        let buf.fullpath = slashed_path . name
+        let buf.name = name
         let buf.homereldir = fnamemodify(slashed_path, ':~:h')
         let buf.homerelpath = fnamemodify(buf.fullpath, ':~')
         let buf.relativedir = fnamemodify(slashed_path, ':~:.:h')
@@ -1039,17 +1039,17 @@ function! s:CalculateBufferDetails(buf)
         " removed via the first `:h` applied to `buf.fullpath` (except
         " for the root directory, where the path separator will remain).
         let parent = fnamemodify(buf.fullpath, ':h:h')
-        let buf.shortname = fnamemodify(buf.fullpath, ':h:t')
+        let buf.name = fnamemodify(buf.fullpath, ':h:t')
         " Special case for root directory: fnamemodify('/', ':h:t') == ''
-        if buf.shortname == ''
-            let buf.shortname = '.'
+        if buf.name == ''
+            let buf.name = '.'
         endif
         " Must perform shortening (`:~`, `:.`) before `:h`.
         let buf.homerelpath = fnamemodify(buf.fullpath, ':~:h')
         let buf.relativepath = fnamemodify(buf.fullpath, ':~:.:h')
     else
         let parent = fnamemodify(buf.fullpath, ':h')
-        let buf.shortname = fnamemodify(buf.fullpath, ':t')
+        let buf.name = fnamemodify(buf.fullpath, ':t')
         let buf.homerelpath = fnamemodify(buf.fullpath, ':~')
         let buf.relativepath = fnamemodify(buf.fullpath, ':~:.')
     endif
@@ -1169,7 +1169,7 @@ function! s:BuildBufferList()
         " Are we to split the path and file name?
         if g:bufExplorerSplitOutPathName
             let type = (g:bufExplorerShowRelativePath) ? "relativedir" : "homereldir"
-            let row += [buf.shortname, buf[type]]
+            let row += [buf.name, buf[type]]
         else
             let type = (g:bufExplorerShowRelativePath) ? "relativepath" : "homerelpath"
             let row += [buf[type]]
@@ -1589,7 +1589,7 @@ endfunction
 function! s:Key_name(line)
     let bufNbr = str2nr(a:line)
     let buf = s:raw_buffer_listing[bufNbr]
-    let key = [buf.shortname, buf.fullpath]
+    let key = [buf.name, buf.fullpath]
     return key
 endfunction
 
@@ -1605,8 +1605,8 @@ endfunction
 function! s:Key_extension(line)
     let bufNbr = str2nr(a:line)
     let buf = s:raw_buffer_listing[bufNbr]
-    let extension = fnamemodify(buf.shortname, ':e')
-    let key = [extension, buf.shortname, buf.fullpath]
+    let extension = fnamemodify(buf.name, ':e')
+    let key = [extension, buf.name, buf.fullpath]
     return key
 endfunction
 
