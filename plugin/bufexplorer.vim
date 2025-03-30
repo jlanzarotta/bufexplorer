@@ -1028,7 +1028,7 @@ function! s:CalculateBufferDetails(buf)
         let buf.shortname = shortname
         let buf.homereldir = fnamemodify(slashed_path, ':~:h')
         let buf.homename = fnamemodify(buf.fullname, ':~')
-        let buf.relativepath = fnamemodify(slashed_path, ':~:.:h')
+        let buf.relativedir = fnamemodify(slashed_path, ':~:.:h')
         let buf.relativename = fnamemodify(buf.fullname, ':~:.')
         return
     endif
@@ -1057,7 +1057,7 @@ function! s:CalculateBufferDetails(buf)
     " effective shortening (`:~`, `:.`), but `:h` is required afterward
     " to trim this separator.
     let buf.homereldir = fnamemodify(parent, ':p:~:h')
-    let buf.relativepath = fnamemodify(parent, ':p:~:.:h')
+    let buf.relativedir = fnamemodify(parent, ':p:~:.:h')
 endfunction
 
 " GetBufferInfo {{{2
@@ -1168,7 +1168,7 @@ function! s:BuildBufferList()
 
         " Are we to split the path and file name?
         if g:bufExplorerSplitOutPathName
-            let type = (g:bufExplorerShowRelativePath) ? "relativepath" : "homereldir"
+            let type = (g:bufExplorerShowRelativePath) ? "relativedir" : "homereldir"
             let row += [buf.shortname, buf[type]]
         else
             let type = (g:bufExplorerShowRelativePath) ? "relativename" : "homename"
