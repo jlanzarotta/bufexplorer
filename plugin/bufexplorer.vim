@@ -1206,12 +1206,6 @@ function! s:SelectBuffer(...)
             return
         endif
     else
-        " Are we on a line with a file name?
-        if line('.') < s:firstBufferLine
-            execute "normal! \<CR>"
-            return
-        endif
-
         let _bufNbr = s:GetBufNbrAtCursor()
         if _bufNbr == 0
             return
