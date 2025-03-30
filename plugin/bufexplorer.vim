@@ -958,6 +958,9 @@ function! s:CalculateBufferDetails(buf)
     let buf["hasNoName"] = empty(rawpath)
     if buf.hasNoName
         let rawpath = "[No Name]"
+        let buf.isdir = 0
+    else
+        let buf.isdir = getftype(rawpath) == 'dir'
     endif
     let buf.isterminal = getbufvar(buf.bufNbr, '&buftype') == 'terminal'
     if buf.isterminal
@@ -1032,7 +1035,6 @@ function! s:CalculateBufferDetails(buf)
     endif
 
     let buf.fullname = simplify(fnamemodify(rawpath, ':p'))
-    let buf.isdir = getftype(buf.fullname) == "dir"
     if buf.isdir
         " `buf.fullname` ends with a path separator; this will be
         " removed via the first `:h` applied to `buf.fullname` (except
