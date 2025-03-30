@@ -1024,13 +1024,13 @@ function! s:CalculateBufferDetails(buf)
             endif
         endif
 
-        let slashed_path = fnamemodify(cwd, ':p')
-        let buf.fullpath = slashed_path . name
-        let buf.fulldir = fnamemodify(slashed_path, ':h')
+        let slashed_cwd = fnamemodify(cwd, ':p')
+        let buf.fullpath = slashed_cwd . name
+        let buf.fulldir = fnamemodify(slashed_cwd, ':h')
         let buf.name = name
-        let buf.homereldir = fnamemodify(slashed_path, ':~:h')
+        let buf.homereldir = fnamemodify(slashed_cwd, ':~:h')
         let buf.homerelpath = fnamemodify(buf.fullpath, ':~')
-        let buf.relativedir = fnamemodify(slashed_path, ':~:.:h')
+        let buf.relativedir = fnamemodify(slashed_cwd, ':~:.:h')
         let buf.relativepath = fnamemodify(buf.fullpath, ':~:.')
         return
     endif
