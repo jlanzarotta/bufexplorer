@@ -133,6 +133,40 @@ function! s:Set(var, default)
     return 0
 endfunction
 
+" Naming conventions for file paths.
+" Conventionally a `path` is the string of characters used to identify a file
+" (ref. https://en.wikipedia.org/wiki/Path_(computing)).
+" An absolute or `full` path starts from the root directory and consists of
+" parent directories (if any) and a final `name` component.
+" A file's `dir` (directory) is the path to the parent directory of the file.
+" In general:
+"
+"   fullpath = dir / name
+"
+" Paths below the user's home directory may be abbreviated, replacing the home
+" directory with `~`, e.g.:
+"
+"   /home/user/some/file
+"   ->
+"   ~/some/file
+"
+" `homerel` refers to paths with home-directory-relative abbreviation.
+"
+" `relative` refers to paths computed relative to the current working directory;
+" these also include the home-directory-relative abbreviation.
+"
+" `rawpath` is the path as returned from `:buffers`; as such, buffers lacking
+" any name are represented as `[No Name]`.
+"
+" Thus, for a buffer:
+" - `rawpath` is the path as returned from `:buffers`.
+" - `fullpath` is the absolute path to the buffer.
+" - `homerelpath` is `fullpath` with the `~/` abbreviation.
+" - `relativepath` is `homerelpath` with relative abbreviation.
+" - `fulldir` is the absolute path to the buffer's parent directory.
+" - `homereldir` is `fulldir` with the `~/` abbreviation.
+" - `relativedir` is `homereldir` with relative abbreviation.
+
 " Script variables {{{2
 let s:MRU_Exclude_List = ["[BufExplorer]","__MRU_Files__","[Buf\ List]"]
 let s:name = '[BufExplorer]'
