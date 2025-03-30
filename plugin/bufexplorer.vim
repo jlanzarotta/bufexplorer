@@ -1709,11 +1709,11 @@ endfunction
 " GetBufNbrAtLine {{{2
 " Return `bufNbr` at `lineNbr`; return 0 if no buffer on that line.
 function! s:GetBufNbrAtLine(lineNbr)
-    if a:lineNbr < s:firstBufferLine || a:lineNbr > s:BufferNumLines()
+    let bufIndex = a:lineNbr - s:firstBufferLine
+    if bufIndex < 0 || bufIndex >= len(s:displayedBufNbrs)
         return 0
     endif
-    let lineText = getline(a:lineNbr)
-    return str2nr(lineText)
+    return s:displayedBufNbrs[bufIndex]
 endfunction
 
 " BufferNumLines {{{2
