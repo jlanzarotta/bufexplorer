@@ -1630,6 +1630,26 @@ function! s:SortListing()
     call s:SortByKeyFunc("<SID>Key_" . g:bufExplorerSortBy)
 endfunction
 
+" BufferNumLines {{{2
+" Return number of lines in the BufExplorer buffer.
+function! s:BufferNumLines()
+    " `line('$')` returns the line number of the last line in a buffer.
+    " Normally, this is the same as the number of lines in the buffer.  When
+    " there are no lines in the buffer, logically `line('$')` should return
+    " zero, but Vim unfortunately returns 1 for this case.  This is because
+    " there must always be a valid line number for the cursor.
+    "
+    " When `line('$') == 1`, we detect an empty buffer by seeing if the first
+    " line itself is empty.  Technically, this cannot distinguish a completely
+    " empty buffer from a one-line buffer with no characters on the first line,
+    " but BufExplorer doesn't create empty lines in the buffer.
+    let numLines = line('$')
+    if numLines == 1 && getline(1) == ''
+        let numLines = 0
+    endif
+    return numLines
+endfunction
+
 " Error {{{2
 " Display a message using ErrorMsg highlight group.
 function! s:Error(msg)
