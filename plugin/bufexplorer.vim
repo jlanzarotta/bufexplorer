@@ -1026,6 +1026,7 @@ function! s:CalculateBufferDetails(buf)
 
         let slashed_path = fnamemodify(cwd, ':p')
         let buf.fullpath = slashed_path . name
+        let buf.fulldir = fnamemodify(slashed_path, ':h')
         let buf.name = name
         let buf.homereldir = fnamemodify(slashed_path, ':~:h')
         let buf.homerelpath = fnamemodify(buf.fullpath, ':~')
@@ -1054,6 +1055,7 @@ function! s:CalculateBufferDetails(buf)
         let buf.homerelpath = fnamemodify(buf.fullpath, ':~')
         let buf.relativepath = fnamemodify(buf.fullpath, ':~:.')
     endif
+    let buf.fulldir = parent
     " `:p` on `parent` adds back the path separator which permits more
     " effective shortening (`:~`, `:.`), but `:h` is required afterward
     " to trim this separator.
