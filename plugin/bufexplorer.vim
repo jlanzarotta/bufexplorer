@@ -1467,6 +1467,8 @@ function! s:DeleteBuffer(bufNbr, mode)
 
         " Delete the buffer from the raw buffer list.
         unlet s:raw_buffer_listing[a:bufNbr]
+        " Remove buffer number from list of displayed buffer numbers.
+        call remove(s:displayedBufNbrs, index(s:displayedBufNbrs, a:bufNbr))
     endif
 endfunction
 
