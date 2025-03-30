@@ -1040,15 +1040,16 @@ function! s:CalculateBufferDetails(buf)
         " `fullpath` ends with a path separator; this will be
         " removed via the first `:h` applied to `fullpath` (except
         " for the root directory, where the path separator will remain).
+
+        " Must perform shortening (`:~`, `:.`) before `:h`.
+        let buf.homerelpath = fnamemodify(fullpath, ':~:h')
+        let buf.relativepath = fnamemodify(fullpath, ':~:.:h')
         let parent = fnamemodify(fullpath, ':h:h')
         let buf.name = fnamemodify(fullpath, ':h:t')
         " Special case for root directory: fnamemodify('/', ':h:t') == ''
         if buf.name == ''
             let buf.name = '.'
         endif
-        " Must perform shortening (`:~`, `:.`) before `:h`.
-        let buf.homerelpath = fnamemodify(fullpath, ':~:h')
-        let buf.relativepath = fnamemodify(fullpath, ':~:.:h')
     else
         let parent = fnamemodify(fullpath, ':h')
         let buf.name = fnamemodify(fullpath, ':t')
