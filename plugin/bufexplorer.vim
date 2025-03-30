@@ -1206,13 +1206,10 @@ function! s:SelectBuffer(...)
             return
         endif
     else
-        " Are we on a line with a file name?
-        if line('.') < s:firstBufferLine
-            execute "normal! \<CR>"
+        let _bufNbr = s:GetBufNbrAtCursor()
+        if _bufNbr == 0
             return
         endif
-
-        let _bufNbr = str2nr(getline('.'))
 
         " Check and see if we are running BufferExplorer via WinManager.
         if exists("b:displayMode") && b:displayMode == "winmanager"
@@ -1322,7 +1319,10 @@ function! s:RemoveBuffer(mode)
         call WinManagerSuspendAUs()
     end
 
-    let bufNbr = str2nr(getline('.'))
+    let bufNbr = s:GetBufNbrAtCursor()
+    if bufNbr == 0
+        return
+    endif
     let buf = s:raw_buffer_listing[bufNbr]
 
     if !forced && (buf.isterminal || getbufvar(bufNbr, '&modified'))
@@ -1573,7 +1573,7 @@ endfunction
 " SortByKeyFunc {{{2
 function! s:SortByKeyFunc(keyFunc)
     let keyedLines = []
-    for line in getline(s:firstBufferLine, "$")
+    for line in getline(s:firstBufferLine, s:BufferNumLines())
         let key = eval(a:keyFunc . '(line)')
         call add(keyedLines, join(key + [line], "\1"))
     endfor
@@ -1628,6 +1628,42 @@ endfunction
 " SortListing {{{2
 function! s:SortListing()
     call s:SortByKeyFunc("<SID>Key_" . g:bufExplorerSortBy)
+endfunction
+
+" GetBufNbrAtCursor {{{2
+" Return `bufNbr` at cursor; return 0 if no buffer on that line.
+function! s:GetBufNbrAtCursor()
+    return s:GetBufNbrAtLine(line('.'))
+endfunction
+
+" GetBufNbrAtLine {{{2
+" Return `bufNbr` at `lineNbr`; return 0 if no buffer on that line.
+function! s:GetBufNbrAtLine(lineNbr)
+    if a:lineNbr < s:firstBufferLine || a:lineNbr > s:BufferNumLines()
+        return 0
+    endif
+    let lineText = getline(a:lineNbr)
+    return str2nr(lineText)
+endfunction
+
+" BufferNumLines {{{2
+" Return number of lines in the BufExplorer buffer.
+function! s:BufferNumLines()
+    " `line('$')` returns the line number of the last line in a buffer.
+    " Normally, this is the same as the number of lines in the buffer.  When
+    " there are no lines in the buffer, logically `line('$')` should return
+    " zero, but Vim unfortunately returns 1 for this case.  This is because
+    " there must always be a valid line number for the cursor.
+    "
+    " When `line('$') == 1`, we detect an empty buffer by seeing if the first
+    " line itself is empty.  Technically, this cannot distinguish a completely
+    " empty buffer from a one-line buffer with no characters on the first line,
+    " but BufExplorer doesn't create empty lines in the buffer.
+    let numLines = line('$')
+    if numLines == 1 && getline(1) == ''
+        let numLines = 0
+    endif
+    return numLines
 endfunction
 
 " Error {{{2
