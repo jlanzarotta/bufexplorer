@@ -964,27 +964,27 @@ function! s:CalculateBufferDetails(buf)
     endif
     let buf.isterminal = getbufvar(buf.bufNbr, '&buftype') == 'terminal'
     if buf.isterminal
-        " Neovim uses paths with `term://` prefix, where the provided path
+        " Neovim uses paths with `term://` prefix, where the provided dir path
         " is the current working directory when the terminal was launched, e.g.:
         " - Unix:
         "   term://~/tmp/sort//1464953:/bin/bash
         " - Windows:
         "   term://C:\apps\nvim-win64\bin//6408:C:\Windows\system32\cmd.exe
-        " Vim uses paths starting with `!`, with no provided path, e.g.:
+        " Vim uses paths starting with `!`, with no provided dir path, e.g.:
         " - Unix:
         "   !/bin/bash
         " - Windows:
         "   !C:\Windows\system32\cmd.exe
 
-        " Use the terminal's current working directory as the `path`.
+        " Use the terminal's current working directory as `fulldir`.
         " For `shortname`, use `!PID:shellName`, prefixed with `!` as Vim does,
-        " and without the shell's path for brevity, e.g.:
+        " and without the shell's dir path for brevity, e.g.:
         "   `/bin/bash` -> `!bash`
         "   `1464953:/bin/bash` -> `!1464953:bash`
         "   `C:\Windows\system32\cmd.exe` -> `!cmd.exe`
         "   `6408:C:\Windows\system32\cmd.exe` -> `!6408:cmd.exe`
 
-        " Neovim-style name format:
+        " Neovim-style path format:
         "   term://(cwd)//(pid):(shellPath)
         " e.g.:
         "   term://~/tmp/sort//1464953:/bin/bash
@@ -1027,7 +1027,7 @@ function! s:CalculateBufferDetails(buf)
         let buf.fullname = slashed_path . shortname
         let buf.shortname = shortname
         let homepath = fnamemodify(slashed_path, ':~:h')
-        let buf.path = homepath
+        let buf.homereldir = homepath
         let buf.homename = fnamemodify(buf.fullname, ':~')
         let buf.relativepath = fnamemodify(slashed_path, ':~:.:h')
         let buf.relativename = fnamemodify(buf.fullname, ':~:.')
@@ -1057,7 +1057,7 @@ function! s:CalculateBufferDetails(buf)
     " `:p` on `parent` adds back the path separator which permits more
     " effective shortening (`:~`, `:.`), but `:h` is required afterward
     " to trim this separator.
-    let buf.path = fnamemodify(parent, ':p:~:h')
+    let buf.homereldir = fnamemodify(parent, ':p:~:h')
     let buf.relativepath = fnamemodify(parent, ':p:~:.:h')
 endfunction
 
@@ -1169,7 +1169,7 @@ function! s:BuildBufferList()
 
         " Are we to split the path and file name?
         if g:bufExplorerSplitOutPathName
-            let type = (g:bufExplorerShowRelativePath) ? "relativepath" : "path"
+            let type = (g:bufExplorerShowRelativePath) ? "relativepath" : "homereldir"
             let row += [buf.shortname, buf[type]]
         else
             let type = (g:bufExplorerShowRelativePath) ? "relativename" : "homename"
