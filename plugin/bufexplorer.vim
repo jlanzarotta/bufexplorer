@@ -954,6 +954,8 @@ endfunction
 " - `.line`
 function! s:CalculateBufferDetails(buf)
     let buf = a:buf
+    let buf.number = string(buf.bufNbr)
+    let buf.indicators = substitute(buf.numberindicators, '^\s*\d*', '', '')
     let rawpath = bufname(buf.bufNbr)
     let buf["hasNoName"] = empty(rawpath)
     if buf.hasNoName
