@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 20 Mar 2025
+*bufexplorer.txt*              Buffer Explorer       Last Change: 01 Apr 2025
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.10.0
+                                Version 7.11.0
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -462,6 +462,12 @@ The default is 1.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.11.0   April 01, 2025
+     What's Changed
+     - Thanks to Dr. Michael Henry for another patch.
+       * Fixed issue #131 when no help text is displayed and there are no
+         buffers to display.
+         https://github.com/jlanzarotta/bufexplorer/pull/132
 7.10.0   March 25, 2025
      What's Changed
      - Another major patch implemented by Dr. Michael Henry.
