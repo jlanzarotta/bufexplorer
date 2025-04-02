@@ -1129,6 +1129,7 @@ endfunction
 
 " BuildBufferList {{{2
 function! s:BuildBufferList()
+    let columns = s:GetColumns()
     let table = []
     let s:displayedBufNbrs = []
 
@@ -1174,21 +1175,19 @@ function! s:BuildBufferList()
             continue
         endif
 
-        let row = [buf.numberindicators]
+        let row = []
+        for column in columns
+            if has_key(buf, column)
+                let row += [buf[column]]
+            elseif column == 'icon'
+                " Support must exist or 'icon' would have been removed.
+                let row += [WebDevIconsGetFileTypeSymbol(buf.fullpath, buf.isdir)]
+            else
+                " Must be of the form `=literal`.
+                let row += [column[1:]]
+            endif
+        endfor
 
-        if exists("g:loaded_webdevicons")
-            let row += [WebDevIconsGetFileTypeSymbol(buf.fullpath, buf.isdir)]
-        endif
-
-        " Are we to split the path and file name?
-        if g:bufExplorerSplitOutPathName
-            let type = (g:bufExplorerShowRelativePath) ? "relativedir" : "homereldir"
-            let row += [buf.name, buf[type]]
-        else
-            let type = (g:bufExplorerShowRelativePath) ? "relativepath" : "homerelpath"
-            let row += [buf[type]]
-        endif
-        let row += [buf.line]
         call add(table, row)
         call add(s:displayedBufNbrs, buf.bufNbr)
     endfor
@@ -1205,6 +1204,73 @@ endfunction
 
 " Buffer numbers for buffers displayed in the BufExplorer window.
 let s:displayedBufNbrs = []
+
+" GetColumns {{{2
+function! s:GetColumns()
+    let validColumns = [
+            \ 'dir',
+            \ 'fulldir',
+            \ 'fullpath',
+            \ 'homereldir',
+            \ 'homerelpath',
+            \ 'icon',
+            \ 'indicators',
+            \ 'line',
+            \ 'name',
+            \ 'number',
+            \ 'numberindicators',
+            \ 'path',
+            \ 'rawpath',
+            \ 'relativedir',
+            \ 'relativepath',
+            \ 'splittablepath',
+            \ ]
+    let columns = []
+    for column in g:bufExplorerColumns
+        if column == 'splittablepath'
+            if g:bufExplorerSplitOutPathName
+                let columns += ['name']
+                let column = 'dir'
+            else
+                let column = 'path'
+            endif
+        endif
+        if column == 'dir' || column == 'path'
+            if g:bufExplorerShowRelativePath
+                let column = 'relative' . column
+            else
+                let column = 'homerel' . column
+            endif
+        endif
+        if column == 'icon'
+            " 'icon' is always valid, but omitted unless support is loaded.
+            if exists("g:loaded_webdevicons")
+                let columns += [column]
+            endif
+        elseif index(validColumns, column) >= 0 || column =~# '^='
+            let columns += [column]
+        else
+            let columns += ['=[bad column name "' . column . '"]']
+        endif
+    endfor
+    if len(columns) == 0
+        let columns = ['=[`g:bufExplorerColumns` is empty]']
+    endif
+    return columns
+endfunction
+
+" BufExplorer_defaultColumns {{{2
+" User-accessible default value for `g:bufExplorerColumns`.
+" Implemented as a function so that users may modify the returned list.
+function! BufExplorer_defaultColumns()
+    let defaultColumns = [
+            \   'numberindicators',
+            \   'icon',
+            \   'splittablepath',
+            \   'line',
+            \ ]
+    return defaultColumns
+endfunction
 
 " MakeLines {{{2
 function! s:MakeLines(table)
@@ -1869,6 +1935,7 @@ function! BufExplorer_ReSize()
 endfunction
 
 " Default values {{{2
+call s:Set("g:bufExplorerColumns", BufExplorer_defaultColumns()) " Configurable list of column names for the buffer list.
 call s:Set("g:bufExplorerDisableDefaultKeyMapping", 0)  " Do not disable default key mappings.
 call s:Set("g:bufExplorerDefaultAction", 'current')     " Default action for `:BufExplorer` with no args.
 call s:Set("g:bufExplorerDefaultHelp", 1)               " Show default help?
