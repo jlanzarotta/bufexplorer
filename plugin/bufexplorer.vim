@@ -1187,7 +1187,7 @@ function! s:SelectBuffer(...)
     " error has occurred when it really has not.
     "echo ""
 
-    let _bufNbr = -1
+    let bufNbr = -1
 
     if (a:0 == 1) && (a:1 == "ask")
         " Ask the user for input.
@@ -1199,20 +1199,20 @@ function! s:SelectBuffer(...)
         redraw | echo
 
         if strlen(cmd) > 0
-            let _bufNbr = str2nr(cmd)
+            let bufNbr = str2nr(cmd)
         else
             call s:Error("Invalid buffer number, try again.")
             return
         endif
     else
-        let _bufNbr = s:GetBufNbrAtCursor()
-        if _bufNbr == 0
+        let bufNbr = s:GetBufNbrAtCursor()
+        if bufNbr == 0
             return
         endif
 
         " Check and see if we are running BufferExplorer via WinManager.
         if exists("b:displayMode") && b:displayMode == "winmanager"
-            let _bufName = expand("#"._bufNbr.":p")
+            let _bufName = expand("#".bufNbr.":p")
 
             if (a:0 == 1) && (a:1 == "tab")
                 call WinManagerFileEdit(_bufName, 1)
@@ -1224,12 +1224,12 @@ function! s:SelectBuffer(...)
         endif
     endif
 
-    if bufexists(_bufNbr)
+    if bufexists(bufNbr)
         " Get the tab number where this buffer is located in.
-        let tabNbr = s:GetTabNbr(_bufNbr)
+        let tabNbr = s:GetTabNbr(bufNbr)
         if exists("g:bufExplorerChgWin") && g:bufExplorerChgWin <=winnr("$")
             execute g:bufExplorerChgWin."wincmd w"
-            execute "keepjumps keepalt silent b!" _bufNbr
+            execute "keepjumps keepalt silent b!" bufNbr
 
         " Are we supposed to open the selected buffer in a tab?
         elseif (a:0 == 1) && (a:1 == "tab")
@@ -1238,42 +1238,42 @@ function! s:SelectBuffer(...)
             " Open a new tab with the selected buffer in it.
             if v:version > 704 || ( v:version == 704 && has('patch2237') )
                 " new syntax for last tab as of 7.4.2237
-                execute "$tab split +buffer" . _bufNbr
+                execute "$tab split +buffer" . bufNbr
             else
-                execute "999tab split +buffer" . _bufNbr
+                execute "999tab split +buffer" . bufNbr
             endif
         " Are we supposed to open the selected buffer in a split?
         elseif (a:0 == 2) && (a:1 == "split")
             call s:Close()
             if (a:2 == "vl")
-                execute "vert topleft sb "._bufNbr
+                execute "vert topleft sb ".bufNbr
             elseif (a:2 == "vr")
-                execute "vert belowright sb "._bufNbr
+                execute "vert belowright sb ".bufNbr
             elseif (a:2 == "st")
-                execute "topleft sb "._bufNbr
+                execute "topleft sb ".bufNbr
             else " = sb
-                execute "belowright sb "._bufNbr
+                execute "belowright sb ".bufNbr
             endif
         " Are we supposed to open the selected buffer in the original window?
         elseif (a:0 == 1) && (a:1 == "original_window")
             call s:Close()
             execute s:windowAtLaunch . "wincmd w"
-            execute "keepjumps keepalt silent b!" _bufNbr
+            execute "keepjumps keepalt silent b!" bufNbr
         else
             " Request to open in current (BufExplorer) window.
             if g:bufExplorerFindActive && tabNbr > 0
                 " Close BufExplorer window and switch to existing tab/window.
                 call s:Close()
                 execute tabNbr . "tabnext"
-                execute bufwinnr(_bufNbr) . "wincmd w"
+                execute bufwinnr(bufNbr) . "wincmd w"
             else
                 " Use BufExplorer window for the buffer.
-                execute "keepjumps keepalt silent b!" _bufNbr
+                execute "keepjumps keepalt silent b!" bufNbr
             endif
         endif
 
         " Make the buffer 'listed' again.
-        call setbufvar(_bufNbr, "&buflisted", "1")
+        call setbufvar(bufNbr, "&buflisted", "1")
 
         " Call any associated function references. g:bufExplorerFuncRef may be
         " an individual function reference or it may be a list containing
@@ -1294,7 +1294,7 @@ function! s:SelectBuffer(...)
         endif
     else
         call s:Error("Sorry, that buffer no longer exists, please select another")
-        call s:DeleteBuffer(_bufNbr, "wipe")
+        call s:DeleteBuffer(bufNbr, "wipe")
     endif
 endfunction
 
