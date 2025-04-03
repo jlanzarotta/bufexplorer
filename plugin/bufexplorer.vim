@@ -1631,12 +1631,17 @@ endfunction
 
 " SortByKeyFunc {{{2
 function! s:SortByKeyFunc(keyFunc)
+    let lastLineNbr = s:firstBufferLine + len(s:displayedBufNbrs) - 1
+    " `s:firstBufferLine >= 1`, `lastLineNbr >= 0`; `getline(1, 0) -> []`.
+    let displayedLines = getline(s:firstBufferLine, lastLineNbr)
+    let bufLineIndex = 0
     let keyedLines = []
-    for line in getline(s:firstBufferLine, s:BufferNumLines())
-        let bufNbr = str2nr(line)
+    for bufNbr in s:displayedBufNbrs
         let buf = s:raw_buffer_listing[bufNbr]
         let key = eval(a:keyFunc . '(buf)')
-        call add(keyedLines, join(key + [line], "\1"))
+        let parts = key + [string(bufNbr), string(bufLineIndex)]
+        call add(keyedLines, join(parts, "\1"))
+        let bufLineIndex += 1
     endfor
 
     " Ignore case when sorting by passing `1`:
@@ -1646,9 +1651,13 @@ function! s:SortByKeyFunc(keyFunc)
         call reverse(keyedLines)
     endif
 
+    let s:displayedBufNbrs = []
     let lines = []
     for keyedLine in keyedLines
-        call add(lines, split(keyedLine, "\1")[-1])
+        let parts = split(keyedLine, "\1")
+        let [bufNbrStr, bufLineIndexStr] = parts[-2:-1]
+        call add(s:displayedBufNbrs, str2nr(bufNbrStr))
+        call add(lines, displayedLines[str2nr(bufLineIndexStr)])
     endfor
 
     call setline(s:firstBufferLine, lines)
