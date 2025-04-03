@@ -649,6 +649,7 @@ function! BufExplorer(...)
         let name = escape(name, "[]")
     endif
 
+    let s:bufNbrAtLaunch = bufnr('%')
     let s:tabIdAtLaunch = s:MRUEnsureTabId(tabpagenr())
     let s:windowAtLaunch = winnr()
 
@@ -698,9 +699,12 @@ function! BufExplorer(...)
     call s:DisplayBufferList()
 
     " Position the cursor in the newly displayed list on the line representing
-    " the active buffer.  The active buffer is the line with the '%' character
-    " in it.
-    execute search("%")
+    " the active buffer at BufExplorer launch (assuming it is displayed).
+    let activeBufIndex = index(s:displayedBufNbrs, s:bufNbrAtLaunch)
+    if activeBufIndex >= 0
+        let activeBufLineNbr = s:firstBufferLine + activeBufIndex
+        keepjumps execute 'normal! ' . string(activeBufLineNbr) . 'G'
+    endif
 
     if exists('#User#BufExplorer_Started')
         " Notify that BufExplorer has started.  This is an opportunity to make
@@ -708,6 +712,9 @@ function! BufExplorer(...)
         doautocmd User BufExplorer_Started
     endif
 endfunction
+
+" Tracks buffer number at BufExplorer launch.
+let s:bufNbrAtLaunch = 0
 
 " Tracks `tabId` at BufExplorer launch.
 let s:tabIdAtLaunch = ''
