@@ -1592,50 +1592,43 @@ function! s:UpdateHelpStatus()
 endfunction
 
 " Key_number {{{2
-function! s:Key_number(line)
-    let bufNbr = str2nr(a:line)
-    let key = [printf('%9d', bufNbr)]
+function! s:Key_number(buf)
+    let key = [printf('%9d', a:buf.bufNbr)]
     return key
 endfunction
 
 " Key_name {{{2
-function! s:Key_name(line)
-    let bufNbr = str2nr(a:line)
-    let buf = s:raw_buffer_listing[bufNbr]
-    let key = [buf.name, buf.fullpath]
+function! s:Key_name(buf)
+    let key = [a:buf.name, a:buf.fullpath]
     return key
 endfunction
 
 " Key_fullpath {{{2
-function! s:Key_fullpath(line)
-    let bufNbr = str2nr(a:line)
-    let buf = s:raw_buffer_listing[bufNbr]
-    let key = [buf.fullpath]
+function! s:Key_fullpath(buf)
+    let key = [a:buf.fullpath]
     return key
 endfunction
 
 " Key_extension {{{2
-function! s:Key_extension(line)
-    let bufNbr = str2nr(a:line)
-    let buf = s:raw_buffer_listing[bufNbr]
-    let extension = fnamemodify(buf.name, ':e')
-    let key = [extension, buf.name, buf.fullpath]
+function! s:Key_extension(buf)
+    let extension = fnamemodify(a:buf.name, ':e')
+    let key = [extension, a:buf.name, a:buf.fullpath]
     return key
 endfunction
 
 " Key_mru {{{2
-function! s:Key_mru(line)
-    let bufNbr = str2nr(a:line)
-    let buf = s:raw_buffer_listing[bufNbr]
-    let pos = s:MRUOrderForBuf(bufNbr)
-    return [printf('%9d', pos), buf.fullpath]
+function! s:Key_mru(buf)
+    let pos = s:MRUOrderForBuf(a:buf.bufNbr)
+    return [printf('%9d', pos), a:buf.fullpath]
 endfunction
 
 " SortByKeyFunc {{{2
 function! s:SortByKeyFunc(keyFunc)
     let keyedLines = []
     for line in getline(s:firstBufferLine, s:BufferNumLines())
-        let key = eval(a:keyFunc . '(line)')
+        let bufNbr = str2nr(line)
+        let buf = s:raw_buffer_listing[bufNbr]
+        let key = eval(a:keyFunc . '(buf)')
         call add(keyedLines, join(key + [line], "\1"))
     endfor
 
