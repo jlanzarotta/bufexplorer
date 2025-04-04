@@ -1214,6 +1214,10 @@ function! s:MakeLines(table)
     let lines = []
     " To avoid trailing whitespace, do not pad the final column.
     let numColumnsToPad = len(a:table[0]) - 1
+    " Ensure correctness even if `table` has no columns.
+    if numColumnsToPad < 0
+        let numColumnsToPad = 0
+    endif
     let maxWidths = repeat([0], numColumnsToPad)
     for row in a:table
         let i = 0
