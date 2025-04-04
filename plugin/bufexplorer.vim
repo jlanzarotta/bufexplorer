@@ -1593,7 +1593,7 @@ endfunction
 
 " Key_number {{{2
 function! s:Key_number(buf)
-    let key = [printf('%9d', a:buf.bufNbr)]
+    let key = [printf('%020d', a:buf.bufNbr)]
     return key
 endfunction
 
