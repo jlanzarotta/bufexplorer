@@ -742,6 +742,13 @@ function! s:DisplayBufferList()
     setlocal nomodifiable
 endfunction
 
+" BufExplorer_redisplay {{{2
+function! BufExplorer_redisplay()
+    if s:running && bufnr('%') == s:bufExplorerBuffer
+        call s:RedisplayBufferList()
+    endif
+endfunction
+
 " RedisplayBufferList {{{2
 function! s:RedisplayBufferList()
     call s:RebuildBufferList()
