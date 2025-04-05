@@ -891,8 +891,11 @@ function! s:GetHelpStatus()
     let ret .= ((g:bufExplorerShowUnlisted == 0) ? "" : " | Show unlisted")
     let ret .= ((g:bufExplorerShowTabBuffer == 0) ? "" : " | Show buffers/tab")
     let ret .= ((g:bufExplorerOnlyOneTab == 0) ? "" : " | One tab/buffer")
-    let ret .= ' | '.((g:bufExplorerShowRelativePath == 0) ? "Absolute" : "Relative")
-    let ret .= ' '.((g:bufExplorerSplitOutPathName == 0) ? "Full" : "Split")." path"
+    let ret .= ' | '
+    if g:bufExplorerShowRelativePath
+        let ret .= "Relative "
+    endif
+    let ret .= ((g:bufExplorerSplitOutPathName == 0) ? "Whole" : "Split")." path"
     let ret .= ((g:bufExplorerShowTerminal == 0) ? "" : " | Show terminal")
 
     return ret
@@ -921,10 +924,10 @@ function! s:CreateHelp()
         call add(header, '" F : open buffer in another window above the current')
         call add(header, '" f : open buffer in another window below the current')
         call add(header, '" O : open buffer in original window')
-        call add(header, '" p : toggle splitting of file and path name')
+        call add(header, '" p : toggle splitting of path into name + dir')
         call add(header, '" q : quit')
         call add(header, '" r : reverse sort')
-        call add(header, '" R : toggle showing relative or full paths')
+        call add(header, '" R : toggle showing relative paths')
         call add(header, '" s : cycle thru "sort by" fields '.string(s:sort_by).'')
         call add(header, '" S : reverse cycle thru "sort by" fields')
         call add(header, '" T : toggle showing all buffers/only buffers used on this tab')
