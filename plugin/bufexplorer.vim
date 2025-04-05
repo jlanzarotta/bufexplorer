@@ -1129,6 +1129,12 @@ endfunction
 
 " BuildBufferList {{{2
 function! s:BuildBufferList()
+    if exists('#User#BufExplorer_PreDisplay')
+        " Notify that BufExplorer is about to display the buffer list.  This is
+        " an opportunity to make last-minute changes to `g:bufExplorerColumns`.
+        doautocmd User BufExplorer_PreDisplay
+    endif
+
     let columns = s:GetColumns()
     let table = []
     let s:displayedBufNbrs = []
