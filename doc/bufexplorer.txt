@@ -89,10 +89,10 @@ Commands to use once exploring:
                window.
  O             Opens the buffer that is under the cursor into the window where
                BufExplorer was originally launched.
- p             Toggles the showing of a split filename/pathname.
+ p             Toggles splitting a whole path into name and directory.
  q             Exit/Close bufexplorer.
  r             Reverses the order the buffers are listed in.
- R             Toggles relative path/absolute path.
+ R             Toggles showing paths relative to the current working directory.
  s             Cycle thru how the buffers are listed. Either by buffer
                number, file name, file extension, most recently used (MRU), or
                full path.
@@ -186,16 +186,16 @@ WINDOW LAYOUT                                       *bufexplorer-windowlayout*
 
 -------------------------------------------------------------------------------
 " Press <F1> for Help
-" Sorted by mru | Locate buffer | Absolute Split path
+" Sorted by mru | Locate buffer | One tab/buffer | Split path | Show terminal
 "=
   1 %a    bufexplorer.txt      C:\Vim\vimfiles\doc       line 87
   2 #     bufexplorer.vim      c:\Vim\vimfiles\plugin    line 1
 -------------------------------------------------------------------------------
   | |     |                    |                         |
   | |     |                    |                         +-- Current Line #.
-  | |     |                    +-- Relative/Full Path
+  | |     |                    +-- Path (may be Split +/or Relative)
   | |     +-- Buffer Name.
-  | +-- Buffer Attributes. See |:buffers| for more information.
+  | +-- Buffer Indicators. See |:buffers| for more information.
   +-- Buffer Number. See |:buffers| for more information.
 
 ===============================================================================
@@ -267,6 +267,7 @@ BufExplorer's buffer:
   nmap <nowait> <buffer> V        <Plug>(BufExplorer_OpenBufferSplitLeft)
   nmap <nowait> <buffer> X        <Plug>(BufExplorer_ToggleShowTerminal)
 
+                                                          *BufExplorer_Started*
 These buffer-local mappings may be adjusted as desired after BufExplorer has
 been launched, typically by use of an autocommand.  At BufExplorer startup, a
 |User| autocommand will be sent with an autocommand pattern of
@@ -307,6 +308,238 @@ be called to adjust BufExplorer's mappings: >
 
       " Example: Map the `t` key to `<Nop>` to prevent opening in a tab.
       nmap <nowait> <buffer> t <Nop>
+  endfunction
+<
+                                                         *g:bufExplorerColumns*
+The columns displayed in the buffer list are configurable via the variable
+`g:bufExplorerColumns`.  This is a list of strings, where each string dictates
+the contents of a column in the buffer list.  Most strings relate to properties
+of the buffer being displayed, and most properties are taken from the output of
+`:buffers`; see Vim's help for |:buffers| for details on the interpretation of
+these properties.
+
+For a file:
+- A "path" is the location of the file.
+- A "dir" is the directory portion of a path.
+- A "name" is a path with the directory portion removed.
+
+Paths of files and directories may be modified via a prefix:
+- `full` - the full location starting from the root directory.
+- `homerel` - `full` but with any home directory prefix replaced with `~/`.
+- `relative` - `homerel` but shortened relative to current directory.
+
+BufExplorer defines the following column strings:
+
+Column String               Meaning
+------------------------    ------------------------------------------------
+`number`                      buffer number from `:buffers`
+`indicators`                  indicators from `:buffers`
+`numberindicators`            number and indicators in the same column
+`line`                        line number from `:buffers`
+`rawpath`                     raw path as returned by `:buffers`
+`name`                        path with directory portion removed
+`fullpath`                    file location starting from root directory
+`fulldir`                     directory location starting from root directory
+`homerelpath`                 `fullpath` with homerel shortening
+`homereldir`                  `fulldir` with homerel shortening
+`relativepath`                `homerelpath` with relative shortening
+`relativedir`                 `homereldir` with relative shortening
+`path`                        `relativedir` or `homereldir;` see below
+`dir`                         `relativedir` or `homereldir;` see below
+`splittablepath`              `[path]` or `[name, dir]`; see below
+`icon`                        icon from VimDevIcons
+
+In the examples that follow the user `vimmer` has home directory `/home/vimmer`
+with the following contents: >
+
+  /home/
+    vimmer/                 <- Home directory
+      notes/                <- Current working directory
+        todo.txt
+        shopping/
+          laptop.txt
+<
+The current working directory is `/home/vimmer/notes`.
+
+The files are open in Vim; the output of `:buffers` is: >
+
+    4 %a   "todo.txt"                     line 23
+    6 #h   "shopping/laptop.txt"          line 18
+<
+For buffer 4 (`todo.txt`): >
+
+  rawpath           ->  todo.txt
+  name              ->  todo.txt
+  fullpath          ->  /home/vimmer/notes/todo.txt
+  fulldir           ->  /home/vimmer/notes
+  homerelpath       ->  ~/notes/todo.txt
+  homereldir        ->  ~/notes
+  relativepath      ->  todo.txt
+  relativedir       ->  .
+  number            ->  4
+  indicators        ->  %a
+  numberindicators  ->  4 %a
+  line              ->  line 23
+<
+For buffer 6 (`shopping/laptop.txt`): >
+
+  rawpath           ->  shopping/laptop.txt
+  name              ->  laptop.txt
+  fullpath          ->  /home/vimmer/notes/shopping/laptop.txt
+  fulldir           ->  /home/vimmer/notes/shopping
+  homerelpath       ->  ~/notes/shopping/laptop.txt
+  homereldir        ->  ~/notes/shopping
+  relativepath      ->  laptop.txt
+  relativedir       ->  shopping
+  number            ->  6
+  indicators        ->  #h
+  numberindicators  ->  6 #h
+  line              ->  line 18
+<
+Certain column strings are dynamically calculated based on current BufExplorer
+display mode: >
+
+  if g:bufExplorerSplitOutPathName:
+      [splittablepath] => [name, dir]
+  else:
+      [splittablepath] => [path]
+
+  if g:bufExplorerShowRelativePath:
+      [dir]  -> [relativedir]
+      [path] -> [relativepath]
+  else:
+      [dir]  -> [homereldir]
+      [path] -> [homerelpath]
+<
+Thus, `splittablepath` will be split into two columns (`name` and `dir`) when
+`g:bufExplorerSplitOutPathName=1`, and kept as `path` in a single column
+otherwise.
+
+`dir` and `path` will have a `relative` prefix when
+`g:bufExplorerShowRelativePath=1` and a `homerel` prefix otherwise.
+
+If the VimDevIcons plugin (https://github.com/ryanoasis/vim-devicons) is
+installed, then the `icon` column string creates a column with the appropriate
+icon; otherwise, no icon column will be created.  See the VimDevIcons plugin
+documentation for more details.
+
+For example, to show only the buffer's number and path, add the below to your
+vimrc: >
+
+  let g:bufExplorerColumns = ['number', 'splittablepath']
+<
+To show only the buffer's path, add the below to your vimrc: >
+
+  let g:bufExplorerColumns = ['splittablepath']
+<
+In addition to the above column strings, any string starting with `=` will be
+inserted into the column literally.  So, for example, the string `=|` results in
+a column of vertical bars: >
+
+  let g:bufExplorerColumns = ['number', '=|', 'splittablepath']
+
+And the string `=    `  (`=` plus four spaces) adds a column of extra spaces: >
+
+  let g:bufExplorerColumns = ['number', '=    ', 'splittablepath']
+<
+                                                 *BufExplorer_defaultColumns()*
+The default list of columns is given by `BufExplorer_defaultColumns()`.  At
+BufExplorer startup, `g:bufExplorerColumns` will be set to this default if that
+variable is undefined.  The default list is: >
+
+  ['numberindicators', 'icon', 'splittablepath', 'line']
+<
+                                                      *BufExplorer_redisplay()*
+It's useful to request a re-display of the buffer list if the columns are being
+changed dynamically.  `BufExplorer_redisplay()` causes BufExplorer to redisplay
+the buffer list according to the columns defined by `g:bufExplorerColumns`.
+The example below uses the key `q` to toggle between the default view and the
+"quiet" view above that shows only the buffer's path: >
+
+  " `UserPrefix_` is an arbitrary prefix to avoid name collisions.
+  augroup UserPrefix_BufExplorerGroup
+      autocmd!
+      autocmd User BufExplorer_Started call <SID>BufExplorer_Started()
+  augroup END
+
+  function! s:BufExplorer_Started()
+      nmap <nowait> <buffer> <silent> q :call <SID>toggleQuiet()<CR>
+  endfunction
+
+  let s:quiet = 0
+
+  function! s:toggleQuiet()
+      let s:quiet = !s:quiet
+      if s:quiet
+          let g:bufExplorerColumns = ['splittablepath']
+      else
+          let g:bufExplorerColumns = BufExplorer_defaultColumns()
+      endif
+      call BufExplorer_redisplay()
+  endfunction
+<
+The following example uses `=` to reset some BufExplorer settings to some
+preferred set and then redisplay: >
+
+  augroup UserPrefix_BufExplorerGroup
+      autocmd!
+      autocmd User BufExplorer_Started call UserPrefix_setupBufExplorer()
+  augroup END
+
+  function! UserPrefix_setupBufExplorer()
+      " Example: Make `=` reset to preferred settings and redisplay.
+      nmap <nowait> <buffer> <silent> = :call <SID>reset()<CR>
+  endfunction
+
+  function! s:reset()
+      let g:bufExplorerSortBy = 'fullpath'
+      let g:bufExplorerSplitOutPathName = 1
+      let g:bufExplorerShowRelativePath = 1
+      call BufExplorer_redisplay()
+  endfunction
+<
+                                                       *BufExplorer_PreDisplay*
+Before displaying (or redisplaying) a buffer list, BufExplorer will send a
+|User| autocommand with an autocommand pattern of `BufExplorer_PreDisplay`.
+This event may be caught via an |:autocmd|, allowing for last-minute adjustments
+to the buffer list columns.  For example, consider customizing BufExplorer's `R`
+command to cycle among `homerel`, `relative`, and `full` prefixes instead of
+just toggling between `homerel` and `relative`.  Note that the `p` command
+influences the choice of columns, so the calculation must be done during the
+`BufExplorer_PreDisplay` event: >
+
+  " `UserPrefix_` is an arbitrary prefix to avoid name collisions.
+  augroup UserPrefix_BufExplorerGroup
+      autocmd!
+      autocmd User BufExplorer_Started call <SID>BufExplorer_Started()
+      autocmd User BufExplorer_PreDisplay call <SID>BufExplorer_PreDisplay()
+  augroup END
+
+  function! s:BufExplorer_Started()
+      nmap <nowait> <buffer> <silent> R :call <SID>cycleRelative()<CR>
+  endfunction
+
+  let s:relTypeIndex = 0
+  let s:relTypes = ['homerel', 'relative', 'full']
+
+  function! s:BufExplorer_PreDisplay()
+      let g:bufExplorerColumns = BufExplorer_defaultColumns()
+      let pathIndex = index(g:bufExplorerColumns, 'splittablepath')
+      call remove(g:bufExplorerColumns, pathIndex)
+      let prefix = s:relTypes[s:relTypeIndex]
+      if g:bufExplorerSplitOutPathName
+          call insert(g:bufExplorerColumns, 'name', pathIndex)
+          let pathIndex += 1
+          let suffix = 'dir'
+      else
+          let suffix = 'path'
+      endif
+      call insert(g:bufExplorerColumns, prefix . suffix, pathIndex)
+  endfunction
+
+  function! s:cycleRelative()
+      let s:relTypeIndex = (s:relTypeIndex  + 1 ) % len(s:relTypes)
+      call BufExplorer_redisplay()
   endfunction
 <
                                                           *g:bufExplorerChgWin*
@@ -386,11 +619,10 @@ To control whether to show "No Name" buffers or not, use: >
 The default is to NOT show "No Name buffers.
 
                                                 *g:bufExplorerShowRelativePath*
-To control whether to show absolute paths or relative to the current
-directory, use: >
-  let g:bufExplorerShowRelativePath=0  " Show absolute paths.
+To control whether to show paths relative to the current directory, use: >
+  let g:bufExplorerShowRelativePath=0  " Do not show relative paths.
   let g:bufExplorerShowRelativePath=1  " Show relative paths.
-The default is to show absolute paths.
+The default is to NOT show relative paths.
 
                                                    *g:bufExplorerShowTabBuffer*
 To control whether or not to show buffers on for the specific tab or not, use: >
@@ -428,11 +660,10 @@ To control the size of the new horizontal split window. use: >
 The default is 0, so that the size is set by Vim.
 
                                                 *g:bufExplorerSplitOutPathName*
-To control whether to split out the path and file name or not, use: >
-  let g:bufExplorerSplitOutPathName=1  " Split the path and file name.
-  let g:bufExplorerSplitOutPathName=0  " Don't split the path and file
-                                       " name.
-The default is to split the path and file name.
+To control whether to split the path into name + directory columns, use: >
+  let g:bufExplorerSplitOutPathName=1  " Split the path into name + directory.
+  let g:bufExplorerSplitOutPathName=0  " Don't split the path.
+The default is to split path into name + directory columns.
 
                                                       *g:bufExplorerSplitRight*
 To control where the new vsplit window will be placed to the left or right of

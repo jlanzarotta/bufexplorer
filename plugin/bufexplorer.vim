@@ -133,6 +133,40 @@ function! s:Set(var, default)
     return 0
 endfunction
 
+" Naming conventions for file paths.
+" Conventionally a `path` is the string of characters used to identify a file
+" (ref. https://en.wikipedia.org/wiki/Path_(computing)).
+" An absolute or `full` path starts from the root directory and consists of
+" parent directories (if any) and a final `name` component.
+" A file's `dir` (directory) is the path to the parent directory of the file.
+" In general:
+"
+"   fullpath = dir / name
+"
+" Paths below the user's home directory may be abbreviated, replacing the home
+" directory with `~`, e.g.:
+"
+"   /home/user/some/file
+"   ->
+"   ~/some/file
+"
+" `homerel` refers to paths with home-directory-relative abbreviation.
+"
+" `relative` refers to paths computed relative to the current working directory;
+" these also include the home-directory-relative abbreviation.
+"
+" `rawpath` is the path as returned from `:buffers`; as such, buffers lacking
+" any name are represented as `[No Name]`.
+"
+" Thus, for a buffer:
+" - `rawpath` is the path as returned from `:buffers`.
+" - `fullpath` is the absolute path to the buffer.
+" - `homerelpath` is `fullpath` with the `~/` abbreviation.
+" - `relativepath` is `homerelpath` with relative abbreviation.
+" - `fulldir` is the absolute path to the buffer's parent directory.
+" - `homereldir` is `fulldir` with the `~/` abbreviation.
+" - `relativedir` is `homereldir` with relative abbreviation.
+
 " Script variables {{{2
 let s:MRU_Exclude_List = ["[BufExplorer]","__MRU_Files__","[Buf\ List]"]
 let s:name = '[BufExplorer]'
@@ -141,7 +175,6 @@ let s:bufExplorerBuffer = 0
 let s:running = 0
 let s:sort_by = ["number", "name", "fullpath", "mru", "extension"]
 let s:didSplit = 0
-let s:types = ["fullname", "homename", "path", "relativename", "relativepath", "shortname"]
 
 " Setup the autocommands that handle stuff. {{{2
 augroup BufExplorer
@@ -650,6 +683,7 @@ function! BufExplorer(...)
         let name = escape(name, "[]")
     endif
 
+    let s:bufNbrAtLaunch = bufnr('%')
     let s:tabIdAtLaunch = s:MRUEnsureTabId(tabpagenr())
     let s:windowAtLaunch = winnr()
 
@@ -699,9 +733,12 @@ function! BufExplorer(...)
     call s:DisplayBufferList()
 
     " Position the cursor in the newly displayed list on the line representing
-    " the active buffer.  The active buffer is the line with the '%' character
-    " in it.
-    execute search("%")
+    " the active buffer at BufExplorer launch (assuming it is displayed).
+    let activeBufIndex = index(s:displayedBufNbrs, s:bufNbrAtLaunch)
+    if activeBufIndex >= 0
+        let activeBufLineNbr = s:firstBufferLine + activeBufIndex
+        keepjumps execute 'normal! ' . string(activeBufLineNbr) . 'G'
+    endif
 
     if exists('#User#BufExplorer_Started')
         " Notify that BufExplorer has started.  This is an opportunity to make
@@ -709,6 +746,9 @@ function! BufExplorer(...)
         doautocmd User BufExplorer_Started
     endif
 endfunction
+
+" Tracks buffer number at BufExplorer launch.
+let s:bufNbrAtLaunch = 0
 
 " Tracks `tabId` at BufExplorer launch.
 let s:tabIdAtLaunch = ''
@@ -741,6 +781,13 @@ function! s:DisplayBufferList()
     endif
 
     setlocal nomodifiable
+endfunction
+
+" BufExplorer_redisplay {{{2
+function! BufExplorer_redisplay()
+    if s:running && bufnr('%') == s:bufExplorerBuffer
+        call s:RedisplayBufferList()
+    endif
 endfunction
 
 " RedisplayBufferList {{{2
@@ -844,8 +891,11 @@ function! s:GetHelpStatus()
     let ret .= ((g:bufExplorerShowUnlisted == 0) ? "" : " | Show unlisted")
     let ret .= ((g:bufExplorerShowTabBuffer == 0) ? "" : " | Show buffers/tab")
     let ret .= ((g:bufExplorerOnlyOneTab == 0) ? "" : " | One tab/buffer")
-    let ret .= ' | '.((g:bufExplorerShowRelativePath == 0) ? "Absolute" : "Relative")
-    let ret .= ' '.((g:bufExplorerSplitOutPathName == 0) ? "Full" : "Split")." path"
+    let ret .= ' | '
+    if g:bufExplorerShowRelativePath
+        let ret .= "Relative "
+    endif
+    let ret .= ((g:bufExplorerSplitOutPathName == 0) ? "Whole" : "Split")." path"
     let ret .= ((g:bufExplorerShowTerminal == 0) ? "" : " | Show terminal")
 
     return ret
@@ -874,10 +924,10 @@ function! s:CreateHelp()
         call add(header, '" F : open buffer in another window above the current')
         call add(header, '" f : open buffer in another window below the current')
         call add(header, '" O : open buffer in original window')
-        call add(header, '" p : toggle splitting of file and path name')
+        call add(header, '" p : toggle splitting of path into name + dir')
         call add(header, '" q : quit')
         call add(header, '" r : reverse sort')
-        call add(header, '" R : toggle showing relative or full paths')
+        call add(header, '" R : toggle showing relative paths')
         call add(header, '" s : cycle thru "sort by" fields '.string(s:sort_by).'')
         call add(header, '" S : reverse cycle thru "sort by" fields')
         call add(header, '" T : toggle showing all buffers/only buffers used on this tab')
@@ -902,44 +952,50 @@ endfunction
 " CalculateBufferDetails {{{2
 " Calculate `buf`-related details.
 " Only these fields of `buf` must be defined on entry:
-" - `._bufnr`
-" - `.attributes`
+" - `.bufNbr`
+" - `.numberindicators`
 " - `.line`
 function! s:CalculateBufferDetails(buf)
     let buf = a:buf
-    let name = bufname(buf._bufnr)
-    let buf["hasNoName"] = empty(name)
+    let buf.number = string(buf.bufNbr)
+    let buf.indicators = substitute(buf.numberindicators, '^\s*\d*', '', '')
+    let rawpath = bufname(buf.bufNbr)
+    let buf["hasNoName"] = empty(rawpath)
     if buf.hasNoName
-        let name = "[No Name]"
+        let rawpath = "[No Name]"
+        let buf.isdir = 0
+    else
+        let buf.isdir = getftype(rawpath) == 'dir'
     endif
-    let buf.isterminal = getbufvar(buf._bufnr, '&buftype') == 'terminal'
+    let buf.rawpath = rawpath
+    let buf.isterminal = getbufvar(buf.bufNbr, '&buftype') == 'terminal'
     if buf.isterminal
-        " Neovim uses paths with `term://` prefix, where the provided path
+        " Neovim uses paths with `term://` prefix, where the provided dir path
         " is the current working directory when the terminal was launched, e.g.:
         " - Unix:
         "   term://~/tmp/sort//1464953:/bin/bash
         " - Windows:
         "   term://C:\apps\nvim-win64\bin//6408:C:\Windows\system32\cmd.exe
-        " Vim uses paths starting with `!`, with no provided path, e.g.:
+        " Vim uses paths starting with `!`, with no provided dir path, e.g.:
         " - Unix:
         "   !/bin/bash
         " - Windows:
         "   !C:\Windows\system32\cmd.exe
 
-        " Use the terminal's current working directory as the `path`.
-        " For `shortname`, use `!PID:shellName`, prefixed with `!` as Vim does,
-        " and without the shell's path for brevity, e.g.:
+        " Use the terminal's current working directory as `fulldir`.
+        " For `name`, use `!PID:shellName`, prefixed with `!` as Vim does,
+        " and without the shell's dir path for brevity, e.g.:
         "   `/bin/bash` -> `!bash`
         "   `1464953:/bin/bash` -> `!1464953:bash`
         "   `C:\Windows\system32\cmd.exe` -> `!cmd.exe`
         "   `6408:C:\Windows\system32\cmd.exe` -> `!6408:cmd.exe`
 
-        " Neovim-style name format:
+        " Neovim-style path format:
         "   term://(cwd)//(pid):(shellPath)
         " e.g.:
         "   term://~/tmp/sort//1464953:/bin/bash
         " `cwd` is the directory at terminal launch.
-        let termNameParts = matchlist(name, '\v\c^term://(.*)//(\d+):(.*)$')
+        let termNameParts = matchlist(rawpath, '\v\c^term://(.*)//(\d+):(.*)$')
         if len(termNameParts) > 0
             let [cwd, pidStr, shellPath] = termNameParts[1:3]
             let pid = str2nr(pidStr)
@@ -947,10 +1003,10 @@ function! s:CalculateBufferDetails(buf)
         else
             " Default to Vim's current working directory.
             let cwd = '.'
-            let shellName = fnamemodify(name, ':t')
+            let shellName = fnamemodify(rawpath, ':t')
             let pid = -1
             if exists('*term_getjob') && exists('*job_info')
-                let job = term_getjob(buf._bufnr)
+                let job = term_getjob(buf.bufNbr)
                 if job != v:null
                     let pid = job_info(job).process
                 endif
@@ -958,9 +1014,9 @@ function! s:CalculateBufferDetails(buf)
         endif
 
         if pid < 0
-            let shortname = '!' . shellName
+            let name = '!' . shellName
         else
-            let shortname = '!' . pid . ':' . shellName
+            let name = '!' . pid . ':' . shellName
             " On some systems having a `/proc` filesystem (e.g., Linux, *BSD,
             " Solaris), each process has a `cwd` symlink for the current working
             " directory.  `resolve()` will return the actual current working
@@ -973,51 +1029,55 @@ function! s:CalculateBufferDetails(buf)
             endif
         endif
 
-        let slashed_path = fnamemodify(cwd, ':p')
-        let buf.fullname = slashed_path . shortname
-        let buf.shortname = shortname
-        let homepath = fnamemodify(slashed_path, ':~:h')
-        let buf.path = homepath
-        let buf.homename = fnamemodify(buf.fullname, ':~')
-        let buf.relativepath = fnamemodify(slashed_path, ':~:.:h')
-        let buf.relativename = fnamemodify(buf.fullname, ':~:.')
+        let slashed_cwd = fnamemodify(cwd, ':p')
+        let buf.fullpath = slashed_cwd . name
+        let buf.fulldir = fnamemodify(slashed_cwd, ':h')
+        let buf.name = name
+        let buf.homereldir = fnamemodify(slashed_cwd, ':~:h')
+        let buf.homerelpath = fnamemodify(buf.fullpath, ':~')
+        let buf.relativedir = fnamemodify(slashed_cwd, ':~:.:h')
+        let buf.relativepath = fnamemodify(buf.fullpath, ':~:.')
         return
     endif
 
-    let buf.fullname = simplify(fnamemodify(name, ':p'))
-    let buf.isdir = getftype(buf.fullname) == "dir"
+    let fullpath = simplify(fnamemodify(rawpath, ':p'))
     if buf.isdir
-        " `buf.fullname` ends with a path separator; this will be
-        " removed via the first `:h` applied to `buf.fullname` (except
+        " `fullpath` ends with a path separator; this will be
+        " removed via the first `:h` applied to `fullpath` (except
         " for the root directory, where the path separator will remain).
-        let parent = fnamemodify(buf.fullname, ':h:h')
-        let buf.shortname = fnamemodify(buf.fullname, ':h:t')
-        " Special case for root directory: fnamemodify('/', ':h:t') == ''
-        if buf.shortname == ''
-            let buf.shortname = '.'
-        endif
+
         " Must perform shortening (`:~`, `:.`) before `:h`.
-        let buf.homename = fnamemodify(buf.fullname, ':~:h')
-        let buf.relativename = fnamemodify(buf.fullname, ':~:.:h')
+        let buf.homerelpath = fnamemodify(fullpath, ':~:h')
+        let buf.relativepath = fnamemodify(fullpath, ':~:.:h')
+        " Remove trailing slash.
+        let fullpath = fnamemodify(fullpath, ':h')
+        let parent = fnamemodify(fullpath, ':h')
+        let buf.name = fnamemodify(fullpath, ':t')
+        " Special case for root directory: fnamemodify('/', ':h:t') == ''
+        if buf.name == ''
+            let buf.name = '.'
+        endif
     else
-        let parent = fnamemodify(buf.fullname, ':h')
-        let buf.shortname = fnamemodify(buf.fullname, ':t')
-        let buf.homename = fnamemodify(buf.fullname, ':~')
-        let buf.relativename = fnamemodify(buf.fullname, ':~:.')
+        let parent = fnamemodify(fullpath, ':h')
+        let buf.name = fnamemodify(fullpath, ':t')
+        let buf.homerelpath = fnamemodify(fullpath, ':~')
+        let buf.relativepath = fnamemodify(fullpath, ':~:.')
     endif
+    let buf.fullpath = fullpath
+    let buf.fulldir = parent
     " `:p` on `parent` adds back the path separator which permits more
     " effective shortening (`:~`, `:.`), but `:h` is required afterward
     " to trim this separator.
-    let buf.path = fnamemodify(parent, ':p:~:h')
-    let buf.relativepath = fnamemodify(parent, ':p:~:.:h')
+    let buf.homereldir = fnamemodify(parent, ':p:~:h')
+    let buf.relativedir = fnamemodify(parent, ':p:~:.:h')
 endfunction
 
 " GetBufferInfo {{{2
 " Return dictionary `{ bufNbr : buf }`.
 " - If `onlyBufNbr > 0`, dictionary will contain at most that buffer.
 " On return, only these fields are set for each `buf`:
-" - `._bufnr`
-" - `.attributes`
+" - `.bufNbr`
+" - `.numberindicators`
 " - `.line`
 " Other fields will be populated by `s:CalculateBufferDetails()`.
 function! s:GetBufferInfo(onlyBufNbr)
@@ -1043,7 +1103,7 @@ function! s:GetBufferInfo(onlyBufNbr)
         " more spaces/tabs:
         let onlyLinePattern = '\v\n\s*'
         " Continue with the buffer number followed by a non-digit character
-        " (which will be a buffer attribute character such as `u` or ` `).
+        " (which will be a buffer indicator character such as `u` or ` `).
         let onlyLinePattern .= a:onlyBufNbr . '\D'
         " Finish with a run of zero or more non-newline characters plus newline:
         let onlyLinePattern .= '[^\n]*\n'
@@ -1058,9 +1118,13 @@ function! s:GetBufferInfo(onlyBufNbr)
 
         " Use first and last components after the split on '"', in case a
         " filename with an embedded '"' is present.
-        let buf = {"attributes": bits[0], "line": substitute(bits[-1], '\s*', '', '')}
-        let buf._bufnr = str2nr(buf.attributes)
-        let all[buf._bufnr] = buf
+        let buf = {
+                \ "numberindicators": bits[0],
+                \ "line": substitute(bits[-1],
+                \ '\s*', '', '')
+                \}
+        let buf.bufNbr = str2nr(buf.numberindicators)
+        let all[buf.bufNbr] = buf
     endfor
 
     return all
@@ -1068,27 +1132,35 @@ endfunction
 
 " BuildBufferList {{{2
 function! s:BuildBufferList()
+    if exists('#User#BufExplorer_PreDisplay')
+        " Notify that BufExplorer is about to display the buffer list.  This is
+        " an opportunity to make last-minute changes to `g:bufExplorerColumns`.
+        doautocmd User BufExplorer_PreDisplay
+    endif
+
+    let columns = s:GetColumns()
     let table = []
+    let s:displayedBufNbrs = []
 
     " Loop through every buffer.
     for buf in values(s:raw_buffer_listing)
-        " `buf.attributes` must exist, but we defer the expensive work of
-        " calculating other buffer details (e.g., `buf.fullname`) until we know
+        " `buf.numberindicators` must exist, but we defer the expensive work of
+        " calculating other buffer details (e.g., `buf.fullpath`) until we know
         " the user wants to view this buffer.
 
         " Skip BufExplorer's buffer.
-        if buf._bufnr == s:bufExplorerBuffer
+        if buf.bufNbr == s:bufExplorerBuffer
             continue
         endif
 
         " Skip unlisted buffers if we are not to show them.
-        if !g:bufExplorerShowUnlisted && buf.attributes =~ "u"
+        if !g:bufExplorerShowUnlisted && buf.numberindicators =~ "u"
             " Skip unlisted buffers if we are not to show them.
             continue
         endif
 
         " Ensure buffer details are computed for this buffer.
-        if !has_key(buf, 'fullname')
+        if !has_key(buf, 'fullpath')
             call s:CalculateBufferDetails(buf)
         endif
 
@@ -1098,7 +1170,7 @@ function! s:BuildBufferList()
         endif
 
         " Should we show this buffer in this tab?
-        if !s:MRUTabShouldShowBuf(s:tabIdAtLaunch, buf._bufnr)
+        if !s:MRUTabShouldShowBuf(s:tabIdAtLaunch, buf.bufNbr)
             continue
         endif
 
@@ -1112,22 +1184,21 @@ function! s:BuildBufferList()
             continue
         endif
 
-        let row = [buf.attributes]
+        let row = []
+        for column in columns
+            if has_key(buf, column)
+                let row += [buf[column]]
+            elseif column == 'icon'
+                " Support must exist or 'icon' would have been removed.
+                let row += [WebDevIconsGetFileTypeSymbol(buf.fullpath, buf.isdir)]
+            else
+                " Must be of the form `=literal`.
+                let row += [column[1:]]
+            endif
+        endfor
 
-        if exists("g:loaded_webdevicons")
-            let row += [WebDevIconsGetFileTypeSymbol(buf.fullname, buf.isdir)]
-        endif
-
-        " Are we to split the path and file name?
-        if g:bufExplorerSplitOutPathName
-            let type = (g:bufExplorerShowRelativePath) ? "relativepath" : "path"
-            let row += [buf.shortname, buf[type]]
-        else
-            let type = (g:bufExplorerShowRelativePath) ? "relativename" : "homename"
-            let row += [buf[type]]
-        endif
-        let row += [buf.line]
         call add(table, row)
+        call add(s:displayedBufNbrs, buf.bufNbr)
     endfor
 
     let lines = s:MakeLines(table)
@@ -1140,6 +1211,76 @@ function! s:BuildBufferList()
     call s:SortListing()
 endfunction
 
+" Buffer numbers for buffers displayed in the BufExplorer window.
+let s:displayedBufNbrs = []
+
+" GetColumns {{{2
+function! s:GetColumns()
+    let validColumns = [
+            \ 'dir',
+            \ 'fulldir',
+            \ 'fullpath',
+            \ 'homereldir',
+            \ 'homerelpath',
+            \ 'icon',
+            \ 'indicators',
+            \ 'line',
+            \ 'name',
+            \ 'number',
+            \ 'numberindicators',
+            \ 'path',
+            \ 'rawpath',
+            \ 'relativedir',
+            \ 'relativepath',
+            \ 'splittablepath',
+            \ ]
+    let columns = []
+    for column in g:bufExplorerColumns
+        if column == 'splittablepath'
+            if g:bufExplorerSplitOutPathName
+                let columns += ['name']
+                let column = 'dir'
+            else
+                let column = 'path'
+            endif
+        endif
+        if column == 'dir' || column == 'path'
+            if g:bufExplorerShowRelativePath
+                let column = 'relative' . column
+            else
+                let column = 'homerel' . column
+            endif
+        endif
+        if column == 'icon'
+            " 'icon' is always valid, but omitted unless support is loaded.
+            if exists("g:loaded_webdevicons")
+                let columns += [column]
+            endif
+        elseif index(validColumns, column) >= 0 || column =~# '^='
+            let columns += [column]
+        else
+            let columns += ['=[bad column name "' . column . '"]']
+        endif
+    endfor
+    if len(columns) == 0
+        let columns = ['=[`g:bufExplorerColumns` is empty]']
+    endif
+    return columns
+endfunction
+
+" BufExplorer_defaultColumns {{{2
+" User-accessible default value for `g:bufExplorerColumns`.
+" Implemented as a function so that users may modify the returned list.
+function! BufExplorer_defaultColumns()
+    let defaultColumns = [
+            \   'numberindicators',
+            \   'icon',
+            \   'splittablepath',
+            \   'line',
+            \ ]
+    return defaultColumns
+endfunction
+
 " MakeLines {{{2
 function! s:MakeLines(table)
     if len(a:table) == 0
@@ -1148,6 +1289,10 @@ function! s:MakeLines(table)
     let lines = []
     " To avoid trailing whitespace, do not pad the final column.
     let numColumnsToPad = len(a:table[0]) - 1
+    " Ensure correctness even if `table` has no columns.
+    if numColumnsToPad < 0
+        let numColumnsToPad = 0
+    endif
     let maxWidths = repeat([0], numColumnsToPad)
     for row in a:table
         let i = 0
@@ -1188,7 +1333,7 @@ function! s:SelectBuffer(...)
     " error has occurred when it really has not.
     "echo ""
 
-    let _bufNbr = -1
+    let bufNbr = -1
 
     if (a:0 == 1) && (a:1 == "ask")
         " Ask the user for input.
@@ -1200,20 +1345,20 @@ function! s:SelectBuffer(...)
         redraw | echo
 
         if strlen(cmd) > 0
-            let _bufNbr = str2nr(cmd)
+            let bufNbr = str2nr(cmd)
         else
             call s:Error("Invalid buffer number, try again.")
             return
         endif
     else
-        let _bufNbr = s:GetBufNbrAtCursor()
-        if _bufNbr == 0
+        let bufNbr = s:GetBufNbrAtCursor()
+        if bufNbr == 0
             return
         endif
 
         " Check and see if we are running BufferExplorer via WinManager.
         if exists("b:displayMode") && b:displayMode == "winmanager"
-            let _bufName = expand("#"._bufNbr.":p")
+            let _bufName = expand("#".bufNbr.":p")
 
             if (a:0 == 1) && (a:1 == "tab")
                 call WinManagerFileEdit(_bufName, 1)
@@ -1225,12 +1370,12 @@ function! s:SelectBuffer(...)
         endif
     endif
 
-    if bufexists(_bufNbr)
+    if bufexists(bufNbr)
         " Get the tab number where this buffer is located in.
-        let tabNbr = s:GetTabNbr(_bufNbr)
+        let tabNbr = s:GetTabNbr(bufNbr)
         if exists("g:bufExplorerChgWin") && g:bufExplorerChgWin <=winnr("$")
             execute g:bufExplorerChgWin."wincmd w"
-            execute "keepjumps keepalt silent b!" _bufNbr
+            execute "keepjumps keepalt silent b!" bufNbr
 
         " Are we supposed to open the selected buffer in a tab?
         elseif (a:0 == 1) && (a:1 == "tab")
@@ -1239,42 +1384,42 @@ function! s:SelectBuffer(...)
             " Open a new tab with the selected buffer in it.
             if v:version > 704 || ( v:version == 704 && has('patch2237') )
                 " new syntax for last tab as of 7.4.2237
-                execute "$tab split +buffer" . _bufNbr
+                execute "$tab split +buffer" . bufNbr
             else
-                execute "999tab split +buffer" . _bufNbr
+                execute "999tab split +buffer" . bufNbr
             endif
         " Are we supposed to open the selected buffer in a split?
         elseif (a:0 == 2) && (a:1 == "split")
             call s:Close()
             if (a:2 == "vl")
-                execute "vert topleft sb "._bufNbr
+                execute "vert topleft sb ".bufNbr
             elseif (a:2 == "vr")
-                execute "vert belowright sb "._bufNbr
+                execute "vert belowright sb ".bufNbr
             elseif (a:2 == "st")
-                execute "topleft sb "._bufNbr
+                execute "topleft sb ".bufNbr
             else " = sb
-                execute "belowright sb "._bufNbr
+                execute "belowright sb ".bufNbr
             endif
         " Are we supposed to open the selected buffer in the original window?
         elseif (a:0 == 1) && (a:1 == "original_window")
             call s:Close()
             execute s:windowAtLaunch . "wincmd w"
-            execute "keepjumps keepalt silent b!" _bufNbr
+            execute "keepjumps keepalt silent b!" bufNbr
         else
             " Request to open in current (BufExplorer) window.
             if g:bufExplorerFindActive && tabNbr > 0
                 " Close BufExplorer window and switch to existing tab/window.
                 call s:Close()
                 execute tabNbr . "tabnext"
-                execute bufwinnr(_bufNbr) . "wincmd w"
+                execute bufwinnr(bufNbr) . "wincmd w"
             else
                 " Use BufExplorer window for the buffer.
-                execute "keepjumps keepalt silent b!" _bufNbr
+                execute "keepjumps keepalt silent b!" bufNbr
             endif
         endif
 
         " Make the buffer 'listed' again.
-        call setbufvar(_bufNbr, "&buflisted", "1")
+        call setbufvar(bufNbr, "&buflisted", "1")
 
         " Call any associated function references. g:bufExplorerFuncRef may be
         " an individual function reference or it may be a list containing
@@ -1295,7 +1440,7 @@ function! s:SelectBuffer(...)
         endif
     else
         call s:Error("Sorry, that buffer no longer exists, please select another")
-        call s:DeleteBuffer(_bufNbr, "wipe")
+        call s:DeleteBuffer(bufNbr, "wipe")
     endif
 endfunction
 
@@ -1387,7 +1532,7 @@ function! s:DeleteBuffer(bufNbr, mode)
 
     if bufexists(a:bufNbr)
         " Buffer is still present.  We may have failed to wipe it, or it may
-        " have changed attributes (as `:bd` only makes a buffer unlisted).
+        " have changed indicators (as `:bd` only makes a buffer unlisted).
         " Regather information on this buffer, update the buffer list, and
         " redisplay.
         let info = s:GetBufferInfo(a:bufNbr)
@@ -1401,6 +1546,8 @@ function! s:DeleteBuffer(bufNbr, mode)
 
         " Delete the buffer from the raw buffer list.
         unlet s:raw_buffer_listing[a:bufNbr]
+        " Remove buffer number from list of displayed buffer numbers.
+        call remove(s:displayedBufNbrs, index(s:displayedBufNbrs, a:bufNbr))
     endif
 endfunction
 
@@ -1531,51 +1678,49 @@ function! s:UpdateHelpStatus()
 endfunction
 
 " Key_number {{{2
-function! s:Key_number(line)
-    let _bufnr = str2nr(a:line)
-    let key = [printf('%9d', _bufnr)]
+function! s:Key_number(buf)
+    let key = [printf('%020d', a:buf.bufNbr)]
     return key
 endfunction
 
 " Key_name {{{2
-function! s:Key_name(line)
-    let _bufnr = str2nr(a:line)
-    let buf = s:raw_buffer_listing[_bufnr]
-    let key = [buf.shortname, buf.fullname]
+function! s:Key_name(buf)
+    let key = [a:buf.name, a:buf.fullpath]
     return key
 endfunction
 
 " Key_fullpath {{{2
-function! s:Key_fullpath(line)
-    let _bufnr = str2nr(a:line)
-    let buf = s:raw_buffer_listing[_bufnr]
-    let key = [buf.fullname]
+function! s:Key_fullpath(buf)
+    let key = [a:buf.fullpath]
     return key
 endfunction
 
 " Key_extension {{{2
-function! s:Key_extension(line)
-    let _bufnr = str2nr(a:line)
-    let buf = s:raw_buffer_listing[_bufnr]
-    let extension = fnamemodify(buf.shortname, ':e')
-    let key = [extension, buf.shortname, buf.fullname]
+function! s:Key_extension(buf)
+    let extension = fnamemodify(a:buf.name, ':e')
+    let key = [extension, a:buf.name, a:buf.fullpath]
     return key
 endfunction
 
 " Key_mru {{{2
-function! s:Key_mru(line)
-    let _bufnr = str2nr(a:line)
-    let buf = s:raw_buffer_listing[_bufnr]
-    let pos = s:MRUOrderForBuf(_bufnr)
-    return [printf('%9d', pos), buf.fullname]
+function! s:Key_mru(buf)
+    let pos = s:MRUOrderForBuf(a:buf.bufNbr)
+    return [printf('%9d', pos), a:buf.fullpath]
 endfunction
 
 " SortByKeyFunc {{{2
 function! s:SortByKeyFunc(keyFunc)
+    let lastLineNbr = s:firstBufferLine + len(s:displayedBufNbrs) - 1
+    " `s:firstBufferLine >= 1`, `lastLineNbr >= 0`; `getline(1, 0) -> []`.
+    let displayedLines = getline(s:firstBufferLine, lastLineNbr)
+    let bufLineIndex = 0
     let keyedLines = []
-    for line in getline(s:firstBufferLine, s:BufferNumLines())
-        let key = eval(a:keyFunc . '(line)')
-        call add(keyedLines, join(key + [line], "\1"))
+    for bufNbr in s:displayedBufNbrs
+        let buf = s:raw_buffer_listing[bufNbr]
+        let key = eval(a:keyFunc . '(buf)')
+        let parts = key + [string(bufNbr), string(bufLineIndex)]
+        call add(keyedLines, join(parts, "\1"))
+        let bufLineIndex += 1
     endfor
 
     " Ignore case when sorting by passing `1`:
@@ -1585,9 +1730,13 @@ function! s:SortByKeyFunc(keyFunc)
         call reverse(keyedLines)
     endif
 
+    let s:displayedBufNbrs = []
     let lines = []
     for keyedLine in keyedLines
-        call add(lines, split(keyedLine, "\1")[-1])
+        let parts = split(keyedLine, "\1")
+        let [bufNbrStr, bufLineIndexStr] = parts[-2:-1]
+        call add(s:displayedBufNbrs, str2nr(bufNbrStr))
+        call add(lines, displayedLines[str2nr(bufLineIndexStr)])
     endfor
 
     call setline(s:firstBufferLine, lines)
@@ -1639,11 +1788,11 @@ endfunction
 " GetBufNbrAtLine {{{2
 " Return `bufNbr` at `lineNbr`; return 0 if no buffer on that line.
 function! s:GetBufNbrAtLine(lineNbr)
-    if a:lineNbr < s:firstBufferLine || a:lineNbr > s:BufferNumLines()
+    let bufIndex = a:lineNbr - s:firstBufferLine
+    if bufIndex < 0 || bufIndex >= len(s:displayedBufNbrs)
         return 0
     endif
-    let lineText = getline(a:lineNbr)
-    return str2nr(lineText)
+    return s:displayedBufNbrs[bufIndex]
 endfunction
 
 " BufferNumLines {{{2
@@ -1795,6 +1944,7 @@ function! BufExplorer_ReSize()
 endfunction
 
 " Default values {{{2
+call s:Set("g:bufExplorerColumns", BufExplorer_defaultColumns()) " Configurable list of column names for the buffer list.
 call s:Set("g:bufExplorerDisableDefaultKeyMapping", 0)  " Do not disable default key mappings.
 call s:Set("g:bufExplorerDefaultAction", 'current')     " Default action for `:BufExplorer` with no args.
 call s:Set("g:bufExplorerDefaultHelp", 1)               " Show default help?
