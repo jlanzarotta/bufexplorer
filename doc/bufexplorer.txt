@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 01 Apr 2025
+*bufexplorer.txt*              Buffer Explorer       Last Change: 10 Apr 2025
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.11.0
+                                Version 7.12.0
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -189,7 +189,7 @@ WINDOW LAYOUT                                       *bufexplorer-windowlayout*
 " Sorted by mru | Locate buffer | One tab/buffer | Split path | Show terminal
 "=
   1 %a    bufexplorer.txt      C:\Vim\vimfiles\doc       line 87
-  2 #     bufexplorer.vim      c:\Vim\vimfiles\plugin    line 1
+  2 #     bufexplorer.vim      C:\Vim\vimfiles\plugin    line 1
 -------------------------------------------------------------------------------
   | |     |                    |                         |
   | |     |                    |                         +-- Current Line #.
@@ -332,14 +332,14 @@ BufExplorer defines the following column strings:
 
 Column String               Meaning
 ------------------------    ------------------------------------------------
-`number`                      buffer number from `:buffers`
-`indicators`                  indicators from `:buffers`
-`numberindicators`            number and indicators in the same column
-`line`                        line number from `:buffers`
-`rawpath`                     raw path as returned by `:buffers`
-`name`                        path with directory portion removed
-`fullpath`                    file location starting from root directory
-`fulldir`                     directory location starting from root directory
+`number`                    buffer number from `:buffers`
+`indicators`                indicators from `:buffers`
+`numberindicators`          number and indicators in the same column
+`line`                      line number from `:buffers`
+`rawpath`                   raw path as returned by `:buffers`
+`name`                      path with directory portion removed
+`fullpath`                  file location starting from root directory
+`fulldir`                   directory location starting from root directory
 `homerelpath`                 `fullpath` with homerel shortening
 `homereldir`                  `fulldir` with homerel shortening
 `relativepath`                `homerelpath` with relative shortening
@@ -347,7 +347,7 @@ Column String               Meaning
 `path`                        `relativedir` or `homereldir;` see below
 `dir`                         `relativedir` or `homereldir;` see below
 `splittablepath`              `[path]` or `[name, dir]`; see below
-`icon`                        icon from VimDevIcons
+`icon`                      icon from VimDevIcons
 
 In the examples that follow the user `vimmer` has home directory `/home/vimmer`
 with the following contents: >
@@ -693,6 +693,56 @@ The default is 1.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.12.0   April 11, 2025
+     What's Changed
+     - Thanks to Dr. Michael Henry for another patch.
+       * Addresses issue Show the list of buffers by user specified parameter,
+         e.g. filename #114.
+         https://github.com/jlanzarotta/bufexplorer/issues/114
+       * The new variable g:bufExplorerColumns holds a customizable list of
+         column strings that dictate the columns in the buffer listing.
+         - Predefined column string values for g:bufExplorerColumns:
+>
+           number
+           indicators
+           numberindicators
+           line
+           rawpath
+           name
+           fullpath
+           fulldir
+           homerelpath
+           homereldir
+           relativepath
+           relativedir
+           path
+           dir
+           splittablepath
+           icon
+<
+       * The new function BufExplorer_redisplay() causes BufExplorer to
+         redisplay the buffer list according to the columns defined by
+         g:bufExplorerColumns.
+       * The new event BufExplorer_PreDisplay will be sent before each update
+         to the buffer listing, enabling last-minute adjustments to the
+         columns.
+       * Setting g:bufExplorerColumns is sufficient to choose any subset of
+         the predefined columns, e.g.:
+>
+           " Show only the buffer number and path.
+           let g:bufExplorerColumns = ['number', 'splittablepath']
+
+           " Show only the buffer path.
+           let g:bufExplorerColumns = ['splittablepath']
+<
+       * More dynamic configuration changes are possible as shown in the help
+         text, e.g.:
+         - Press `p` to toggle between the default view and showing only the
+           path.
+         - Press `=` to reset to preferred settings and redisplay.
+         - Press `R` to cycle among `homerel`, `relative`, and `full` prefixes
+           instead of just toggling between `homerel` and `relative`.
+       * See `:help g:bufExplorerColumns` for more details.
 7.11.0   April 01, 2025
      What's Changed
      - Thanks to Dr. Michael Henry for another patch.
