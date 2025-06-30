@@ -1580,6 +1580,12 @@ function! s:Close()
     " If we needed to split the main window, close the split one.
     if s:didSplit
         execute "wincmd c"
+        " After closing the BufExplorer split, we expect to be back on the
+        " tab from which we launched; if so, make sure we also return to the
+        " window from which we launched.
+        if s:MRUEnsureTabId(tabpagenr()) == s:tabIdAtLaunch
+            execute s:windowAtLaunch . "wincmd w"
+        endif
     endif
 
     " Check to see if there are anymore buffers listed.
