@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 11 Apr 2025
+*bufexplorer.txt*              Buffer Explorer       Last Change: 01 Jul 2025
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.12.0
+                                Version 7.12.1
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -693,6 +693,15 @@ The default is 1.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.12.1   July 01, 2025
+     What's Changed
+     - Thanks to Dr. Michael Henry for another patch.
+       https://github.com/jlanzarotta/bufexplorer/pull/135
+       * Restore BufExplorer window-splitting logic. When BufExplorer closes
+         via q, ensure the original window-at-launch is chosen regardless of
+         split mode.
+       * This fixes a window-splitting regression introduced in BufExplorer
+         7.10.0.
 7.12.0   April 11, 2025
      What's Changed
      - Thanks to Dr. Michael Henry for another patch.
