@@ -695,27 +695,36 @@ function! BufExplorer(...)
     call s:MRUGarbageCollectBufs()
     call s:MRUGarbageCollectTabs()
 
+    let [splitbelow, splitright] = [g:bufExplorerSplitBelow, g:bufExplorerSplitRight]
     " `{ action: [splitMode, botRight] }`.
     let actionMap = {
-            \ 'split'   : ['split', g:bufExplorerSplitBelow],
-            \ 'vsplit'  : ['vsplit', g:bufExplorerSplitRight],
-            \ 'above'   : ['split', 0],
-            \ 'below'   : ['split', 1],
-            \ 'left'    : ['vsplit', 0],
-            \ 'right'   : ['vsplit', 1],
-            \ 'current' : ['', 0],
+            \ 'split'   : ['split', splitbelow, splitright],
+            \ 'vsplit'  : ['vsplit', splitbelow, splitright],
+            \ 'above'   : ['split', 0, splitright],
+            \ 'below'   : ['split', 1, splitright],
+            \ 'left'    : ['vsplit', splitbelow, 0],
+            \ 'right'   : ['vsplit', splitbelow, 1],
+            \ 'current' : ['', splitbelow, splitright],
             \}
-    let [splitMode, botRight] = actionMap[action]
+    let [splitMode, splitbelow, splitright] = actionMap[action]
 
     " We may have to split the current window.
     if splitMode != ''
+        " Save off the original settings.
+        let [_splitbelow, _splitright] = [&splitbelow, &splitright]
+
+        " Set the setting to ours.
+        let [&splitbelow, &splitright] = [splitbelow, splitright]
         let size = splitMode == 'split' ? g:bufExplorerSplitHorzSize : g:bufExplorerSplitVertSize
-        let cmd = 'keepalt ' . (botRight ? 'botright ' : 'topleft ')
+        let cmd = 'keepalt '
         if size > 0
             let cmd .= size
         endif
         let cmd .= splitMode
         execute cmd
+
+        " Restore the original settings.
+        let [&splitbelow, &splitright] = [_splitbelow, _splitright]
 
         " Remember that a split was triggered
         let s:didSplit = 1
@@ -1571,6 +1580,12 @@ function! s:Close()
     " If we needed to split the main window, close the split one.
     if s:didSplit
         execute "wincmd c"
+        " After closing the BufExplorer split, we expect to be back on the
+        " tab from which we launched; if so, make sure we also return to the
+        " window from which we launched.
+        if s:MRUEnsureTabId(tabpagenr()) == s:tabIdAtLaunch
+            execute s:windowAtLaunch . "wincmd w"
+        endif
     endif
 
     " Check to see if there are anymore buffers listed.
