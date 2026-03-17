@@ -1033,6 +1033,17 @@ function! s:CalculateBufferDetails(buf)
             endif
         endif
 
+        " Prefer the OSC title set by the shell (b:term_title) when available.
+        " Neovim initialises b:term_title to the raw `term://` URI before any
+        " title sequence arrives, so ignore values that still look like URIs.
+        " When the shell emits an OSC 0/2 title (e.g. via preexec/precmd hooks),
+        " this shows the running command or current directory instead of the
+        " opaque `!PID:shell` fallback, making it easy to distinguish terminals.
+        let term_title = getbufvar(buf.bufNbr, 'term_title', '')
+        if !empty(term_title) && term_title !~# '^term://'
+            let name = '!' . term_title
+        endif
+
         let slashed_cwd = fnamemodify(cwd, ':p')
         let buf.fullpath = slashed_cwd . name
         let buf.fulldir = fnamemodify(slashed_cwd, ':h')
