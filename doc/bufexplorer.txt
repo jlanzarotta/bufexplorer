@@ -1,7 +1,7 @@
-*bufexplorer.txt*              Buffer Explorer       Last Change: 19 Aug 2025
+*bufexplorer.txt*              Buffer Explorer       Last Change: 16 Mar 2026
 
 Buffer Explorer                                *buffer-explorer* *bufexplorer*
-                                Version 7.13.0
+                                Version 7.14.0
 
 Plugin for easily exploring (or browsing) Vim|:buffers|.
 
@@ -693,6 +693,20 @@ The default is 1.
 ===============================================================================
 CHANGE LOG                                              *bufexplorer-changelog*
 
+7.14.0   March 16, 2026
+     - Thanks to charlesg3 for the patch.
+       https://github.com/jlanzarotta/bufexplorer/pull/138
+       * Use b:term_title for terminal buffer display names.
+         When a terminal buffer's b:term_title has been set by an OSC 0/2
+         title sequence (e.g. via shell preexec/precmd hooks), use it as the
+         display name instead of the opaque `!PID:shell` fallback.  This makes
+         it easy to distinguish multiple terminal buffers by showing the
+         running command or current directory rather than an arbitrary
+         process ID.
+
+         Neovim initialises b:term_title to the raw `term://` URI before any
+         title sequence has arrived, so values matching that prefix are
+         ignored and the existing fallback is used instead.
 7.13.0   August 19, 2025
      - Thanks to Dr. Michael Henry for another patch.
        https://github.com/jlanzarotta/bufexplorer/pull/137
@@ -1435,7 +1449,7 @@ won't list names.
 ===============================================================================
 COPYRIGHT                                               *bufexplorer-copyright*
 
-Copyright (c) 2001-2025, Jeff Lanzarotta
+Copyright (c) 2001-2026, Jeff Lanzarotta
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
