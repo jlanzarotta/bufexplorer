@@ -77,6 +77,22 @@ endif
 let g:bufexplorer_version = "7.14.0"
 
 " Plugin Code {{{1
+" Check for Vim version {{{2
+if !exists("g:bufExplorerVersionWarn")
+    let g:bufExplorerVersionWarn = 1
+endif
+
+" Make sure we are using the correct version of Vim. If not, do not load the
+" plugin.
+if v:version < 704
+    if g:bufExplorerVersionWarn
+        echohl WarningMsg
+        echo "Sorry, bufexplorer ".g:bufexplorer_version." required Vim 7.4 or greater."
+        echohl None
+    endif
+    finish
+endif
+
 " Command actions {{{2
 let s:actions = [
         \ 'current',
@@ -225,6 +241,12 @@ function! s:MRUNew(head)
     return { 'head': a:head, 'next': next, 'prev': prev }
 endfunction
 
+" MRULen {{{2
+function! s:MRULen(mru)
+    " Do not include the always-present `mru.head` item.
+    return len(a:mru.next) - 1
+endfunction
+
 " MRURemoveMustExist {{{2
 "   `item` must exist in `mru`.
 function! s:MRURemoveMustExist(mru, item)
@@ -257,6 +279,23 @@ function! s:MRUAdd(mru, item)
         let next[prevItem] = a:item
         let prev[nextItem] = a:item
     endif
+endfunction
+
+" MRUGetItems {{{2
+"   Return list of up to `maxItems` items in MRU order.
+"   `maxItems == 0` => unlimited.
+function! s:MRUGetItems(mru, maxItems)
+    let [head, next] = [a:mru.head, a:mru.next]
+    let items = []
+    let item = next[head]
+    while item != head
+        if a:maxItems > 0 && len(items) >= a:maxItems
+            break
+        endif
+        call add(items, item)
+        let item = next[item]
+    endwhile
+    return items
 endfunction
 
 " MRUGetOrdering {{{2
@@ -496,16 +535,13 @@ function! s:ShouldIgnore(buf)
         return 1
     endif
 
-    " Cache bufname() — used twice below.
-    let bname = bufname(a:buf)
-
     " Ignore the BufExplorer buffer.
-    if fnamemodify(bname, ":t") == s:name
+    if fnamemodify(bufname(a:buf), ":t") == s:name
         return 1
     endif
 
     " Ignore any buffers in the exclude list.
-    if index(s:MRU_Exclude_List, bname) >= 0
+    if index(s:MRU_Exclude_List, bufname(a:buf)) >= 0
         return 1
     endif
 
@@ -1060,41 +1096,50 @@ endfunction
 " - `.line`
 " Other fields will be populated by `s:CalculateBufferDetails()`.
 function! s:GetBufferInfo(onlyBufNbr)
-    " Use getbufinfo() instead of :redir + :buffers! to avoid string parsing.
-    " getbufinfo({'buflisted': 0}) returns all buffers including unlisted ones.
-    if a:onlyBufNbr > 0
-        let infolist = getbufinfo(a:onlyBufNbr)
+    redir => bufoutput
+
+    " Below, `:silent buffers` allows capturing the output via `:redir` but
+    " prevents display to the user.
+
+    if a:onlyBufNbr > 0 && buflisted(a:onlyBufNbr)
+        " We care only about the listed buffer `a:onlyBufNbr`, so no need to
+        " enumerate unlisted buffers.
+        silent buffers
     else
-        let infolist = getbufinfo({'buflisted': 0})
+        " Use `!` to show all buffers including the unlisted ones.
+        silent buffers!
+    endif
+    redir END
+
+    if a:onlyBufNbr > 0
+        " Since we are only interested in this specified buffer remove the
+        " other buffers listed.
+        " Use a very-magic pattern starting with a newline and a run of zero or
+        " more spaces/tabs:
+        let onlyLinePattern = '\v\n\s*'
+        " Continue with the buffer number followed by a non-digit character
+        " (which will be a buffer indicator character such as `u` or ` `).
+        let onlyLinePattern .= a:onlyBufNbr . '\D'
+        " Finish with a run of zero or more non-newline characters plus newline:
+        let onlyLinePattern .= '[^\n]*\n'
+        let bufoutput = matchstr("\n" . bufoutput . "\n", onlyLinePattern)
     endif
 
     let all = {}
 
-    for info in infolist
-        let bufNbr = info.bufnr
+    " Loop over each line in the buffer.
+    for line in split(bufoutput, '\n')
+        let bits = split(line, '"')
 
-        " Build a `numberindicators` string that mimics :buffers output so that
-        " the rest of the code (indicator stripping, 'u' check) continues to
-        " work without changes.
-        "   Column 1: buffer number (right-justified in 3 chars)
-        "   Column 2: 'u' if unlisted, ' ' if listed
-        "   Column 3: '%' current, '#' alternate, ' ' otherwise
-        "   Column 4: 'a' active/loaded, 'h' hidden, ' ' unloaded
-        "   Column 5: '+' modified, ' ' clean
-        let unlisted  = info.listed ? ' ' : 'u'
-        let curalt    = (bufNbr == bufnr('%')) ? '%' : (bufNbr == bufnr('#') ? '#' : ' ')
-        let actflag   = (info.loaded && !empty(info.windows)) ? 'a' :
-                      \ (info.loaded && empty(info.windows))  ? 'h' : ' '
-        let modflag   = info.changed ? '+' : ' '
-        let numberindicators = printf('%3d', bufNbr) . unlisted . curalt . actflag . modflag
-
-        " `line` is the last-known cursor line, matching :buffers output.
+        " Use first and last components after the split on '"', in case a
+        " filename with an embedded '"' is present.
         let buf = {
-                \ "numberindicators": numberindicators,
-                \ "line": string(info.lnum),
+                \ "numberindicators": bits[0],
+                \ "line": substitute(bits[-1],
+                \ '\s*', '', '')
                 \}
-        let buf.bufNbr = bufNbr
-        let all[bufNbr] = buf
+        let buf.bufNbr = str2nr(buf.numberindicators)
+        let all[buf.bufNbr] = buf
     endfor
 
     return all
@@ -1184,28 +1229,26 @@ endfunction
 " Buffer numbers for buffers displayed in the BufExplorer window.
 let s:displayedBufNbrs = []
 
-" Valid column names — script-level constant, shared across all GetColumns calls.
-let s:validColumns = [
-        \ 'dir',
-        \ 'fulldir',
-        \ 'fullpath',
-        \ 'homereldir',
-        \ 'homerelpath',
-        \ 'icon',
-        \ 'indicators',
-        \ 'line',
-        \ 'name',
-        \ 'number',
-        \ 'numberindicators',
-        \ 'path',
-        \ 'rawpath',
-        \ 'relativedir',
-        \ 'relativepath',
-        \ 'splittablepath',
-        \ ]
-
 " GetColumns {{{2
 function! s:GetColumns()
+    let validColumns = [
+            \ 'dir',
+            \ 'fulldir',
+            \ 'fullpath',
+            \ 'homereldir',
+            \ 'homerelpath',
+            \ 'icon',
+            \ 'indicators',
+            \ 'line',
+            \ 'name',
+            \ 'number',
+            \ 'numberindicators',
+            \ 'path',
+            \ 'rawpath',
+            \ 'relativedir',
+            \ 'relativepath',
+            \ 'splittablepath',
+            \ ]
     let columns = []
     for column in g:bufExplorerColumns
         if column == 'splittablepath'
@@ -1228,7 +1271,7 @@ function! s:GetColumns()
             if exists("g:loaded_webdevicons")
                 let columns += [column]
             endif
-        elseif index(s:validColumns, column) >= 0 || column =~# '^='
+        elseif index(validColumns, column) >= 0 || column =~# '^='
             let columns += [column]
         else
             let columns += ['=[bad column name "' . column . '"]']
@@ -1354,7 +1397,12 @@ function! s:SelectBuffer(...)
             call s:Close()
 
             " Open a new tab with the selected buffer in it.
-            execute "$tab split +buffer" . bufNbr
+            if v:version > 704 || ( v:version == 704 && has('patch2237') )
+                " new syntax for last tab as of 7.4.2237
+                execute "$tab split +buffer" . bufNbr
+            else
+                execute "999tab split +buffer" . bufNbr
+            endif
         " Are we supposed to open the selected buffer in a split?
         elseif (a:0 == 2) && (a:1 == "split")
             call s:Close()
@@ -1824,17 +1872,29 @@ endfunction
 function! s:GetWinNbr(tabNbr, bufNbr)
     " window number in tabpage.
     let tablist = tabpagebuflist(a:tabNbr)
+    " Number:     0
+    " String:     1
+    " Funcref:    2
+    " List:       3
+    " Dictionary: 4
+    " Float:      5
     if type(tablist) == 3
-        return index(tablist, a:bufNbr) + 1
+        return index(tabpagebuflist(a:tabNbr), a:bufNbr) + 1
     else
         return 1
     endif
 endfunction
 
 " StringWidth" {{{2
-function! s:StringWidth(s)
-    return strwidth(a:s)
-endfunction
+if exists('*strwidth')
+    function s:StringWidth(s)
+        return strwidth(a:s)
+    endfunction
+else
+    function s:StringWidth(s)
+        return len(a:s)
+    endfunction
+endif
 
 " Winmanager Integration {{{2
 let g:BufExplorer_title = "\[Buf\ List\]"
